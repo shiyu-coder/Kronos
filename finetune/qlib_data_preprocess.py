@@ -39,11 +39,20 @@ class QlibDataPreprocessor:
         # Determine the actual start and end times to load, including buffer for lookback and predict windows.
         start_index = cal.searchsorted(pd.Timestamp(self.config.dataset_begin_time))
         end_index = cal.searchsorted(pd.Timestamp(self.config.dataset_end_time))
-        real_start_time = cal[start_index - self.config.lookback_window]
 
-        if cal[end_index] != pd.Timestamp(self.config.dataset_end_time):
+        # 检查start_index - lookback_window是否会导致负数索引
+        adjusted_start_index = max(start_index - self.config.lookback_window, 0)
+        real_start_time = cal[adjusted_start_index]
+
+        # 检查end_index是否超出数组范围
+        if end_index >= len(cal):
+            end_index = len(cal) - 1
+        elif cal[end_index] != pd.Timestamp(self.config.dataset_end_time):
             end_index -= 1
-        real_end_time = cal[end_index + self.config.predict_window]
+
+        # 检查end_index + predict_window是否会超出数组范围
+        adjusted_end_index = min(end_index + self.config.predict_window, len(cal) - 1)
+        real_end_time = cal[adjusted_end_index]
 
         # Load data using Qlib's data loader.
         data_df = QlibDataLoader(config=data_fields_qlib).load(
