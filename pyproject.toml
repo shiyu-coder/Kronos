@@ -1,0 +1,22 @@
+[project]
+name = "kronos"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "einops==0.8.1",
+    "huggingface-hub==0.33.1",
+    "matplotlib==3.9.3",
+    "numpy>=2.3.2",
+    "pandas>=2.2.2",
+    "torch>=2.8.0",
+    "tqdm==4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "pre-commit>=4.3.0",
+    "ruff>=0.12.11",
+]
