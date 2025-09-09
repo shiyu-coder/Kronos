@@ -111,18 +111,24 @@ class QlibDataset(Dataset):
 
         # Extract the sliding window from the dataframe.
         df = self.data[symbol]
-        end_idx = start_idx + self.window
+        end_idx = start_idx + self.window # this is time window, T
         win_df = df.iloc[start_idx:end_idx]
 
         # Separate main features and time features.
         x = win_df[self.feature_list].values.astype(np.float32)
         x_stamp = win_df[self.time_feature_list].values.astype(np.float32)
 
-        # Perform instance-level normalization.
-        # Be careful about data leakage here, because x contains time span in this window.
-        # We use this window to predict the future, not to predict within this window!
-        x_mean, x_std = np.mean(x, axis=0), np.std(x, axis=0)
-        x = (x - x_mean) / (x_std + 1e-5)
+        # # Perform instance-level normalization.
+        # # Be careful about data leakage here, because x contains time span in this window.
+        # # We use this window to predict the future, not to predict within this window!
+        # x_mean, x_std = np.mean(x, axis=0), np.std(x, axis=0)
+        # x = (x - x_mean) / (x_std + 1e-5)
+        # x = np.clip(x, -self.config.clip, self.config.clip)
+
+        L = self.config.lookback_window  # only use the lookback window for normalization
+        x_hist = x[:L]
+        x_hist_mean, x_hist_std = np.mean(x_hist, axis=0), np.std(x_hist, axis=0)
+        x = (x - x_hist_mean) / (x_hist_std + 1e-5)
         x = np.clip(x, -self.config.clip, self.config.clip)
 
         # Convert to PyTorch tensors.

@@ -56,12 +56,12 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
         self.embed = nn.Linear(self.d_in, self.d_model)
         self.head = nn.Linear(self.d_model, self.d_in)
 
-        # Encoder Transformer Blocks
+        # Encoder Transformer Blocks, causal
         self.encoder = nn.ModuleList([
             TransformerBlock(self.d_model, self.n_heads, self.ff_dim, self.ffn_dropout_p, self.attn_dropout_p, self.resid_dropout_p)
             for _ in range(self.enc_layers - 1)
         ])
-        # Decoder Transformer Blocks
+        # Decoder Transformer Blocks, causal
         self.decoder = nn.ModuleList([
             TransformerBlock(self.d_model, self.n_heads, self.ff_dim, self.ffn_dropout_p, self.attn_dropout_p, self.resid_dropout_p)
             for _ in range(self.dec_layers - 1)
@@ -261,7 +261,7 @@ class Kronos(nn.Module, PyTorchModelHubMixin):
         x = self.token_drop(x)
 
         for layer in self.transformer:
-            x = layer(x, key_padding_mask=padding_mask)
+            x = layer(x, key_padding_mask=padding_mask) # padding_mask is for hiding the padding place, which has no meaning in attention calculation. not causal mask!!!
 
         x = self.norm(x)
 

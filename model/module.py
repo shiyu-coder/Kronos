@@ -309,6 +309,7 @@ class RotaryPositionalEmbedding(nn.Module):
         return torch.cat((-x2, x1), dim=-1)
 
 
+# with a causal mask
 def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None) -> torch.Tensor:
     L, S = query.size(-2), key.size(-2)
     scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
