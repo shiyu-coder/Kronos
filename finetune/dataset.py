@@ -39,7 +39,7 @@ class QlibDataset(Dataset):
             self.n_samples = self.config.n_val_iter
 
         with open(self.data_path, 'rb') as f:
-            self.data = pickle.load(f)
+            self.data = pickle.load(f) # {symbol: pd.DataFrame(ochlv, index=datetime)}
 
         self.window = self.config.lookback_window + self.config.predict_window + 1
 
@@ -63,7 +63,7 @@ class QlibDataset(Dataset):
                 df['day'] = df['datetime'].dt.day
                 df['month'] = df['datetime'].dt.month
                 # Keep only necessary columns to save memory.
-                self.data[symbol] = df[self.feature_list + self.time_feature_list]
+                self.data[symbol] = df[self.feature_list + self.time_feature_list] # store ochlv and time features as a dataframe in final self.data
 
                 # Add all valid starting indices for this symbol to the global list.
                 for i in range(num_samples):
@@ -119,6 +119,8 @@ class QlibDataset(Dataset):
         x_stamp = win_df[self.time_feature_list].values.astype(np.float32)
 
         # Perform instance-level normalization.
+        # Be careful about data leakage here, because x contains time span in this window.
+        # We use this window to predict the future, not to predict within this window!
         x_mean, x_std = np.mean(x, axis=0), np.std(x, axis=0)
         x = (x - x_mean) / (x_std + 1e-5)
         x = np.clip(x, -self.config.clip, self.config.clip)

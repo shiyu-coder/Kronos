@@ -91,15 +91,18 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
         for layer in self.encoder:
             z = layer(z)
 
-        z = self.quant_embed(z) # (B, T, codebook)
+        z = self.quant_embed(z) # (B, T, codebook(k=s1_bits+s2_bits))
 
-        bsq_loss, quantized, z_indices = self.tokenizer(z)
+        # quantized is the float representation before binarization to subtokens, with the same shape as z and z_indices. this Float is used for decoder input.
+        # z_indices is a quantized index, reflecting the codebook entry subtoken1 and subtoken2. e.g. z_indices [10,23] reflecting the subtoken1{1,0,1,0} and subtoken2{1,0,1,1,1} in the codebook
+        bsq_loss, quantized, z_indices = self.tokenizer(z) 
 
         quantized_pre = quantized[:, :, :self.s1_bits] # Extract the first part of quantized representation (s1_bits)
-        z_pre = self.post_quant_embed_pre(quantized_pre)
 
+        z_pre = self.post_quant_embed_pre(quantized_pre)
         z = self.post_quant_embed(quantized)
 
+        # Causal Transformer decoder layers
         # Decoder layers (for pre part - s1 bits)
         for layer in self.decoder:
             z_pre = layer(z_pre)
@@ -153,10 +156,10 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
         z = self.embed(x)
         for layer in self.encoder:
             z = layer(z)
-        z = self.quant_embed(z)
+        z = self.quant_embed(z) # (B, T, codebook(k=s1_bits+s2_bits))
 
         bsq_loss, quantized, z_indices = self.tokenizer(z, half)
-        return z_indices
+        return z_indices # [(B, T, s1), (B, T, s2)] ==> [LongTensor(B, T), LongTensor(B, T)], which are coarse subtokens and fine subtokens
 
     def decode(self, x, half=False):
         """
@@ -273,7 +276,7 @@ class Kronos(nn.Module, PyTorchModelHubMixin):
 
         x2 = self.dep_layer(x, sibling_embed, key_padding_mask=padding_mask) # Dependency Aware Layer: Condition on s1 embeddings
         s2_logits = self.head.cond_forward(x2)
-        return s1_logits, s2_logits
+        return s1_logits, s2_logits #the element in these two list, reflects to subtoken3, subtoken4 in paper figure 2
 
     def decode_s1(self, s1_ids, s2_ids, stamp=None, padding_mask=None):
         """

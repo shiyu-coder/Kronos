@@ -124,7 +124,7 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
         valid_dataset.set_epoch_seed(0)  # Keep validation sampling consistent
 
         for i, (ori_batch_x, _) in enumerate(train_loader):
-            ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True)
+            ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True) # (B_size, Time_window, D_features)
 
             # --- Gradient Accumulation Loop ---
             current_batch_total_loss = 0.0
@@ -145,11 +145,11 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
 
                 loss_scaled = loss / config['accumulation_steps']
                 current_batch_total_loss += loss.item()
-                loss_scaled.backward()
+                loss_scaled.backward() # (accumulate gradients: delta_Loss/delta_weightsθ) + (remove the grad graph), each accumulation step
 
             # --- Optimizer Step after Accumulation ---
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
-            optimizer.step()
+            optimizer.step() # adjust weights(θ) based on batched gradients, one batch
             scheduler.step()
             optimizer.zero_grad()
 
