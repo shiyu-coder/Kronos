@@ -75,6 +75,14 @@ class QlibDataPreprocessor:
             symbol_df['amt'] = (symbol_df['open'] + symbol_df['high'] + symbol_df['low'] + symbol_df['close']) / 4 * symbol_df['vol']
             symbol_df = symbol_df[self.config.feature_list]
 
+            # finally the symbol_df looks like:
+            # symbol 'XSHG.600000'
+            #
+            # field(column axis)  open  close  xxx  xxx  xxx
+            # datetime(index name)
+            # 2024-01-02          100    101  xxx  xxx  xxx
+            # 2024-01-03          102    103  xxx  xxx  xxx
+
             # Filter out symbols with insufficient data.
             symbol_df = symbol_df.dropna()
             if len(symbol_df) < self.config.lookback_window + self.config.predict_window + 1:

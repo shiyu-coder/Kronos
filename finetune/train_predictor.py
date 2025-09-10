@@ -98,14 +98,21 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
 
             # Tokenize input data on-the-fly
             with torch.no_grad():
-                token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
+                # token_seq_0, token_seq_1 are coarse subtoken and fine subtoken batches, like: [LongTensor(B, T), LongTensor(B, T)], each value in [0, 2**s1_bits-1] or [0, 2**s2_bits-1]
+                # From (B, T, D) to (B, T, 1), by squeezing the last dimension as a interger index, then to (B, T) LongTensor
+                token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True) # coarse subtokens and fine subtokens
 
             # Prepare inputs and targets for the language model
-            token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
-            token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
+            # token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
+            # token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
+            s = config['lookback_window'] - 1
+            token_in  = [token_seq_0[:, s:-1], token_seq_1[:, s:-1]]
+            token_out = [token_seq_0[:, s+1:], token_seq_1[:, s+1:]]
 
             # Forward pass and loss calculation
-            logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
+            # logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
+            stamp_in  = batch_x_stamp[:, s:-1, :]
+            logits = model(token_in[0], token_in[1], stamp_in)
             loss, s1_loss, s2_loss = model.module.head.compute_loss(logits[0], logits[1], token_out[0], token_out[1])
 
             # Backward pass and optimization
