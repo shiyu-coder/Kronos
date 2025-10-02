@@ -7,12 +7,64 @@ A股股票预测运行脚本 - 修复版本
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
 import sys
 import os
 from pathlib import Path
 import torch
 import warnings
 warnings.filterwarnings("ignore")
+
+# 修复matplotlib中文显示问题
+def setup_chinese_font():
+    """设置matplotlib中文字体 - 实用版本"""
+    try:
+        import matplotlib.font_manager as fm
+        
+        # 查找系统中可用的中文字体
+        chinese_fonts = [
+            'SimHei',           # 黑体 (Windows)
+            'Microsoft YaHei',  # 微软雅黑 (Windows)
+            'PingFang SC',      # Mac
+            'Hiragino Sans GB', # Mac
+            'WenQuanYi Micro Hei', # Linux
+            'Noto Sans CJK SC', # Google Noto
+            'Source Han Sans SC' # 思源黑体
+        ]
+        
+        # 获取系统中所有可用字体
+        available_fonts = [f.name for f in fm.fontManager.ttflist]
+        
+        # 查找第一个可用的中文字体
+        found_font = None
+        for font in chinese_fonts:
+            if font in available_fonts:
+                found_font = font
+                break
+        
+        if found_font:
+            # 设置找到的中文字体
+            matplotlib.rcParams['font.sans-serif'] = [found_font] + matplotlib.rcParams['font.sans-serif']
+            matplotlib.rcParams['font.family'] = 'sans-serif'
+            print(f"   ✅ 成功设置中文字体: {found_font}")
+            return True
+        else:
+            # 没有找到中文字体，使用英文替代方案
+            print("   ⚠️  系统中未找到中文字体")
+            print("   📝 将使用英文标签以避免乱码")
+            matplotlib.rcParams['font.family'] = 'DejaVu Sans'
+            matplotlib.rcParams['axes.unicode_minus'] = False
+            return False
+            
+    except Exception as e:
+        print(f"   ⚠️  字体设置失败: {e}")
+        # 使用备用方案
+        matplotlib.rcParams['font.family'] = 'DejaVu Sans'
+        matplotlib.rcParams['axes.unicode_minus'] = False
+        return False
+
+# 初始化中文字体并获取是否支持中文
+chinese_supported = setup_chinese_font()
 
 # 添加model模块到Python路径
 sys.path.append(str(Path(__file__).parent / "model"))
@@ -23,41 +75,74 @@ except ImportError:
     # 如果无法导入，尝试直接从kronos模块导入
     from kronos import KronosTokenizer, Kronos, KronosPredictor
 
-def plot_prediction(kline_df, pred_df):
+def plot_prediction(kline_df, pred_df, use_chinese=True):
     """绘制预测结果对比图"""
     pred_df.index = kline_df.index[-pred_df.shape[0]:]
+    
+    # 根据中文支持情况选择标签
+    if use_chinese and chinese_supported:
+        # 中文标签
+        labels = {
+            'actual_price': '真实价格',
+            'pred_price': '预测价格',
+            'actual_volume': '真实成交量',
+            'pred_volume': '预测成交量',
+            'price_ylabel': '收盘价',
+            'volume_ylabel': '成交量',
+            'time_xlabel': '时间',
+            'title': 'A股股票价格预测对比 (修复版)'
+        }
+    else:
+        # 英文标签（避免乱码）
+        labels = {
+            'actual_price': 'Actual Price',
+            'pred_price': 'Predicted Price',
+            'actual_volume': 'Actual Volume',
+            'pred_volume': 'Predicted Volume',
+            'price_ylabel': 'Close Price',
+            'volume_ylabel': 'Volume',
+            'time_xlabel': 'Time',
+            'title': 'A-Share Stock Prediction Comparison (Fixed)'
+        }
+    
     sr_close = kline_df['close']
     sr_pred_close = pred_df['close']
-    sr_close.name = '真实价格'
-    sr_pred_close.name = "预测价格"
+    sr_close.name = labels['actual_price']
+    sr_pred_close.name = labels['pred_price']
 
     sr_volume = kline_df['volume']
     sr_pred_volume = pred_df['volume']
-    sr_volume.name = '真实成交量'
-    sr_pred_volume.name = "预测成交量"
+    sr_volume.name = labels['actual_volume']
+    sr_pred_volume.name = labels['pred_volume']
 
     close_df = pd.concat([sr_close, sr_pred_close], axis=1)
     volume_df = pd.concat([sr_volume, sr_pred_volume], axis=1)
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
-    ax1.plot(close_df['真实价格'], label='真实价格', color='blue', linewidth=1.5)
-    ax1.plot(close_df['预测价格'], label='预测价格', color='red', linewidth=1.5)
-    ax1.set_ylabel('收盘价', fontsize=14)
+    ax1.plot(close_df[labels['actual_price']], label=labels['actual_price'], color='blue', linewidth=1.5)
+    ax1.plot(close_df[labels['pred_price']], label=labels['pred_price'], color='red', linewidth=1.5)
+    ax1.set_ylabel(labels['price_ylabel'], fontsize=14)
     ax1.legend(loc='lower left', fontsize=12)
     ax1.grid(True)
-    ax1.set_title('A股股票价格预测对比 (修复版)', fontsize=16)
+    ax1.set_title(labels['title'], fontsize=16)
 
-    ax2.plot(volume_df['真实成交量'], label='真实成交量', color='blue', linewidth=1.5)
-    ax2.plot(volume_df['预测成交量'], label='预测成交量', color='red', linewidth=1.5)
-    ax2.set_ylabel('成交量', fontsize=14)
-    ax2.set_xlabel('时间', fontsize=14)
+    ax2.plot(volume_df[labels['actual_volume']], label=labels['actual_volume'], color='blue', linewidth=1.5)
+    ax2.plot(volume_df[labels['pred_volume']], label=labels['pred_volume'], color='red', linewidth=1.5)
+    ax2.set_ylabel(labels['volume_ylabel'], fontsize=14)
+    ax2.set_xlabel(labels['time_xlabel'], fontsize=14)
     ax2.legend(loc='upper left', fontsize=12)
     ax2.grid(True)
 
     plt.tight_layout()
     plt.savefig('a_share_prediction_result_fixed.png', dpi=300, bbox_inches='tight')
     plt.show()
+    
+    # 输出字体使用信息
+    if use_chinese and chinese_supported:
+        print("   📝 图表使用中文标签")
+    else:
+        print("   📝 图表使用英文标签以避免乱码")
 
 def create_tokenizer_with_config():
     """创建具有默认配置的tokenizer"""

@@ -6,9 +6,54 @@ A股股票预测运行脚本
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
 import sys
 import os
 from pathlib import Path
+
+# 修复matplotlib中文显示问题
+def setup_chinese_font():
+    """设置matplotlib中文字体"""
+    try:
+        # 尝试常见的中文字体
+        chinese_fonts = [
+            'SimHei',           # 黑体 (Windows)
+            'Microsoft YaHei',  # 微软雅黑 (Windows)
+            'DejaVu Sans',      # Linux通用字体
+            'Arial Unicode MS', # Mac
+            'PingFang SC',      # Mac
+            'Hiragino Sans GB', # Mac
+            'WenQuanYi Micro Hei', # Linux
+            'sans-serif'        # 默认
+        ]
+        
+        # 逐个尝试字体
+        for font in chinese_fonts:
+            try:
+                matplotlib.rcParams['font.family'] = font
+                matplotlib.rcParams['font.sans-serif'] = [font] + matplotlib.rcParams['font.sans-serif']
+                # 测试是否支持中文
+                fig, ax = plt.subplots(figsize=(1, 1))
+                ax.text(0.5, 0.5, '测试', fontsize=12)
+                plt.close(fig)
+                print(f"   ✅ 成功设置中文字体: {font}")
+                break
+            except:
+                continue
+        else:
+            print("   ⚠️  未找到合适的中文字体，使用默认字体")
+        
+        # 设置负号正常显示
+        matplotlib.rcParams['axes.unicode_minus'] = False
+        
+    except Exception as e:
+        print(f"   ⚠️  字体设置失败: {e}")
+        # 使用备用方案：直接指定sans-serif
+        matplotlib.rcParams['font.family'] = 'sans-serif'
+        matplotlib.rcParams['axes.unicode_minus'] = False
+
+# 初始化中文字体
+setup_chinese_font()
 
 # 添加model模块到Python路径
 sys.path.append(str(Path(__file__).parent / "model"))
