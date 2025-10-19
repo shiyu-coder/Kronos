@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-09-30 22:45:36",
+  "market_analysis": {
+    "is_main_uptrend": false,
+    "trend_strength": 0.5,
+    "market_status": "未知",
+    "support_level": null,
+    "resistance_level": null
+  },
+  "sector_analysis": {
+    "industry": "电机",
+    "sector_momentum": 0.5,
+    "sector_limit_up_count": 0,
+    "is_sector_hot": false,
+    "resonance_score": 0.35
+  },
+  "macro_analysis": {
+    "us_rate_cycle": {
+      "current_rate": 4.25,
+      "trend": "降息周期",
+      "expected_cuts_2025": 2,
+      "expected_cuts_2026": 2,
+      "impact_on_emerging_markets": "positive",
+      "usd_index_support": 95.0
+    },
+    "domestic_policy": {
+      "monetary_policy": "宽松",
+      "fiscal_policy": "积极",
+      "market_liquidity": "充足",
+      "holiday_effect": {
+        "effect": "节前震荡，节后上涨概率大",
+        "historical_win_rate": 0.8,
+        "expected_return": 0.0227,
+        "period": "节后5个交易日"
+      }
+    },
+    "global_liquidity_outlook": "改善",
+    "overall_macro_score": 0.7
+  },
+  "adjustment_factor": 1.00776
+}
