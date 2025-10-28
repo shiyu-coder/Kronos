@@ -13,25 +13,26 @@ from model.kronos import calc_time_stamps
 
 TEST_DATA_ROOT = Path(__file__).parent / "data"
 INPUT_DATA_PATH = TEST_DATA_ROOT / "regression_input.csv"
+
+# Regression test configuration
 OUTPUT_DATA_DIR = TEST_DATA_ROOT
 MAX_CTX_LEN = 512
 TEST_CTX_LEN = [512, 256]
 PRED_LEN = 8
+REL_TOLERANCE = 1e-5
+
+# MSE regression test configuration
+MSE_SAMPLE_SIZE = 8
+MSE_SAMPLE_CTX_LEN = 512
+MSE_BATCH_SIZE = 4
+MSE_PRED_LEN = 30
+MSE_EXPECTED = 0.00559805
+MSE_REL_TOLERANCE = 1e-5
+
 NORM_EPS = 1e-5
-
-MSE_SAMPLE_SIZE = 100
-MSE_SAMPLE_CTX_LEN = 256
-MSE_BATCH_SIZE = 8
-# Average MSE (cpu): 0.0017483025
-# Average MSE (mps): 0.0017483025
-MSE_THRESHOLD = 1.75e-3
-
 MODEL_REVISION = "901c26c1332695a2a8f243eb2f37243a37bea320"
 TOKENIZER_REVISION = "0e0117387f39004a9016484a186a908917e22426"
 SEED = 123
-
-REL_TOLERANCE = 1e-5
-
 DEVICE = "cpu"
 
 def set_seed(seed: int) -> None:
@@ -102,7 +103,7 @@ def test_kronos_predictor_mse():
     set_seed(SEED)
 
     df = pd.read_csv(INPUT_DATA_PATH, parse_dates=["timestamps"])
-    if df.shape[0] <= MSE_SAMPLE_CTX_LEN + PRED_LEN:
+    if df.shape[0] <= MSE_SAMPLE_CTX_LEN + MSE_PRED_LEN:
         raise ValueError("Example data does not contain enough rows for the random sample regression test.")
 
     tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base", revision=TOKENIZER_REVISION)
@@ -116,7 +117,7 @@ def test_kronos_predictor_mse():
     mse_feature_names = ["open", "high", "low", "close"]
     mse_feature_idx = [feature_names.index(name) for name in mse_feature_names]
 
-    valid_region = df.iloc[MSE_SAMPLE_CTX_LEN : df.shape[0] - PRED_LEN]
+    valid_region = df.iloc[MSE_SAMPLE_CTX_LEN : df.shape[0] - MSE_PRED_LEN]
     if valid_region.shape[0] < MSE_SAMPLE_SIZE:
         raise ValueError("Not enough data points to draw the requested random samples.")
 
@@ -137,7 +138,7 @@ def test_kronos_predictor_mse():
 
             for row_idx in batch_indices:
                 context_df = df.iloc[row_idx - MSE_SAMPLE_CTX_LEN : row_idx]
-                future_df = df.iloc[row_idx : row_idx + PRED_LEN]
+                future_df = df.iloc[row_idx : row_idx + MSE_PRED_LEN]
 
                 x = context_df[feature_names].values.astype(np.float32)
                 expected = future_df[feature_names].values.astype(np.float32)
@@ -168,7 +169,7 @@ def test_kronos_predictor_mse():
                 x=normalized_batch_arr,
                 x_stamp=x_stamp_batch_arr,
                 y_stamp=y_stamp_batch_arr,
-                pred_len=PRED_LEN,
+                pred_len=MSE_PRED_LEN,
                 T=1.0,
                 top_k=1,
                 top_p=1.0,
@@ -193,6 +194,7 @@ def test_kronos_predictor_mse():
         raise AssertionError(f"Expected {MSE_SAMPLE_SIZE} MSE values, got {len(mse_values)}.")
 
     mse = np.mean(mse_values).item()
-    print(f"Average MSE: {mse}")
+    rel_diff = (MSE_EXPECTED - mse) / MSE_EXPECTED
+    print(f"Average MSE: {mse} (Rel diff with expected {rel_diff:+})")
 
-    assert mse < MSE_THRESHOLD, f"Average MSE {mse} exceeds threshold {MSE_THRESHOLD}"
+    assert np.isclose(mse, MSE_EXPECTED, rtol=MSE_REL_TOLERANCE)
