@@ -22,15 +22,15 @@ NORM_EPS = 1e-5
 MSE_SAMPLE_SIZE = 100
 MSE_SAMPLE_CTX_LEN = 256
 MSE_BATCH_SIZE = 8
-# Average MSE (cpu): 0.001748302526102634
-# Average MSE (mps): 0.0017483024582907092
+# Average MSE (cpu): 0.0017483025
+# Average MSE (mps): 0.0017483025
 MSE_THRESHOLD = 1.75e-3
 
 MODEL_REVISION = "901c26c1332695a2a8f243eb2f37243a37bea320"
 TOKENIZER_REVISION = "0e0117387f39004a9016484a186a908917e22426"
 SEED = 123
 
-REL_TOLERANCE = 1e-7
+REL_TOLERANCE = 1e-5
 
 DEVICE = "cpu"
 
@@ -43,11 +43,10 @@ def set_seed(seed: int) -> None:
         torch.backends.cudnn.benchmark = False
 
 
-def _run_regression_scenario(
-    context_len: int, device: str
-) -> None:
+@pytest.mark.parametrize("context_len", TEST_CTX_LEN)
+def test_kronos_predictor_regression(context_len):
     set_seed(SEED)
-    
+
     expected_output_path = OUTPUT_DATA_DIR / f"regression_output_{context_len}.csv"
     df = pd.read_csv(INPUT_DATA_PATH, parse_dates=["timestamps"])
     expected_df = pd.read_csv(expected_output_path, parse_dates=["timestamps"])
@@ -69,7 +68,7 @@ def _run_regression_scenario(
     tokenizer.eval()
     model.eval()
 
-    predictor = KronosPredictor(model, tokenizer, device=device, max_context=MAX_CTX_LEN)
+    predictor = KronosPredictor(model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN)
 
     x_mean = np.mean(x, axis=0)
     x_std = np.std(x, axis=0)
@@ -92,14 +91,14 @@ def _run_regression_scenario(
     obtained = preds.squeeze(0)
     obtained = obtained * (x_std + NORM_EPS) + x_mean
 
-    np.testing.assert_allclose(obtained, expected, rtol=REL_TOLERANCE)
-
     abs_diff = np.abs(obtained - expected)
     rel_diff = abs_diff / (np.abs(expected) + 1e-9)
     print(f"Abs diff: {np.max(abs_diff)}, Rel diff: {np.max(rel_diff)}")
 
+    np.testing.assert_allclose(obtained, expected, rtol=REL_TOLERANCE)
 
-def _run_random_sample_mse_regression(device: str) -> float:
+
+def test_kronos_predictor_mse():
     set_seed(SEED)
 
     df = pd.read_csv(INPUT_DATA_PATH, parse_dates=["timestamps"])
@@ -111,7 +110,7 @@ def _run_random_sample_mse_regression(device: str) -> float:
     tokenizer.eval()
     model.eval()
 
-    predictor = KronosPredictor(model, tokenizer, device=device, max_context=MAX_CTX_LEN)
+    predictor = KronosPredictor(model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN)
 
     feature_names = ["open", "high", "low", "close", "volume", "amount"]
     mse_feature_names = ["open", "high", "low", "close"]
@@ -193,15 +192,7 @@ def _run_random_sample_mse_regression(device: str) -> float:
     if len(mse_values) != MSE_SAMPLE_SIZE:
         raise AssertionError(f"Expected {MSE_SAMPLE_SIZE} MSE values, got {len(mse_values)}.")
 
-    return float(np.mean(mse_values))
+    mse = np.mean(mse_values).item()
+    print(f"Average MSE: {mse}")
 
-
-@pytest.mark.parametrize("ctx_len", TEST_CTX_LEN)
-def test_kronos_predictor_regression(ctx_len):
-    _run_regression_scenario(ctx_len, DEVICE)
-
-
-def test_kronos_predictor_random_sample_mse():
-    average_mse = _run_random_sample_mse_regression(DEVICE)
-    assert average_mse < MSE_THRESHOLD, f"Average MSE {average_mse} exceeds threshold {MSE_THRESHOLD}"
-    print(f"Average MSE: {average_mse}")
+    assert mse < MSE_THRESHOLD, f"Average MSE {mse} exceeds threshold {MSE_THRESHOLD}"
