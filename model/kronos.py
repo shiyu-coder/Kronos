@@ -155,7 +155,7 @@ class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
             z = layer(z)
         z = self.quant_embed(z)
 
-        bsq_loss, quantized, z_indices = self.tokenizer(z, half)
+        bsq_loss, quantized, z_indices = self.tokenizer(z, half=half, collect_metrics=False)
         return z_indices
 
     def decode(self, x, half=False):
@@ -388,8 +388,6 @@ def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_l
 
 def auto_regressive_inference(tokenizer, model, x, x_stamp, y_stamp, max_context, pred_len, clip=5, T=1.0, top_k=0, top_p=0.99, sample_count=5, verbose=False):
     with torch.no_grad():
-        batch_size = x.size(0)
-        initial_seq_len = x.size(1)
         x = torch.clip(x, -clip, clip)
 
         device = x.device
@@ -398,14 +396,22 @@ def auto_regressive_inference(tokenizer, model, x, x_stamp, y_stamp, max_context
         y_stamp = y_stamp.unsqueeze(1).repeat(1, sample_count, 1, 1).reshape(-1, y_stamp.size(1), y_stamp.size(2)).to(device)
 
         x_token = tokenizer.encode(x, half=True)
+        
+        initial_seq_len = x.size(1)
+        batch_size = x_token[0].size(0)
+        total_seq_len = initial_seq_len + pred_len
+        full_stamp = torch.cat([x_stamp, y_stamp], dim=1)
 
-        def get_dynamic_stamp(x_stamp, y_stamp, current_seq_len, pred_step):
+        generated_pre = x_token[0].new_empty(batch_size, pred_len)
+        generated_post = x_token[1].new_empty(batch_size, pred_len)
 
-            if current_seq_len <= max_context - pred_step:
-                return torch.cat([x_stamp, y_stamp[:, :pred_step, :]], dim=1)
-            else:
-                start_idx = max_context - pred_step
-                return torch.cat([x_stamp[:, -start_idx:, :], y_stamp[:, :pred_step, :]], dim=1)
+        pre_buffer = x_token[0].new_zeros(batch_size, max_context)
+        post_buffer = x_token[1].new_zeros(batch_size, max_context)
+        buffer_len = min(initial_seq_len, max_context)
+        if buffer_len > 0:
+            start_idx = max(0, initial_seq_len - max_context)
+            pre_buffer[:, :buffer_len] = x_token[0][:, start_idx:start_idx + buffer_len]
+            post_buffer[:, :buffer_len] = x_token[1][:, start_idx:start_idx + buffer_len]
 
         if verbose:
             ran = trange
@@ -413,13 +419,19 @@ def auto_regressive_inference(tokenizer, model, x, x_stamp, y_stamp, max_context
             ran = range
         for i in ran(pred_len):
             current_seq_len = initial_seq_len + i
+            window_len = min(current_seq_len, max_context)
 
             if current_seq_len <= max_context:
-                input_tokens = x_token
+                input_tokens = [
+                    pre_buffer[:, :window_len],
+                    post_buffer[:, :window_len]
+                ]
             else:
-                input_tokens = [t[:, -max_context:].contiguous() for t in x_token]
+                input_tokens = [pre_buffer, post_buffer]
 
-            current_stamp = get_dynamic_stamp(x_stamp, y_stamp, current_seq_len, i)
+            context_end = current_seq_len
+            context_start = max(0, context_end - max_context)
+            current_stamp = full_stamp[:, context_start:context_end, :].contiguous()
 
             s1_logits, context = model.decode_s1(input_tokens[0], input_tokens[1], current_stamp)
             s1_logits = s1_logits[:, -1, :]
@@ -429,14 +441,28 @@ def auto_regressive_inference(tokenizer, model, x, x_stamp, y_stamp, max_context
             s2_logits = s2_logits[:, -1, :]
             sample_post = sample_from_logits(s2_logits, temperature=T, top_k=top_k, top_p=top_p, sample_logits=True)
 
-            x_token[0] = torch.cat([x_token[0], sample_pre], dim=1)
-            x_token[1] = torch.cat([x_token[1], sample_post], dim=1)
+            generated_pre[:, i] = sample_pre.squeeze(-1)
+            generated_post[:, i] = sample_post.squeeze(-1)
 
-            torch.cuda.empty_cache()
+            if current_seq_len < max_context:
+                pre_buffer[:, current_seq_len] = sample_pre.squeeze(-1)
+                post_buffer[:, current_seq_len] = sample_post.squeeze(-1)
+            else:
+                pre_buffer.copy_(torch.roll(pre_buffer, shifts=-1, dims=1))
+                post_buffer.copy_(torch.roll(post_buffer, shifts=-1, dims=1))
+                pre_buffer[:, -1] = sample_pre.squeeze(-1)
+                post_buffer[:, -1] = sample_post.squeeze(-1)
 
-        input_tokens = [t[:, -max_context:].contiguous() for t in x_token]
+        full_pre = torch.cat([x_token[0], generated_pre], dim=1)
+        full_post = torch.cat([x_token[1], generated_post], dim=1)
+
+        context_start = max(0, total_seq_len - max_context)
+        input_tokens = [
+            full_pre[:, context_start:total_seq_len].contiguous(),
+            full_post[:, context_start:total_seq_len].contiguous()
+        ]
         z = tokenizer.decode(input_tokens, half=True)
-        z = z.reshape(batch_size, sample_count, z.size(1), z.size(2))
+        z = z.reshape(-1, sample_count, z.size(1), z.size(2))
         preds = z.cpu().numpy()
         preds = np.mean(preds, axis=1)
 
