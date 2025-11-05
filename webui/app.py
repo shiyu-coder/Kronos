@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
 import json
 import plotly.graph_objects as go
 import plotly.utils
@@ -696,6 +695,54 @@ def get_model_status():
             'loaded': False,
             'message': 'Kronos model library not available, please install related dependencies'
         })
+
+@app.route('/api/operation-records')
+def get_operation_records():
+    """Get all operation records"""
+    try:
+        results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prediction_results')
+        records = []
+        
+        if os.path.exists(results_dir):
+            for filename in os.listdir(results_dir):
+                if filename.endswith('.json'):
+                    filepath = os.path.join(results_dir, filename)
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        # Add filename and size to the record
+                        data['filename'] = filename
+                        data['file_size'] = os.path.getsize(filepath)
+                        records.append(data)
+        
+        # Sort records by timestamp in descending order
+        records.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'records': records
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get operation records: {str(e)}'}), 500
+
+@app.route('/api/operation-records/<filename>', methods=['DELETE'])
+def delete_operation_record(filename):
+    """Delete a specific operation record by filename"""
+    try:
+        results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prediction_results')
+        file_path = os.path.join(results_dir, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return jsonify({'success': True, 'message': f'Record {filename} deleted successfully'})
+        else:
+            return jsonify({'success': False, 'error': f'Record {filename} not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/records')
+def records():
+    """Operation records page"""
+    return render_template('records.html')
 
 if __name__ == '__main__':
     print("Starting Kronos Web UI...")

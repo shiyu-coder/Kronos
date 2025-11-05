@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kronos Operation Records</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .main-content h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .records-table th,
+        .records-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .records-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .records-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .status.warning {
+            background: #fef5e7;
+            color: #744210;
+            border: 1px solid #fbd38d;
+        }
+
+        .record-details {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .record-details h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .detail-row {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .detail-row strong {
+            color: #2d3748;
+            display: inline-block;
+            width: 150px;
+        }
+
+        .back-btn {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .records-table {
+                font-size: 12px;
+            }
+            
+            .records-table th,
+            .records-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Kronos Operation Records</h1>
+            <p>All prediction operation records</p>
+        </div>
+
+        <div class="main-content">
+            <a href="/" class="btn btn-secondary back-btn">⬅️ Back to Home</a>
+            <h2>Operation Records</h2>
+            <div id="status" class="status info" style="display: none;">
+                Loading records...
+            </div>
+            <table class="records-table" id="records-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>File Name</th>
+                        <th>Prediction Type</th>
+                        <th>Lookback</th>
+                        <th>Prediction Length</th>
+                        <th>Sample Count</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="records-body">
+                    <!-- Records will be populated here -->
+                </tbody>
+            </table>
+
+            <!-- Record Details -->
+            <div id="record-details" class="record-details" style="display: none;">
+                <h3>Record Details</h3>
+                <div class="detail-row"><strong>Timestamp:</strong> <span id="detail-timestamp"></span></div>
+                <div class="detail-row"><strong>File Path:</strong> <span id="detail-file-path"></span></div>
+                <div class="detail-row"><strong>Prediction Type:</strong> <span id="detail-prediction-type"></span></div>
+                <div class="detail-row"><strong>Lookback:</strong> <span id="detail-lookback"></span></div>
+                <div class="detail-row"><strong>Prediction Length:</strong> <span id="detail-pred-len"></span></div>
+                <div class="detail-row"><strong>Temperature:</strong> <span id="detail-temperature"></span></div>
+                <div class="detail-row"><strong>Top P:</strong> <span id="detail-top-p"></span></div>
+                <div class="detail-row"><strong>Sample Count:</strong> <span id="detail-sample-count"></span></div>
+                <div class="detail-row"><strong>Input Rows:</strong> <span id="detail-input-rows"></span></div>
+                <div class="detail-row"><strong>File Size:</strong> <span id="detail-file-size"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Load operation records on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecords();
+        });
+
+        function loadRecords() {
+            const statusElement = document.getElementById('status');
+            const recordsBody = document.getElementById('records-body');
+            
+            statusElement.textContent = 'Loading records...';
+            statusElement.className = 'status info';
+            statusElement.style.display = 'block';
+            
+            // Clear existing records
+            recordsBody.innerHTML = '';
+            
+            axios.get('/api/operation-records')
+                .then(response => {
+                    if (response.data.success) {
+                        const records = response.data.records;
+                        
+                        if (records.length === 0) {
+                            statusElement.textContent = 'No operation records found';
+                            statusElement.className = 'status warning';
+                            return;
+                        }
+                        
+                        statusElement.style.display = 'none';
+                        
+                        // Populate records table
+                        records.forEach(record => {
+                            const row = document.createElement('tr');
+                            
+                            // Format timestamp
+                            const timestamp = new Date(record.timestamp);
+                            const formattedTimestamp = timestamp.toLocaleString('zh-CN');
+                            
+                            // Format file size
+                            const fileSize = formatFileSize(record.file_size);
+                            
+                            // Get prediction params
+                            const params = record.prediction_params || {};
+                            
+                            row.innerHTML = `
+                                <td>${formattedTimestamp}</td>
+                                <td>${record.filename}</td>
+                                <td>${record.prediction_type || 'N/A'}</td>
+                                <td>${params.lookback || 'N/A'}</td>
+                                <td>${params.pred_len || 'N/A'}</td>
+                                <td>${params.sample_count || 'N/A'}</td>
+                                <td>${fileSize}</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="showDetails(${JSON.stringify(record).replace(/"/g, '&quot;')})"><strong>📋</strong> Details</button>
+                                    <button class="btn btn-danger" onclick="deleteRecord('${record.filename}')"><strong>🗑️</strong> Delete</button>
+                                </td>
+                            `;
+                            
+                            recordsBody.appendChild(row);
+                        });
+                    } else {
+                        statusElement.textContent = 'Failed to load records: ' + response.data.error;
+                        statusElement.className = 'status error';
+                    }
+                })
+                .catch(error => {
+                    statusElement.textContent = 'Failed to load records: ' + error.message;
+                    statusElement.className = 'status error';
+                });
+        }
+
+        function showDetails(record) {
+            const detailsDiv = document.getElementById('record-details');
+            
+            // Update details
+            document.getElementById('detail-timestamp').textContent = new Date(record.timestamp).toLocaleString('zh-CN');
+            document.getElementById('detail-file-path').textContent = record.file_path;
+            document.getElementById('detail-prediction-type').textContent = record.prediction_type || 'N/A';
+            
+            const params = record.prediction_params || {};
+            document.getElementById('detail-lookback').textContent = params.lookback || 'N/A';
+            document.getElementById('detail-pred-len').textContent = params.pred_len || 'N/A';
+            document.getElementById('detail-temperature').textContent = params.temperature || 'N/A';
+            document.getElementById('detail-top-p').textContent = params.top_p || 'N/A';
+            document.getElementById('detail-sample-count').textContent = params.sample_count || 'N/A';
+            
+            const inputSummary = record.input_data_summary || {};
+            document.getElementById('detail-input-rows').textContent = inputSummary.rows || 'N/A';
+            
+            document.getElementById('detail-file-size').textContent = formatFileSize(record.file_size);
+            
+            // Show details
+            detailsDiv.style.display = 'block';
+            detailsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteRecord(filename) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                axios.delete('/api/operation-records/' + filename)
+                    .then(response => {
+                        if (response.data.success) {
+                            // Reload records
+                            loadRecords();
+                            // Hide details
+                            document.getElementById('record-details').style.display = 'none';
+                        } else {
+                            alert('Failed to delete record: ' + response.data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Failed to delete record: ' + error.message);
+                    });
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1024*1024) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / (1024*1024)).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>
