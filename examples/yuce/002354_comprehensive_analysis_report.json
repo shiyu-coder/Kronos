@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-10-01 01:55:50",
+  "stock_code": "002354",
+  "market_analysis": {
+    "overall_is_main_uptrend": false,
+    "overall_trend_strength": 0.5,
+    "market_status": "未知",
+    "detailed_analysis": {}
+  },
+  "sector_analysis": {
+    "industry": "互联网服务",
+    "matched_sectors": [],
+    "main_sector": {
+      "sector": "传统行业",
+      "momentum": 0.5,
+      "description": "无热门概念"
+    },
+    "is_sector_hot": false,
+    "resonance_score": 0.5,
+    "sector_count": 0
+  },
+  "macro_analysis": {
+    "us_rate_cycle": {
+      "current_rate": 4.25,
+      "trend": "降息周期",
+      "recent_cut": "2025年9月降息25个基点",
+      "expected_cuts_2025": 2,
+      "expected_cuts_2026": 2,
+      "impact_on_emerging_markets": "positive",
+      "usd_index_support": 95.0,
+      "analysis": "美联储开启宽松周期，利好全球流动性"
+    },
+    "domestic_policy": {
+      "monetary_policy": "稳健偏松",
+      "fiscal_policy": "积极财政",
+      "market_liquidity": "合理充裕",
+      "industrial_policy": "设备更新、以旧换新",
+      "employment_policy": "稳就业政策加力",
+      "analysis": "政策组合拳发力，经济稳中向好"
+    },
+    "industry_policy": {
+      "robot_policy": "机器人产业政策支持",
+      "chip_policy": "国产替代加速推进",
+      "AI_policy": "人工智能发展规划",
+      "low_altitude": "低空经济发展规划"
+    },
+    "global_liquidity_outlook": "改善",
+    "overall_macro_score": 0.75
+  },
+  "fundamental_analysis": {
+    "company_name": "未知",
+    "business_areas": [],
+    "recent_developments": [],
+    "growth_drivers": [],
+    "risk_factors": [],
+    "investment_rating": "中性",
+    "fundamental_score": 0.5
+  },
+  "adjustment_factor": 1.04545
+}
