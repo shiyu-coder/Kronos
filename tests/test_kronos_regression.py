@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import torch
 from tqdm import tqdm
+import itertools
 
 from model import Kronos, KronosPredictor, KronosTokenizer
 
@@ -42,8 +43,8 @@ def set_seed(seed: int) -> None:
         torch.backends.cudnn.benchmark = False
 
 
-@pytest.mark.parametrize("context_len", TEST_CTX_LEN)
-def test_kronos_predictor_regression(context_len):
+@pytest.mark.parametrize("context_len, use_kv_cache", itertools.product(TEST_CTX_LEN, [False, True]))
+def test_kronos_predictor_regression(context_len, use_kv_cache):
     set_seed(SEED)
 
     expected_output_path = OUTPUT_DATA_DIR / f"regression_output_{context_len}.csv"
@@ -77,18 +78,20 @@ def test_kronos_predictor_regression(context_len):
             top_p=1.0,
             verbose=False,
             sample_count=1,
+            use_kv_cache=use_kv_cache,
         )
 
     obtained = pred_df[FEATURE_NAMES].to_numpy(dtype=np.float32)
 
     abs_diff = np.abs(obtained - expected)
     rel_diff = abs_diff / (np.abs(expected) + 1e-9)
-    print(f"Abs diff: {np.max(abs_diff)}, Rel diff: {np.max(rel_diff)}")
+    print(f"Abs diff: {np.max(abs_diff)}, Rel diff: {np.max(rel_diff):.6e}")
 
     np.testing.assert_allclose(obtained, expected, rtol=REL_TOLERANCE)
 
 @pytest.mark.parametrize("context_len, expected_mse", zip(MSE_CTX_LEN, MSE_EXPECTED))
-def test_kronos_predictor_mse(context_len, expected_mse):
+@pytest.mark.parametrize("use_kv_cache", [False, True])
+def test_kronos_predictor_mse(context_len, expected_mse, use_kv_cache):
     set_seed(SEED)
 
     df = pd.read_csv(INPUT_DATA_PATH, parse_dates=["timestamps"])
@@ -111,7 +114,7 @@ def test_kronos_predictor_mse(context_len, expected_mse):
     mse_values = []
     sample_indices = sampled_rows.index.to_list()
     with torch.no_grad():
-        for row_idx in tqdm(sample_indices):
+        for row_idx in tqdm(sample_indices, disable=True):
             context_slice = df.iloc[row_idx - context_len : row_idx].copy()
             future_slice = df.iloc[row_idx : row_idx + MSE_PRED_LEN].copy()
 
@@ -125,6 +128,7 @@ def test_kronos_predictor_mse(context_len, expected_mse):
                 top_p=1.0,
                 verbose=False,
                 sample_count=1,
+                use_kv_cache=use_kv_cache,
             )
 
             obtained = pred_df[MSE_FEATURE_NAMES].to_numpy(dtype=np.float32)
@@ -135,6 +139,6 @@ def test_kronos_predictor_mse(context_len, expected_mse):
 
     mse = np.mean(mse_values).item()
     mse_diff = mse - expected_mse
-    print(f"Average MSE: {mse} (Diff vs expected: {mse_diff:+})")
+    print(f"Average MSE: {mse} (Diff vs expected: {mse_diff:+.6e})")
 
     assert abs(mse_diff) <= MSE_TOLERANCE, f"MSE {mse} differs from expected {expected_mse}"
