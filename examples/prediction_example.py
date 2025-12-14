@@ -39,8 +39,9 @@ def plot_prediction(kline_df, pred_df):
 
 
 # 1. Load Model and Tokenizer
-tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
-model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
+# Make sure you have downloaded the models first by running the `download_model.py` script.
+tokenizer = KronosTokenizer.from_pretrained("./pretrained_models/Kronos-Tokenizer-base")
+model = Kronos.from_pretrained("./pretrained_models/Kronos-small")
 
 # 2. Instantiate Predictor
 predictor = KronosPredictor(model, tokenizer, device="cuda:0", max_context=512)

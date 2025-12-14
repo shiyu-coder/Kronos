@@ -73,3 +73,6 @@ venv.bak/
 *.temp
 temp/
 tmp/
+
+# Downloaded models
+pretrained_models/

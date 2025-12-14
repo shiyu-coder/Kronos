@@ -328,6 +328,30 @@ This project is licensed under the [MIT License](./LICENSE).
 
 
 
+### 🌐 Running Kronos Offline
+
+To run the Kronos model in an environment without internet access, you first need to download the necessary model and tokenizer files. A script is provided to make this easy.
+
+**Step 1: Download the Models**
+
+First, run the `download_model.py` script from your terminal. This script will create a `pretrained_models` directory and download the required files into it.
+
+```shell
+python download_model.py
+```
+
+**Step 2: Run the Example Script**
+
+Once the models are downloaded, you can run the example prediction script, which is already configured to use the local models.
+
+```shell
+python examples/prediction_example.py
+```
+
+This will run the prediction example using the models you downloaded, without needing an internet connection.
+
+
+
 
 
 
