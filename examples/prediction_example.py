@@ -39,9 +39,13 @@ def plot_prediction(kline_df, pred_df):
 
 
 # 1. Load Model and Tokenizer
-# Make sure you have downloaded the models first by running the `download_model.py` script.
-tokenizer = KronosTokenizer.from_pretrained("./pretrained_models/Kronos-Tokenizer-base")
-model = Kronos.from_pretrained("./pretrained_models/Kronos-small")
+# By default, the model is loaded from Hugging Face Hub.
+# To run offline, first use the `download_model.py` script to download the models.
+# Then, uncomment the following lines and comment out the online loading:
+# tokenizer = KronosTokenizer.from_pretrained("./pretrained_models/Kronos-Tokenizer-base")
+# model = Kronos.from_pretrained("./pretrained_models/Kronos-small")
+tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
+model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
 
 # 2. Instantiate Predictor
 predictor = KronosPredictor(model, tokenizer, device="cuda:0", max_context=512)
