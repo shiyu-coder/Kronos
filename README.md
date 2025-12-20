@@ -118,7 +118,7 @@ Create an instance of `KronosPredictor`, passing the model, tokenizer, and desir
 
 ```python
 # Initialize the predictor
-predictor = KronosPredictor(model, tokenizer, device="cuda:0", max_context=512)
+predictor = KronosPredictor(model, tokenizer, max_context=512)
 ```
 
 #### 3. Prepare Input Data

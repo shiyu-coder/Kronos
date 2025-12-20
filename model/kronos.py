@@ -481,7 +481,7 @@ def calc_time_stamps(x_timestamp):
 
 class KronosPredictor:
 
-    def __init__(self, model, tokenizer, device="cuda:0", max_context=512, clip=5):
+    def __init__(self, model, tokenizer, device=None, max_context=512, clip=5):
         self.tokenizer = tokenizer
         self.model = model
         self.max_context = max_context
@@ -490,6 +490,16 @@ class KronosPredictor:
         self.vol_col = 'volume'
         self.amt_vol = 'amount'
         self.time_cols = ['minute', 'hour', 'weekday', 'day', 'month']
+        
+        # Auto-detect device if not specified
+        if device is None:
+            if torch.cuda.is_available():
+                device = "cuda:0"
+            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                device = "mps"
+            else:
+                device = "cpu"
+        
         self.device = device
 
         self.tokenizer = self.tokenizer.to(self.device)
