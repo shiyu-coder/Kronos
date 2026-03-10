@@ -12,7 +12,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-import comet_ml
+try:
+    import comet_ml
+except ImportError:
+    comet_ml = None
 
 # Ensure project root is in path
 sys.path.append("../")
@@ -42,8 +45,9 @@ def create_dataloaders(config: dict, rank: int, world_size: int):
         tuple: A tuple containing (train_loader, val_loader, train_dataset, valid_dataset).
     """
     print(f"[Rank {rank}] Creating distributed dataloaders...")
-    train_dataset = QlibDataset('train')
-    valid_dataset = QlibDataset('val')
+    dataset_config = Config(overrides=config)
+    train_dataset = QlibDataset('train', config=dataset_config)
+    valid_dataset = QlibDataset('val', config=dataset_config)
     print(f"[Rank {rank}] Train dataset size: {len(train_dataset)}, Validation dataset size: {len(valid_dataset)}")
 
     train_sampler = DistributedSampler(train_dataset, num_replicas=world_size, rank=rank, shuffle=True)
@@ -234,7 +238,7 @@ def main(config: dict):
             'save_directory': save_dir,
             'world_size': world_size,
         }
-        if config['use_comet']:
+        if config['use_comet'] and comet_ml is not None:
             comet_logger = comet_ml.Experiment(
                 api_key=config['comet_config']['api_key'],
                 project_name=config['comet_config']['project_name'],
@@ -244,6 +248,8 @@ def main(config: dict):
             comet_logger.set_name(config['comet_name'])
             comet_logger.log_parameters(config)
             print("Comet Logger Initialized.")
+        elif config['use_comet']:
+            print("comet_ml is not installed; continuing without experiment logging.")
 
     dist.barrier()  # Ensure save directory is created before proceeding
 
@@ -277,5 +283,9 @@ if __name__ == '__main__':
     if "WORLD_SIZE" not in os.environ:
         raise RuntimeError("This script must be launched with `torchrun`.")
 
-    config_instance = Config()
-    main(config_instance.__dict__)
+    parser = argparse.ArgumentParser(description="Train the Kronos tokenizer with torchrun.")
+    parser.add_argument("--config-file", type=str, default=None, help="Optional JSON config override file.")
+    args = parser.parse_args()
+
+    config_instance = Config(config_file=args.config_file)
+    main(config_instance.to_dict())
