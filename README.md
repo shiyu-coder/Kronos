@@ -213,6 +213,10 @@ Running this script will generate a plot comparing the ground truth data against
 
 Additionally, we provide a script that makes predictions without Volume and Amount data, which can be found in [`examples/prediction_wo_vol_example.py`](examples/prediction_wo_vol_example.py).
 
+For a concise guide to all example scripts, recommended run order, Apple Silicon device selection, and optional `akshare` setup, see [`examples/README.md`](examples/README.md).
+
+For an overview of the repository's prediction demos, regression tests, finetuning pipelines, and Qlib backtesting workflows, see [`EXPERIMENTS.md`](EXPERIMENTS.md).
+
 
 ## 🔧 Finetuning on Your Own Data (A-Share Market Example)
 
