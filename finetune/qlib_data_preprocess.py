@@ -1,5 +1,6 @@
 import os
 import pickle
+import argparse
 import numpy as np
 import pandas as pd
 import qlib
@@ -16,9 +17,9 @@ class QlibDataPreprocessor:
     A class to handle the loading, processing, and splitting of Qlib financial data.
     """
 
-    def __init__(self):
+    def __init__(self, config_file: str | None = None):
         """Initializes the preprocessor with configuration and data fields."""
-        self.config = Config()
+        self.config = Config(config_file=config_file)
         self.data_fields = ['open', 'close', 'high', 'low', 'volume', 'vwap']
         self.data = {}  # A dictionary to store processed data for each symbol.
 
@@ -122,8 +123,11 @@ class QlibDataPreprocessor:
 
 
 if __name__ == '__main__':
-    # This block allows the script to be run directly to perform data preprocessing.
-    preprocessor = QlibDataPreprocessor()
+    parser = argparse.ArgumentParser(description="Prepare Qlib train/val/test datasets.")
+    parser.add_argument("--config-file", type=str, default=None, help="Optional JSON config override file.")
+    args = parser.parse_args()
+
+    preprocessor = QlibDataPreprocessor(config_file=args.config_file)
     preprocessor.initialize_qlib()
     preprocessor.load_qlib_data()
     preprocessor.prepare_dataset()

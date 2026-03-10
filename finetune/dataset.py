@@ -20,8 +20,8 @@ class QlibDataset(Dataset):
         ValueError: If `data_type` is not 'train' or 'val'.
     """
 
-    def __init__(self, data_type: str = 'train'):
-        self.config = Config()
+    def __init__(self, data_type: str = 'train', config: Config | None = None):
+        self.config = config or Config()
         if data_type not in ['train', 'val']:
             raise ValueError("data_type must be 'train' or 'val'")
         self.data_type = data_type

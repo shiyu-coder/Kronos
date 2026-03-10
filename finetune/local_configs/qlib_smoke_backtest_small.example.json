@@ -1,0 +1,25 @@
+{
+  "dataset_end_time": "2020-09-25",
+  "train_time_range": [
+    "2011-01-01",
+    "2018-12-31"
+  ],
+  "val_time_range": [
+    "2018-09-01",
+    "2020-03-31"
+  ],
+  "test_time_range": [
+    "2020-04-01",
+    "2020-09-25"
+  ],
+  "backtest_time_range": [
+    "2020-07-01",
+    "2020-09-24"
+  ],
+  "pretrained_tokenizer_path": "NeoQuasar/Kronos-Tokenizer-base",
+  "pretrained_predictor_path": "NeoQuasar/Kronos-small",
+  "finetuned_tokenizer_path": "NeoQuasar/Kronos-Tokenizer-base",
+  "finetuned_predictor_path": "NeoQuasar/Kronos-small",
+  "inference_sample_count": 1,
+  "backtest_save_folder_name": "qlib_smoke_backtest_small"
+}
