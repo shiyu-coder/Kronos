@@ -14,6 +14,19 @@ Web user interface for Kronos financial prediction model, providing intuitive gr
 
 ## 🚀 Quick Start
 
+Install the Web UI dependencies from the `webui` directory before starting:
+
+```bash
+pip install -r requirements.txt
+```
+
+If you use a shared environment from the repository root, install the root requirements first and then install the Web UI extras:
+
+```bash
+pip install -r ../requirements.txt
+pip install -r requirements.txt
+```
+
 ### Method 1: Start with Python script
 ```bash
 cd webui
@@ -112,7 +125,7 @@ The system automatically provides comparison analysis between prediction results
 
 ### Common Issues
 1. **Port occupied**: Modify port number in app.py
-2. **Missing dependencies**: Run `pip install -r requirements.txt`
+2. **Missing dependencies**: Run `pip install -r requirements.txt` from the `webui` directory after installing the root project requirements
 3. **Model loading failed**: Check network connection and model ID
 4. **Data format error**: Ensure data column names and format are correct
 

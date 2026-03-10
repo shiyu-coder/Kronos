@@ -59,10 +59,17 @@ AVAILABLE_MODELS = {
 
 def load_data_files():
     """Scan data directory and return available data files"""
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
     data_files = []
-    
-    if os.path.exists(data_dir):
+
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidate_dirs = [
+        os.path.join(project_root, 'data'),
+        os.path.join(project_root, 'examples', 'data'),
+    ]
+
+    for data_dir in candidate_dirs:
+        if not os.path.exists(data_dir):
+            continue
         for file in os.listdir(data_dir):
             if file.endswith(('.csv', '.feather')):
                 file_path = os.path.join(data_dir, file)
@@ -70,6 +77,7 @@ def load_data_files():
                 data_files.append({
                     'name': file,
                     'path': file_path,
+                    'source_dir': os.path.relpath(data_dir, project_root),
                     'size': f"{file_size / 1024:.1f} KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.1f} MB"
                 })
     
