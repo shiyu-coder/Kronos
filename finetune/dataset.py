@@ -90,21 +90,7 @@ class QlibDataset(Dataset):
         return self.n_samples
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        """
-        Retrieves a random sample from the dataset.
-
-        Note: The `idx` argument is ignored. Instead, a random index is drawn
-        from the pre-computed `self.indices` list using `self.py_rng`. This
-        ensures random sampling over the entire dataset for each call.
-
-        Args:
-            idx (int): Ignored.
-
-        Returns:
-            tuple[torch.Tensor, torch.Tensor]: A tuple containing:
-                - x_tensor (torch.Tensor): The normalized feature tensor.
-                - x_stamp_tensor (torch.Tensor): The time feature tensor.
-        """
+        
         # Select a random sample from the entire pool of indices.
         random_idx = self.py_rng.randint(0, len(self.indices) - 1)
         symbol, start_idx = self.indices[random_idx]
@@ -118,8 +104,15 @@ class QlibDataset(Dataset):
         x = win_df[self.feature_list].values.astype(np.float32)
         x_stamp = win_df[self.time_feature_list].values.astype(np.float32)
 
-        # Perform instance-level normalization.
-        x_mean, x_std = np.mean(x, axis=0), np.std(x, axis=0)
+        # Normalize the window. Mean and std are calculated strictly on the
+        # lookback window (past data) to prevent future data leakage.
+        past_len = self.config.lookback_window
+        past_x = x[:past_len]
+
+        x_mean = np.mean(past_x, axis=0)
+        x_std  = np.std(past_x, axis=0)
+
+        # Apply normalization and robust clipping to the entire sequence
         x = (x - x_mean) / (x_std + 1e-5)
         x = np.clip(x, -self.config.clip, self.config.clip)
 
