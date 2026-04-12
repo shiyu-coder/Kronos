@@ -1,5 +1,3 @@
-import os
-
 class Config:
     """
     Configuration class for the entire project.
@@ -11,11 +9,11 @@ class Config:
         # =================================================================
         # TODO: Update this path to your Qlib data directory.
         self.qlib_data_path = "~/.qlib/qlib_data/cn_data"
-        self.instrument = 'csi300'
+        self.instrument = "csi300"
 
         # Overall time range for data loading from Qlib.
         self.dataset_begin_time = "2011-01-01"
-        self.dataset_end_time = '2025-06-05'
+        self.dataset_end_time = "2025-06-05"
 
         # Sliding window parameters for creating samples.
         self.lookback_window = 90  # Number of past time steps for input.
@@ -23,9 +21,9 @@ class Config:
         self.max_context = 512  # Maximum context length for the model.
 
         # Features to be used from the raw data.
-        self.feature_list = ['open', 'high', 'low', 'close', 'vol', 'amt']
+        self.feature_list = ["open", "high", "low", "close", "vol", "amt"]
         # Time-based features to be generated.
-        self.time_feature_list = ['minute', 'hour', 'weekday', 'day', 'month']
+        self.time_feature_list = ["minute", "hour", "weekday", "day", "month"]
 
         # =================================================================
         # Dataset Splitting & Paths
@@ -72,23 +70,23 @@ class Config:
         # =================================================================
         # Experiment Logging & Saving
         # =================================================================
-        self.use_comet = True # Set to False if you don't want to use Comet ML
+        self.use_comet = True  # Set to False if you don't want to use Comet ML
         self.comet_config = {
             # It is highly recommended to load secrets from environment variables
             # for security purposes. Example: os.getenv("COMET_API_KEY")
             "api_key": "YOUR_COMET_API_KEY",
             "project_name": "Kronos-Finetune-Demo",
-            "workspace": "your_comet_workspace" # TODO: Change to your Comet ML workspace name
+            "workspace": "your_comet_workspace",  # TODO: Change to your Comet ML workspace name
         }
-        self.comet_tag = 'finetune_demo'
-        self.comet_name = 'finetune_demo'
+        self.comet_tag = "finetune_demo"
+        self.comet_name = "finetune_demo"
 
         # Base directory for saving model checkpoints and results.
         # Using a general 'outputs' directory is a common practice.
         self.save_path = "./outputs/models"
-        self.tokenizer_save_folder_name = 'finetune_tokenizer_demo'
-        self.predictor_save_folder_name = 'finetune_predictor_demo'
-        self.backtest_save_folder_name = 'finetune_backtest_demo'
+        self.tokenizer_save_folder_name = "finetune_tokenizer_demo"
+        self.predictor_save_folder_name = "finetune_predictor_demo"
+        self.backtest_save_folder_name = "finetune_backtest_demo"
 
         # Path for backtesting results.
         self.backtest_result_path = "./outputs/backtest_results"
@@ -103,8 +101,12 @@ class Config:
 
         # Paths to the fine-tuned models, derived from the save_path.
         # These will be generated automatically during training.
-        self.finetuned_tokenizer_path = f"{self.save_path}/{self.tokenizer_save_folder_name}/checkpoints/best_model"
-        self.finetuned_predictor_path = f"{self.save_path}/{self.predictor_save_folder_name}/checkpoints/best_model"
+        self.finetuned_tokenizer_path = (
+            f"{self.save_path}/{self.tokenizer_save_folder_name}/checkpoints/best_model"
+        )
+        self.finetuned_predictor_path = (
+            f"{self.save_path}/{self.predictor_save_folder_name}/checkpoints/best_model"
+        )
 
         # =================================================================
         # Backtesting Parameters
@@ -121,9 +123,9 @@ class Config:
 
     def _set_benchmark(self, instrument):
         dt_benchmark = {
-            'csi800': "SH000906",
-            'csi1000': "SH000852",
-            'csi300': "SH000300",
+            "csi800": "SH000906",
+            "csi1000": "SH000852",
+            "csi300": "SH000300",
         }
         if instrument in dt_benchmark:
             return dt_benchmark[instrument]

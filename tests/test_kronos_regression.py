@@ -33,6 +33,7 @@ MAX_CTX_LEN = 512
 SEED = 123
 DEVICE = "cpu"
 
+
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -51,20 +52,30 @@ def test_kronos_predictor_regression(context_len):
     expected_df = pd.read_csv(expected_output_path, parse_dates=["timestamps"])
 
     if df.shape[0] < context_len + len(expected_df):
-        raise ValueError("Example data does not contain enough rows for the regression test.")
+        raise ValueError(
+            "Example data does not contain enough rows for the regression test."
+        )
 
     context_df = df.iloc[:context_len].copy()
     context_features = context_df[FEATURE_NAMES].reset_index(drop=True)
     x_timestamp = context_df["timestamps"].reset_index(drop=True)
-    future_timestamp = df["timestamps"].iloc[context_len:context_len + len(expected_df)].reset_index(drop=True)
+    future_timestamp = (
+        df["timestamps"]
+        .iloc[context_len : context_len + len(expected_df)]
+        .reset_index(drop=True)
+    )
     expected = expected_df[FEATURE_NAMES].values.astype(np.float32)
 
-    tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base", revision=TOKENIZER_REVISION)
+    tokenizer = KronosTokenizer.from_pretrained(
+        "NeoQuasar/Kronos-Tokenizer-base", revision=TOKENIZER_REVISION
+    )
     model = Kronos.from_pretrained("NeoQuasar/Kronos-small", revision=MODEL_REVISION)
     tokenizer.eval()
     model.eval()
 
-    predictor = KronosPredictor(model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN)
+    predictor = KronosPredictor(
+        model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN
+    )
 
     with torch.no_grad():
         pred_df = predictor.predict(
@@ -87,26 +98,35 @@ def test_kronos_predictor_regression(context_len):
 
     np.testing.assert_allclose(obtained, expected, rtol=REL_TOLERANCE)
 
+
 @pytest.mark.parametrize("context_len, expected_mse", zip(MSE_CTX_LEN, MSE_EXPECTED))
 def test_kronos_predictor_mse(context_len, expected_mse):
     set_seed(SEED)
 
     df = pd.read_csv(INPUT_DATA_PATH, parse_dates=["timestamps"])
     if df.shape[0] <= context_len + MSE_PRED_LEN:
-        raise ValueError("Example data does not contain enough rows for the random sample regression test.")
+        raise ValueError(
+            "Example data does not contain enough rows for the random sample regression test."
+        )
 
-    tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base", revision=TOKENIZER_REVISION)
+    tokenizer = KronosTokenizer.from_pretrained(
+        "NeoQuasar/Kronos-Tokenizer-base", revision=TOKENIZER_REVISION
+    )
     model = Kronos.from_pretrained("NeoQuasar/Kronos-small", revision=MODEL_REVISION)
     tokenizer.eval()
     model.eval()
 
-    predictor = KronosPredictor(model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN)
+    predictor = KronosPredictor(
+        model, tokenizer, device=DEVICE, max_context=MAX_CTX_LEN
+    )
 
     valid_region = df.iloc[context_len : df.shape[0] - MSE_PRED_LEN]
     if valid_region.shape[0] < MSE_SAMPLE_SIZE:
         raise ValueError("Not enough data points to draw the requested random samples.")
 
-    sampled_rows = valid_region.sample(n=MSE_SAMPLE_SIZE, random_state=SEED).sort_index()
+    sampled_rows = valid_region.sample(
+        n=MSE_SAMPLE_SIZE, random_state=SEED
+    ).sort_index()
 
     mse_values = []
     sample_indices = sampled_rows.index.to_list()
@@ -131,10 +151,14 @@ def test_kronos_predictor_mse(context_len, expected_mse):
             expected = future_slice[MSE_FEATURE_NAMES].to_numpy(dtype=np.float32)
             mse_values.append(float(np.mean((obtained - expected) ** 2)))
 
-    assert len(mse_values) == MSE_SAMPLE_SIZE, f"Expected {MSE_SAMPLE_SIZE} MSE values, got {len(mse_values)}."
+    assert len(mse_values) == MSE_SAMPLE_SIZE, (
+        f"Expected {MSE_SAMPLE_SIZE} MSE values, got {len(mse_values)}."
+    )
 
     mse = np.mean(mse_values).item()
     mse_diff = mse - expected_mse
     print(f"Average MSE: {mse} (Diff vs expected: {mse_diff:+})")
 
-    assert abs(mse_diff) <= MSE_TOLERANCE, f"MSE {mse} differs from expected {expected_mse}"
+    assert abs(mse_diff) <= MSE_TOLERANCE, (
+        f"MSE {mse} differs from expected {expected_mse}"
+    )

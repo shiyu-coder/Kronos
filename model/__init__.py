@@ -1,9 +1,9 @@
-from .kronos import KronosTokenizer, Kronos, KronosPredictor
+from .kronos import Kronos, KronosPredictor, KronosTokenizer
 
 model_dict = {
-    'kronos_tokenizer': KronosTokenizer,
-    'kronos': Kronos,
-    'kronos_predictor': KronosPredictor
+    "kronos_tokenizer": KronosTokenizer,
+    "kronos": Kronos,
+    "kronos_predictor": KronosPredictor,
 }
 
 
@@ -13,5 +13,3 @@ def get_model_class(model_name):
     else:
         print(f"Model {model_name} not found in model_dict")
         raise NotImplementedError
-
-
