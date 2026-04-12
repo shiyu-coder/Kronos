@@ -1,9 +1,10 @@
 import pickle
 import random
+
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 from config import Config
+from torch.utils.data import Dataset
 
 
 class QlibDataset(Dataset):
@@ -20,9 +21,9 @@ class QlibDataset(Dataset):
         ValueError: If `data_type` is not 'train' or 'val'.
     """
 
-    def __init__(self, data_type: str = 'train'):
+    def __init__(self, data_type: str = "train"):
         self.config = Config()
-        if data_type not in ['train', 'val']:
+        if data_type not in ["train", "val"]:
             raise ValueError("data_type must be 'train' or 'val'")
         self.data_type = data_type
 
@@ -31,14 +32,14 @@ class QlibDataset(Dataset):
         self.py_rng = random.Random(self.config.seed)
 
         # Set paths and number of samples based on the data type.
-        if data_type == 'train':
+        if data_type == "train":
             self.data_path = f"{self.config.dataset_path}/train_data.pkl"
             self.n_samples = self.config.n_train_iter
         else:
             self.data_path = f"{self.config.dataset_path}/val_data.pkl"
             self.n_samples = self.config.n_val_iter
 
-        with open(self.data_path, 'rb') as f:
+        with open(self.data_path, "rb") as f:
             self.data = pickle.load(f)
 
         self.window = self.config.lookback_window + self.config.predict_window + 1
@@ -57,11 +58,11 @@ class QlibDataset(Dataset):
 
             if num_samples > 0:
                 # Generate time features and store them directly in the dataframe.
-                df['minute'] = df['datetime'].dt.minute
-                df['hour'] = df['datetime'].dt.hour
-                df['weekday'] = df['datetime'].dt.weekday
-                df['day'] = df['datetime'].dt.day
-                df['month'] = df['datetime'].dt.month
+                df["minute"] = df["datetime"].dt.minute
+                df["hour"] = df["datetime"].dt.hour
+                df["weekday"] = df["datetime"].dt.weekday
+                df["day"] = df["datetime"].dt.day
+                df["month"] = df["datetime"].dt.month
                 # Keep only necessary columns to save memory.
                 self.data[symbol] = df[self.feature_list + self.time_feature_list]
 
@@ -72,7 +73,9 @@ class QlibDataset(Dataset):
         # The effective dataset size is the minimum of the configured iterations
         # and the total number of available samples.
         self.n_samples = min(self.n_samples, len(self.indices))
-        print(f"[{data_type.upper()}] Found {len(self.indices)} possible samples. Using {self.n_samples} per epoch.")
+        print(
+            f"[{data_type.upper()}] Found {len(self.indices)} possible samples. Using {self.n_samples} per epoch."
+        )
 
     def set_epoch_seed(self, epoch: int):
         """
@@ -130,10 +133,10 @@ class QlibDataset(Dataset):
         return x_tensor, x_stamp_tensor
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage and verification.
     print("Creating training dataset instance...")
-    train_dataset = QlibDataset(data_type='train')
+    train_dataset = QlibDataset(data_type="train")
 
     print(f"Dataset length: {len(train_dataset)}")
 

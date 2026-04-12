@@ -1,0 +1,101 @@
+[project]
+name = "kronos"
+version = "0.1.0"
+description = "Foundation model for financial candlestick data (K-line) forecasting"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas==2.2.2",
+    "torch>=2.0.0",
+    "einops==0.8.1",
+    "huggingface-hub==0.33.1",
+    "matplotlib==3.9.3",
+    "tqdm==4.67.1",
+    "safetensors==0.6.2",
+]
+
+[project.optional-dependencies]
+webui = [
+    "flask==2.3.3",
+    "flask-cors==4.0.0",
+    "plotly==5.17.0",
+]
+finetune = [
+    "pyqlib",
+    "comet-ml",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9",
+    "ty>=0.0.0a1",
+    "pytest>=8.0",
+    "pytest-cov",
+]
+
+# ---------------------------------------------------------------------------
+# uv
+# ---------------------------------------------------------------------------
+[tool.uv]
+# PyTorch ships CUDA wheels via its own index. Uncomment the lines below and
+# set the CUDA version to match your environment (cu121, cu124, cu128, …).
+# Users who only need CPU or MPS (macOS) can leave this section commented out.
+#
+# [tool.uv.sources]
+# torch = { index = "pytorch-cu124" }
+#
+# [[tool.uv.index]]
+# name = "pytorch-cu124"
+# url  = "https://download.pytorch.org/whl/cu124"
+
+# ---------------------------------------------------------------------------
+# ruff – lint + format (replaces flake8 / black / isort)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "finetune/data",
+    "finetune_csv/data",
+    "tests/data",
+]
+
+[tool.ruff.lint]
+# E/W = pycodestyle, F = pyflakes, I = isort, UP = pyupgrade
+select = ["E", "F", "W", "I", "UP"]
+ignore = [
+    "E501",   # line too long — enforced by formatter instead
+    "F403",   # star imports (model/module.py wildcard imports are intentional)
+    "F405",   # may be from star import
+    "UP007",  # X | Y union syntax — keep compat with 3.10
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["model", "finetune", "finetune_csv"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ---------------------------------------------------------------------------
+# ty – fast type checker (astral)
+# ---------------------------------------------------------------------------
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.rules]
+# Start permissive on a codebase without existing type annotations in all files.
+# Tighten these as coverage improves.
+unknown-argument = "warn"
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

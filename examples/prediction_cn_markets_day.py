@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 prediction_cn_markets_day.py
 
@@ -21,15 +20,17 @@ Example:
     python3 prediction_cn_markets_day.py --symbol 002594
 """
 
-import os
 import argparse
+import os
+import sys
 import time
-import pandas as pd
+
 import akshare as ak
 import matplotlib.pyplot as plt
-import sys
+import pandas as pd
+
 sys.path.append("../")
-from model import Kronos, KronosTokenizer, KronosPredictor
+from model import Kronos, KronosPredictor, KronosTokenizer
 
 save_dir = "./outputs"
 os.makedirs(save_dir, exist_ok=True)
@@ -44,6 +45,7 @@ PRED_LEN = 120
 T = 1.0
 TOP_P = 0.9
 SAMPLE_COUNT = 1
+
 
 def load_data(symbol: str) -> pd.DataFrame:
     print(f"📥 Fetching {symbol} daily data from akshare ...")
@@ -63,18 +65,23 @@ def load_data(symbol: str) -> pd.DataFrame:
 
     # If still empty after retries
     if df is None or df.empty:
-        print(f"❌ Failed to fetch data for {symbol} after {max_retries} attempts. Exiting.")
+        print(
+            f"❌ Failed to fetch data for {symbol} after {max_retries} attempts. Exiting."
+        )
         sys.exit(1)
-    
-    df.rename(columns={
-        "日期": "date",
-        "开盘": "open",
-        "收盘": "close",
-        "最高": "high",
-        "最低": "low",
-        "成交量": "volume",
-        "成交额": "amount"
-    }, inplace=True)
+
+    df.rename(
+        columns={
+            "日期": "date",
+            "开盘": "open",
+            "收盘": "close",
+            "最高": "high",
+            "最低": "low",
+            "成交量": "volume",
+            "成交额": "amount",
+        },
+        inplace=True,
+    )
 
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").reset_index(drop=True)
@@ -101,7 +108,9 @@ def load_data(symbol: str) -> pd.DataFrame:
     if df["amount"].isna().all() or (df["amount"] == 0).all():
         df["amount"] = df["close"] * df["volume"]
 
-    print(f"✅ Data loaded: {len(df)} rows, range: {df['date'].min()} ~ {df['date'].max()}")
+    print(
+        f"✅ Data loaded: {len(df)} rows, range: {df['date'].min()} ~ {df['date'].max()}"
+    )
 
     print("Data Head:")
     print(df.head())
@@ -110,13 +119,16 @@ def load_data(symbol: str) -> pd.DataFrame:
 
 
 def prepare_inputs(df):
-    x_df = df.iloc[-LOOKBACK:][["open","high","low","close","volume","amount"]]
+    x_df = df.iloc[-LOOKBACK:][["open", "high", "low", "close", "volume", "amount"]]
     x_timestamp = df.iloc[-LOOKBACK:]["date"]
-    y_timestamp = pd.bdate_range(start=df["date"].iloc[-1] + pd.Timedelta(days=1), periods=PRED_LEN)
+    y_timestamp = pd.bdate_range(
+        start=df["date"].iloc[-1] + pd.Timedelta(days=1), periods=PRED_LEN
+    )
     return x_df, pd.Series(x_timestamp), pd.Series(y_timestamp)
 
+
 def apply_price_limits(pred_df, last_close, limit_rate=0.1):
-    print(f"🔒 Applying ±{limit_rate*100:.0f}% price limit ...")
+    print(f"🔒 Applying ±{limit_rate * 100:.0f}% price limit ...")
 
     # Ensure integer index
     pred_df = pred_df.reset_index(drop=True)
@@ -143,7 +155,13 @@ def apply_price_limits(pred_df, last_close, limit_rate=0.1):
 def plot_result(df_hist, df_pred, symbol):
     plt.figure(figsize=(12, 6))
     plt.plot(df_hist["date"], df_hist["close"], label="Historical", color="blue")
-    plt.plot(df_pred["date"], df_pred["close"], label="Predicted", color="red", linestyle="--")
+    plt.plot(
+        df_pred["date"],
+        df_pred["close"],
+        label="Predicted",
+        color="red",
+        linestyle="--",
+    )
     plt.title(f"Kronos Prediction for {symbol}")
     plt.xlabel("Date")
     plt.ylabel("Close Price")
@@ -157,10 +175,14 @@ def plot_result(df_hist, df_pred, symbol):
 
 
 def predict_future(symbol):
-    print(f"🚀 Loading Kronos tokenizer:{TOKENIZER_PRETRAINED} model:{MODEL_PRETRAINED} ...")
+    print(
+        f"🚀 Loading Kronos tokenizer:{TOKENIZER_PRETRAINED} model:{MODEL_PRETRAINED} ..."
+    )
     tokenizer = KronosTokenizer.from_pretrained(TOKENIZER_PRETRAINED)
     model = Kronos.from_pretrained(MODEL_PRETRAINED)
-    predictor = KronosPredictor(model, tokenizer, device=DEVICE, max_context=MAX_CONTEXT)
+    predictor = KronosPredictor(
+        model, tokenizer, device=DEVICE, max_context=MAX_CONTEXT
+    )
 
     df = load_data(symbol)
     x_df, x_timestamp, y_timestamp = prepare_inputs(df)
@@ -184,10 +206,12 @@ def predict_future(symbol):
     pred_df = apply_price_limits(pred_df, last_close, limit_rate=0.1)
 
     # Merge historical and predicted data
-    df_out = pd.concat([
-        df[["date", "open", "high", "low", "close", "volume", "amount"]],
-        pred_df[["date", "open", "high", "low", "close", "volume", "amount"]]
-    ]).reset_index(drop=True)
+    df_out = pd.concat(
+        [
+            df[["date", "open", "high", "low", "close", "volume", "amount"]],
+            pred_df[["date", "open", "high", "low", "close", "volume", "amount"]],
+        ]
+    ).reset_index(drop=True)
 
     # Save CSV
     out_file = os.path.join(save_dir, f"pred_{symbol.replace('.', '_')}_data.csv")

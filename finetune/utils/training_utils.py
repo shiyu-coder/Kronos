@@ -1,6 +1,7 @@
+import datetime
 import os
 import random
-import datetime
+
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -80,7 +81,9 @@ def get_model_size(model: torch.nn.Module) -> str:
         return f"{total_params / 1e3:.1f}K"  # Thousands
 
 
-def reduce_tensor(tensor: torch.Tensor, world_size: int, op=dist.ReduceOp.SUM) -> torch.Tensor:
+def reduce_tensor(
+    tensor: torch.Tensor, world_size: int, op=dist.ReduceOp.SUM
+) -> torch.Tensor:
     """
     Reduces a tensor's value across all processes in a distributed setup.
 
@@ -113,6 +116,3 @@ def format_time(seconds: float) -> str:
         str: The formatted time string (e.g., "0:15:32").
     """
     return str(datetime.timedelta(seconds=int(seconds)))
-
-
-
