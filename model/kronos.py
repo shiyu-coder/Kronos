@@ -372,14 +372,13 @@ def top_k_top_p_filtering(
 
 def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_logits=True):
     logits = logits / temperature
-    if top_k is not None or top_p is not None:
-        if top_k > 0 or top_p < 1.0:
-            logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
+    if (top_k is not None and top_k > 0) or (top_p is not None and top_p < 1.0):
+        logits = top_k_top_p_filtering(logits, top_k=top_k or 0, top_p=top_p or 1.0)
 
     probs = F.softmax(logits, dim=-1)
 
     if not sample_logits:
-        _, x = top_k(probs, k=1, dim=-1)
+        _, x = torch.topk(probs, k=1, dim=-1)
     else:
         x = torch.multinomial(probs, num_samples=1)
 
