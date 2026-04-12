@@ -206,7 +206,7 @@ class BinarySphericalQuantizer(nn.Module):
         q_scale = 1. / (self.embed_dim ** 0.5) if self.l2_norm else 1.
         z_q = z_q * q_scale
         if self.input_format == 'bchw':
-            h, w = int(z_q.shape[1] ** 0.5)
+            h = w = int(z_q.shape[1] ** 0.5)
             assert h * w == z_q.shape[1], 'Invalid sequence length'
             z_q = rearrange(z_q, 'b (h w) c -> b c h w', h=h)
         return z_q
@@ -216,7 +216,7 @@ class BinarySphericalQuantizer(nn.Module):
         q_scale = 1. / (self.embed_dim ** 0.5) if self.l2_norm else 1.
         z_q = z_q * q_scale
         if self.input_format == 'bchw':
-            h, w = int(z_q.shape[1] ** 0.5)
+            h = w = int(z_q.shape[1] ** 0.5)
             assert h * w == z_q.shape[1], 'Invalid sequence length'
             z_q = rearrange(z_q, 'b (h w) c -> b c h w', h=h)
         return z_q
@@ -518,7 +518,7 @@ class FixedEmbedding(nn.Module):
         super(FixedEmbedding, self).__init__()
 
         w = torch.zeros(c_in, d_model).float()
-        w.require_grad = False
+        w.requires_grad = False
 
         position = torch.arange(0, c_in).float().unsqueeze(1)
         div_term = (torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)).exp()
