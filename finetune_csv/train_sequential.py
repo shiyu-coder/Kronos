@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import argparse
 import torch
@@ -7,7 +6,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.distributed as dist
 
-sys.path.append('../')
 from model import Kronos, KronosTokenizer, KronosPredictor
 
 from config_loader import CustomFinetuneConfig

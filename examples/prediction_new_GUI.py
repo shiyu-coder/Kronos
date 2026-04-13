@@ -1,7 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 import os
 from datetime import datetime, timedelta
 import warnings
@@ -20,8 +19,6 @@ import matplotlib.ticker as ticker
 
 warnings.filterwarnings('ignore')
 
-# 添加项目路径以便导入自定义模块
-sys.path.append("../")
 try:
     from model import Kronos, KronosTokenizer, KronosPredictor
 except ImportError:

@@ -6,13 +6,10 @@ import plotly.graph_objects as go
 import plotly.utils
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-import sys
 import warnings
 import datetime
 warnings.filterwarnings('ignore')
 
-# Add project root directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from model import Kronos, KronosTokenizer, KronosPredictor

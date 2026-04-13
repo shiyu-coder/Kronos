@@ -1,3 +1,5 @@
+__version__ = "0.1.0"
+
 from .kronos import KronosTokenizer, Kronos, KronosPredictor
 
 model_dict = {

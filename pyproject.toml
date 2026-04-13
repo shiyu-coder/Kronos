@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "kronos-timeseries"
+dynamic = ["version"]
+description = "Kronos: A Foundation Model for Time-Series Forecasting"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas==2.2.2",
+    "torch>=2.0.0",
+    "einops==0.8.1",
+    "huggingface_hub==0.33.1",
+    "matplotlib==3.9.3",
+    "tqdm==4.67.1",
+    "safetensors==0.6.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+finetune = [
+    "comet-ml",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "model.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["model*"]
+
+[tool.setuptools.package-data]
+model = ["py.typed"]
