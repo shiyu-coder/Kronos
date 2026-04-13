@@ -1,15 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 import os
 from datetime import datetime, timedelta
 import warnings
 
 warnings.filterwarnings('ignore')
 
-# 添加项目路径以便导入自定义模块
-sys.path.append("../")
 from model import Kronos, KronosTokenizer, KronosPredictor
 
 # 设置中文字体

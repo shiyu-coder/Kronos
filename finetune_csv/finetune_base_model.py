@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import time
 import pickle
@@ -17,7 +16,6 @@ import datetime
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-sys.path.append('../')
 from model import Kronos, KronosTokenizer, KronosPredictor
 from config_loader import CustomFinetuneConfig
 

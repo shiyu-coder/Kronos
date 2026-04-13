@@ -1,5 +1,4 @@
 import os
-import sys
 import argparse
 import pickle
 from collections import defaultdict
@@ -19,8 +18,6 @@ from qlib.contrib.strategy import TopkDropoutStrategy
 from qlib.utils import flatten_dict
 from qlib.utils.time import Freq
 
-# Ensure project root is in the Python path
-sys.path.append("../")
 from config import Config
 from model.kronos import Kronos, KronosTokenizer, auto_regressive_inference
 
