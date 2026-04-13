@@ -124,7 +124,7 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
         valid_dataset.set_epoch_seed(0)  # Keep validation sampling consistent
 
         for i, (ori_batch_x, _) in enumerate(train_loader):
-            ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True)
+            ori_batch_x = ori_batch_x.to(device, non_blocking=True)
 
             # --- Gradient Accumulation Loop ---
             current_batch_total_loss = 0.0
@@ -176,7 +176,7 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
         val_sample_count_rank = 0
         with torch.no_grad():
             for ori_batch_x, _ in val_loader:
-                ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True)
+                ori_batch_x = ori_batch_x.to(device, non_blocking=True)
                 zs, _, _, _ = model(ori_batch_x)
                 _, z = zs
                 val_loss_item = F.mse_loss(z, ori_batch_x)
