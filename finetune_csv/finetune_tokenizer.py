@@ -190,7 +190,7 @@ def train_tokenizer(model, device, config, save_dir, logger):
             train_sampler.set_epoch(epoch)
         
         for batch_idx, (ori_batch_x, _) in enumerate(train_loader):
-            ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True)
+            ori_batch_x = ori_batch_x.to(device, non_blocking=True)
             
             current_batch_total_loss = 0.0
             for j in range(accumulation_steps):
@@ -239,7 +239,7 @@ def train_tokenizer(model, device, config, save_dir, logger):
         
         with torch.no_grad():
             for ori_batch_x, _ in val_loader:
-                ori_batch_x = ori_batch_x.squeeze(0).to(device, non_blocking=True)
+                ori_batch_x = ori_batch_x.to(device, non_blocking=True)
                 zs, _, _, _ = (model.module if use_ddp else model)(ori_batch_x)
                 _, z = zs
                 val_loss_item = F.mse_loss(z, ori_batch_x)

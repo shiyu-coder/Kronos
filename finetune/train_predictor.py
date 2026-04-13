@@ -93,8 +93,8 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
         valid_dataset.set_epoch_seed(0)
 
         for i, (batch_x, batch_x_stamp) in enumerate(train_loader):
-            batch_x = batch_x.squeeze(0).to(device, non_blocking=True)
-            batch_x_stamp = batch_x_stamp.squeeze(0).to(device, non_blocking=True)
+            batch_x = batch_x.to(device, non_blocking=True)
+            batch_x_stamp = batch_x_stamp.to(device, non_blocking=True)
 
             # Tokenize input data on-the-fly
             with torch.no_grad():
@@ -137,8 +137,8 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
         val_batches_processed_rank = 0
         with torch.no_grad():
             for batch_x, batch_x_stamp in val_loader:
-                batch_x = batch_x.squeeze(0).to(device, non_blocking=True)
-                batch_x_stamp = batch_x_stamp.squeeze(0).to(device, non_blocking=True)
+                batch_x = batch_x.to(device, non_blocking=True)
+                batch_x_stamp = batch_x_stamp.to(device, non_blocking=True)
 
                 token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
                 token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
