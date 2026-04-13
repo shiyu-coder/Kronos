@@ -29,7 +29,7 @@ class DifferentiableEntropyFunction(Function):
         grad_array = -grad_output * (torch.log(prob) + 1) / zi.numel() / ctx.K
         reord_grad = grad_array[zi.flatten()].reshape(zi.shape)
         grad_input = reord_grad.unsqueeze(-1) * zq
-        return grad_input, None, None, None, None
+        return grad_input, None, None, None
 
 
 def codebook_entropy(zq, basis, K, eps=1e-4):
@@ -88,8 +88,6 @@ class BinarySphericalQuantizer(nn.Module):
         return z + (zhat - z).detach()
 
     def forward(self, z, collect_metrics=True):
-        # if self.input_format == 'bchw':
-        #     z = rearrange(z, 'b c h w -> b h w c')
         zq = self.quantize(z)
 
         q_scale = 1. / (self.embed_dim ** 0.5) if self.l2_norm else 1.
@@ -106,6 +104,7 @@ class BinarySphericalQuantizer(nn.Module):
         else:
             used_codes = None
 
+        avg_prob = None
         if self.soft_entropy:
             persample_entropy, cb_entropy, avg_prob = self.soft_entropy_loss(z)
             entropy_penalty = self.gamma0 * persample_entropy - self.gamma * cb_entropy
@@ -117,9 +116,6 @@ class BinarySphericalQuantizer(nn.Module):
 
         # commit loss
         commit_loss = self.beta * torch.mean(((zq.detach() - z) ** 2).sum(dim=-1))
-
-        # if self.input_format == 'bchw':
-        #     zq = rearrange(zq, 'b h w c -> b c h w')
 
         return (
             zq,
@@ -177,7 +173,7 @@ class BinarySphericalQuantizer(nn.Module):
         return ((zhat_in_group + 1) / 2 * self.group_basis).sum(axis=-1).to(torch.int64)
 
     def indexes_to_codes(self, indices):
-        """Inverse of `indexes_to_codes`."""
+        """Inverse of `codes_to_indexes`."""
         indices = indices.unsqueeze(-1)
         codes_non_centered = torch.remainder(
             torch.floor_divide(indices, self.basis), 2
@@ -185,7 +181,7 @@ class BinarySphericalQuantizer(nn.Module):
         return codes_non_centered * 2 - 1
 
     def group_indexes_to_codes(self, group_indices):
-        """Inverse of `group_indexes_to_codes`."""
+        """Inverse of `codes_to_group_indexes`."""
         group_indices = group_indices.unsqueeze(-1)
         codes_non_centered = torch.remainder(
             torch.floor_divide(group_indices, self.group_basis), 2
@@ -206,7 +202,7 @@ class BinarySphericalQuantizer(nn.Module):
         q_scale = 1. / (self.embed_dim ** 0.5) if self.l2_norm else 1.
         z_q = z_q * q_scale
         if self.input_format == 'bchw':
-            h, w = int(z_q.shape[1] ** 0.5)
+            h = w = int(z_q.shape[1] ** 0.5)
             assert h * w == z_q.shape[1], 'Invalid sequence length'
             z_q = rearrange(z_q, 'b (h w) c -> b c h w', h=h)
         return z_q
@@ -216,7 +212,7 @@ class BinarySphericalQuantizer(nn.Module):
         q_scale = 1. / (self.embed_dim ** 0.5) if self.l2_norm else 1.
         z_q = z_q * q_scale
         if self.input_format == 'bchw':
-            h, w = int(z_q.shape[1] ** 0.5)
+            h = w = int(z_q.shape[1] ** 0.5)
             assert h * w == z_q.shape[1], 'Invalid sequence length'
             z_q = rearrange(z_q, 'b (h w) c -> b c h w', h=h)
         return z_q
@@ -346,7 +342,7 @@ class MultiHeadAttentionWithRoPE(nn.Module):
             q, k, v,
             attn_mask=attn_mask,
             dropout_p=self.attn_dropout_p if self.training else 0.0,
-            is_causal=True
+            is_causal=(attn_mask is None)
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model)
@@ -384,13 +380,11 @@ class MultiHeadCrossAttentionWithRoPE(nn.Module):
         else:
             attn_mask = None
 
-        is_causal_flag = self.training
-
         attn_output = F.scaled_dot_product_attention(
             q, k, v,
             attn_mask=attn_mask,
             dropout_p=self.attn_dropout_p if self.training else 0.0,
-            is_causal=is_causal_flag
+            is_causal=False
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, q_len, self.d_model)
@@ -518,7 +512,7 @@ class FixedEmbedding(nn.Module):
         super(FixedEmbedding, self).__init__()
 
         w = torch.zeros(c_in, d_model).float()
-        w.require_grad = False
+        w.requires_grad = False
 
         position = torch.arange(0, c_in).float().unsqueeze(1)
         div_term = (torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)).exp()

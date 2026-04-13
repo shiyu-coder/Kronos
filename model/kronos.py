@@ -2,12 +2,20 @@ import numpy as np
 import pandas as pd
 import torch
 from huggingface_hub import PyTorchModelHubMixin
-import sys
 
 from tqdm import trange
 
-sys.path.append("../")
-from model.module import *
+from .module import (
+    nn,
+    F,
+    BSQuantizer,
+    DependencyAwareLayer,
+    DualHead,
+    HierarchicalEmbedding,
+    RMSNorm,
+    TemporalEmbedding,
+    TransformerBlock,
+)
 
 
 class KronosTokenizer(nn.Module, PyTorchModelHubMixin):
@@ -344,6 +352,7 @@ def top_k_top_p_filtering(
         Make sure we keep at least min_tokens_to_keep per batch example in the output
     From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
     """
+    logits = logits.clone()
     if top_k > 0:
         top_k = min(max(top_k, min_tokens_to_keep), logits.size(-1))  # Safety check
         # Remove all tokens with a probability less than the last token of the top-k
@@ -373,7 +382,7 @@ def top_k_top_p_filtering(
 def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_logits=True):
     logits = logits / temperature
     if top_k is not None or top_p is not None:
-        if top_k > 0 or top_p < 1.0:
+        if (top_k is not None and top_k > 0) or (top_p is not None and top_p < 1.0):
             logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
 
     probs = F.softmax(logits, dim=-1)
@@ -505,6 +514,7 @@ class KronosPredictor:
         self.tokenizer = self.tokenizer.to(self.device)
         self.model = self.model.to(self.device)
 
+    @torch.no_grad()
     def generate(self, x, x_stamp, y_stamp, pred_len, T, top_k, top_p, sample_count, verbose):
 
         x_tensor = torch.from_numpy(np.array(x).astype(np.float32)).to(self.device)
@@ -516,23 +526,38 @@ class KronosPredictor:
         preds = preds[:, -pred_len:, :]
         return preds
 
-    def predict(self, df, x_timestamp, y_timestamp, pred_len, T=1.0, top_k=0, top_p=0.9, sample_count=1, verbose=True):
+    def _validate_and_prepare(self, df, label=""):
+        """Validate a DataFrame and fill missing volume/amount columns.
 
+        Args:
+            df (pd.DataFrame): Input DataFrame to validate.
+            label (str): Label for error messages (e.g. index in batch).
+
+        Returns:
+            pd.DataFrame: A copy of the DataFrame with missing columns filled.
+        """
+        prefix = f" at index {label}" if label else ""
         if not isinstance(df, pd.DataFrame):
-            raise ValueError("Input must be a pandas DataFrame.")
-
+            raise ValueError(f"Input{prefix} must be a pandas DataFrame.")
         if not all(col in df.columns for col in self.price_cols):
-            raise ValueError(f"Price columns {self.price_cols} not found in DataFrame.")
+            raise ValueError(f"Price columns {self.price_cols} not found in DataFrame{prefix}.")
 
         df = df.copy()
         if self.vol_col not in df.columns:
-            df[self.vol_col] = 0.0  # Fill missing volume with zeros
-            df[self.amt_vol] = 0.0  # Fill missing amount with zeros
+            df[self.vol_col] = 0.0
+            df[self.amt_vol] = 0.0
         if self.amt_vol not in df.columns and self.vol_col in df.columns:
             df[self.amt_vol] = df[self.vol_col] * df[self.price_cols].mean(axis=1)
 
         if df[self.price_cols + [self.vol_col, self.amt_vol]].isnull().values.any():
-            raise ValueError("Input DataFrame contains NaN values in price or volume columns.")
+            raise ValueError(f"Input DataFrame{prefix} contains NaN values in price or volume columns.")
+
+        return df
+
+    @torch.no_grad()
+    def predict(self, df, x_timestamp, y_timestamp, pred_len, T=1.0, top_k=0, top_p=0.9, sample_count=1, verbose=True):
+
+        df = self._validate_and_prepare(df)
 
         x_time_df = calc_time_stamps(x_timestamp)
         y_time_df = calc_time_stamps(y_timestamp)
@@ -559,6 +584,7 @@ class KronosPredictor:
         return pred_df
 
 
+    @torch.no_grad()
     def predict_batch(self, df_list, x_timestamp_list, y_timestamp_list, pred_len, T=1.0, top_k=0, top_p=0.9, sample_count=1, verbose=True):
         """
         Perform parallel (batch) prediction on multiple time series. All series must have the same historical length and prediction length (pred_len).
@@ -595,21 +621,7 @@ class KronosPredictor:
         y_lens = []
 
         for i in range(num_series):
-            df = df_list[i]
-            if not isinstance(df, pd.DataFrame):
-                raise ValueError(f"Input at index {i} is not a pandas DataFrame.")
-            if not all(col in df.columns for col in self.price_cols):
-                raise ValueError(f"DataFrame at index {i} is missing price columns {self.price_cols}.")
-
-            df = df.copy()
-            if self.vol_col not in df.columns:
-                df[self.vol_col] = 0.0
-                df[self.amt_vol] = 0.0
-            if self.amt_vol not in df.columns and self.vol_col in df.columns:
-                df[self.amt_vol] = df[self.vol_col] * df[self.price_cols].mean(axis=1)
-
-            if df[self.price_cols + [self.vol_col, self.amt_vol]].isnull().values.any():
-                raise ValueError(f"DataFrame at index {i} contains NaN values in price or volume columns.")
+            df = self._validate_and_prepare(df_list[i], label=str(i))
 
             x_timestamp = x_timestamp_list[i]
             y_timestamp = y_timestamp_list[i]
