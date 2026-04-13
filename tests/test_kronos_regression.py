@@ -124,8 +124,7 @@ def test_kronos_predictor_mse(context_len, expected_mse):
                 top_k=1,
                 top_p=1.0,
                 verbose=False,
-                sample_count=1,
-            )
+                sample_count=1, )
 
             obtained = pred_df[MSE_FEATURE_NAMES].to_numpy(dtype=np.float32)
             expected = future_slice[MSE_FEATURE_NAMES].to_numpy(dtype=np.float32)
