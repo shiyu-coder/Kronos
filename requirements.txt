@@ -8,3 +8,13 @@ matplotlib==3.9.3
 pandas==2.2.2
 tqdm==4.67.1
 safetensors==0.6.2
+
+
+ccxt
+ta
+transformers
+
+# FastAPI stack for optional mybot REST UI — see also mybot/requirements-server.txt
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+

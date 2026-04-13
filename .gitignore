@@ -68,6 +68,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Node (mybot web UI)
+node_modules/
+
 # Temporary files
 *.tmp
 *.temp

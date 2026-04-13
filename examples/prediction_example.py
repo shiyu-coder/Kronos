@@ -1,7 +1,11 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import sys
-sys.path.append("../")
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+_EXAMPLES_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_EXAMPLES_DIR.parent))
 from model import Kronos, KronosTokenizer, KronosPredictor
 
 
@@ -45,8 +49,8 @@ model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
 # 2. Instantiate Predictor
 predictor = KronosPredictor(model, tokenizer, max_context=512)
 
-# 3. Prepare Data
-df = pd.read_csv("./data/XSHG_5min_600977.csv")
+# 3. Prepare Data (path relative to this file, not cwd)
+df = pd.read_csv(_EXAMPLES_DIR / "data" / "XSHG_5min_600977.csv")
 df['timestamps'] = pd.to_datetime(df['timestamps'])
 
 lookback = 400

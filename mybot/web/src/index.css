@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: linear-gradient(165deg, #f0fdfa 0%, #ecfeff 40%, #f8fafc 100%);
+  color: #0f172a;
+}
