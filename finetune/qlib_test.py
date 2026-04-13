@@ -2,6 +2,9 @@ import os
 import sys
 import argparse
 import pickle
+
+sys.path.insert(0, os.path.dirname(__file__))
+from dataset import restricted_load
 from collections import defaultdict
 
 import numpy as np
@@ -335,7 +338,7 @@ def main():
     test_data_path = os.path.join(run_config['data_path'], "test_data.pkl")
     print(f"Loading test data from {test_data_path}...")
     with open(test_data_path, 'rb') as f:
-        test_data = pickle.load(f)
+        test_data = restricted_load(f)
     print(test_data)
     # --- 3. Generate Predictions ---
     model_preds = generate_predictions(run_config, test_data)
@@ -350,7 +353,7 @@ def main():
 
     # --- 5. Run Backtesting ---
     with open(predictions_file, 'rb') as f:
-        model_preds = pickle.load(f)
+        model_preds = restricted_load(f)
 
     backtester = QlibBacktest(base_config)
     backtester.run_and_plot_results(model_preds)

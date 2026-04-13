@@ -1,9 +1,52 @@
+import io
 import pickle
 import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 from config import Config
+
+
+# Allowlist of types that are safe to unpickle from training data.
+_SAFE_MODULES = {
+    'numpy': {'ndarray', 'dtype', 'float64', 'float32', 'int64', 'int32', 'bool_'},
+    'numpy.core.multiarray': {'scalar', '_reconstruct'},
+    'numpy.core.numeric': {'*'},
+    'pandas.core.frame': {'DataFrame'},
+    'pandas.core.series': {'Series'},
+    'pandas.core.indexes.base': {'_new_Index'},
+    'pandas.core.indexes.range': {'RangeIndex'},
+    'pandas.core.indexes.datetimes': {'DatetimeIndex', '_new_DatetimeIndex'},
+    'pandas.core.internals.blocks': {'new_block', 'DatetimeTZBlock', 'FloatBlock', 'IntBlock', 'ObjectBlock'},
+    'pandas.core.internals.managers': {'BlockManager'},
+    'pandas._libs.tslibs.timestamps': {'Timestamp'},
+    'pandas._libs.tslibs.nattype': {'NaTType'},
+    'pandas._libs.internals': {'BlockPlacement'},
+    'builtins': {'dict', 'list', 'tuple', 'set', 'frozenset', 'str', 'int', 'float', 'bool', 'bytes', 'complex', 'slice', 'range', 'type'},
+    'collections': {'OrderedDict', 'defaultdict'},
+    'datetime': {'datetime', 'date', 'timedelta', 'timezone'},
+    'copy_reg': {'_reconstructor'},
+    'copyreg': {'_reconstructor'},
+}
+
+
+class RestrictedUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        allowed = _SAFE_MODULES.get(module)
+        if allowed is not None and ('*' in allowed or name in allowed):
+            return super().find_class(module, name)
+        raise pickle.UnpicklingError(
+            f"Restricted unpickler refused to load {module}.{name}. "
+            f"If this type is expected in your data, add it to _SAFE_MODULES in dataset.py."
+        )
+
+
+def restricted_loads(data: bytes):
+    return RestrictedUnpickler(io.BytesIO(data)).load()
+
+
+def restricted_load(f):
+    return RestrictedUnpickler(f).load()
 
 
 class QlibDataset(Dataset):
@@ -39,7 +82,7 @@ class QlibDataset(Dataset):
             self.n_samples = self.config.n_val_iter
 
         with open(self.data_path, 'rb') as f:
-            self.data = pickle.load(f)
+            self.data = restricted_load(f)
 
         self.window = self.config.lookback_window + self.config.predict_window + 1
 
