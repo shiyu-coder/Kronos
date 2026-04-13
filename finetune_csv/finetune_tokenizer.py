@@ -1,17 +1,8 @@
 import os
 import sys
-import json
 import time
-import random
-import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
-from time import gmtime, strftime
-import datetime
-import logging
-from logging.handlers import RotatingFileHandler
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -21,132 +12,17 @@ from finetune_base_model import CustomKlineDataset
 from config_loader import CustomFinetuneConfig
 
 
-def set_seed(seed: int, rank: int = 0):
-    actual_seed = seed
-    random.seed(actual_seed)
-    np.random.seed(actual_seed)
-    torch.manual_seed(actual_seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(actual_seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
-
-
-def get_model_size(model: torch.nn.Module) -> str:
-    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    if total_params >= 1e9:
-        return f"{total_params / 1e9:.1f}B"
-    elif total_params >= 1e6:
-        return f"{total_params / 1e6:.1f}M"
-    else:
-        return f"{total_params / 1e3:.1f}K"
-
-
-def format_time(seconds: float) -> str:
-    return str(datetime.timedelta(seconds=int(seconds)))
-
-
-def setup_logging(exp_name: str, log_dir: str, rank: int = 0) -> logging.Logger:
-    os.makedirs(log_dir, exist_ok=True)
-    
-    logger = logging.getLogger(f"tokenizer_training_rank_{rank}")
-    logger.setLevel(logging.INFO)
-    
-    if logger.handlers:
-        return logger
-    
-    log_file = os.path.join(log_dir, f"tokenizer_training_rank_{rank}.log")
-    file_handler = RotatingFileHandler(
-        log_file, 
-        maxBytes=10*1024*1024,
-        backupCount=5,
-        encoding='utf-8'
-    )
-    file_handler.setLevel(logging.INFO)
-    
-    console_handler = None
-    if rank == 0:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-    
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    file_handler.setFormatter(formatter)
-    if console_handler is not None:
-        console_handler.setFormatter(formatter)
-    
-    logger.addHandler(file_handler)
-    if console_handler is not None:
-        logger.addHandler(console_handler)
-    
-    logger.info(f"=== Tokenizer Training Started ===")
-    logger.info(f"Experiment Name: {exp_name}")
-    logger.info(f"Log Directory: {log_dir}")
-    logger.info(f"Rank: {rank}")
-    logger.info(f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    return logger
+from finetune.utils.common import (
+    setup_logging,
+    create_dataloaders as _create_dataloaders,
+    create_tokenizer_from_config,
+)
+from finetune.utils.training_utils import set_seed, get_model_size, format_time
 
 
 def create_dataloaders(config):
-    if not dist.is_available() or not dist.is_initialized() or dist.get_rank() == 0:
-        print("Creating tokenizer training data loaders...")
-    
-    train_dataset = CustomKlineDataset(
-        data_path=config.data_path,
-        data_type="train",
-        lookback_window=config.lookback_window,
-        predict_window=config.predict_window,
-        clip=config.clip,
-        seed=config.seed,
-        train_ratio=config.train_ratio,
-        val_ratio=config.val_ratio,
-        test_ratio=config.test_ratio
-    )
-    
-    val_dataset = CustomKlineDataset(
-        data_path=config.data_path,
-        data_type="val",
-        lookback_window=config.lookback_window,
-        predict_window=config.predict_window,
-        clip=config.clip,
-        seed=config.seed + 1,
-        train_ratio=config.train_ratio,
-        val_ratio=config.val_ratio,
-        test_ratio=config.test_ratio
-    )
-    
-    use_ddp = dist.is_available() and dist.is_initialized()
-    train_sampler = DistributedSampler(train_dataset, num_replicas=dist.get_world_size(), rank=dist.get_rank(), shuffle=True) if use_ddp else None
-    val_sampler = DistributedSampler(val_dataset, num_replicas=dist.get_world_size(), rank=dist.get_rank(), shuffle=False, drop_last=False) if use_ddp else None
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=config.batch_size,
-        shuffle=(train_sampler is None),
-        num_workers=config.num_workers,
-        pin_memory=True,
-        drop_last=True,
-        sampler=train_sampler
-    )
-    
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=config.batch_size,
-        shuffle=False,
-        num_workers=config.num_workers,
-        pin_memory=True,
-        drop_last=False,
-        sampler=val_sampler
-    )
-    
-    if not dist.is_available() or not dist.is_initialized() or dist.get_rank() == 0:
-        print(f"Training set size: {len(train_dataset)}, Validation set size: {len(val_dataset)}")
-    
-    return train_loader, val_loader, train_dataset, val_dataset, train_sampler, val_sampler
-
+    """Thin wrapper that passes CustomKlineDataset to the shared helper."""
+    return _create_dataloaders(CustomKlineDataset, config)
 
 def train_tokenizer(model, device, config, save_dir, logger):
     logger.info("Starting tokenizer training...")
@@ -291,44 +167,22 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    config = CustomFinetuneConfig(args.config)
-    
     os.makedirs(config.tokenizer_save_path, exist_ok=True)
     
     log_dir = os.path.join(config.base_save_path, "logs")
-    logger = setup_logging(config.exp_name, log_dir, 0)
+    logger = setup_logging("tokenizer_training", log_dir, 0)
     
     set_seed(config.seed)
     
     # 加载预训练tokenizer
+    # Load pretrained tokenizer or random init
     if getattr(config, 'pre_trained_tokenizer', True):
         logger.info("Loading pretrained tokenizer...")
         print("Loading pretrained tokenizer...")
         tokenizer = KronosTokenizer.from_pretrained(config.pretrained_tokenizer_path)
     else:
         print("pre_trained_tokenizer=False, randomly initializing Tokenizer architecture")
-        import json, os
-        cfg_path = os.path.join(config.pretrained_tokenizer_path, 'config.json')
-        with open(cfg_path, 'r') as f:
-            arch = json.load(f)
-        tokenizer = KronosTokenizer(
-            d_in=arch.get('d_in', 6),
-            d_model=arch.get('d_model', 256),
-            n_heads=arch.get('n_heads', 4),
-            ff_dim=arch.get('ff_dim', 512),
-            n_enc_layers=arch.get('n_enc_layers', 4),
-            n_dec_layers=arch.get('n_dec_layers', 4),
-            ffn_dropout_p=arch.get('ffn_dropout_p', 0.0),
-            attn_dropout_p=arch.get('attn_dropout_p', 0.0),
-            resid_dropout_p=arch.get('resid_dropout_p', 0.0),
-            s1_bits=arch.get('s1_bits', 10),
-            s2_bits=arch.get('s2_bits', 10),
-            beta=arch.get('beta', 0.05),
-            gamma0=arch.get('gamma0', 1.0),
-            gamma=arch.get('gamma', 1.1),
-            zeta=arch.get('zeta', 0.05),
-            group_size=arch.get('group_size', 4)
-        )
+        tokenizer = create_tokenizer_from_config(config.pretrained_tokenizer_path)
     tokenizer = tokenizer.to(device)
     
     model_size = get_model_size(tokenizer)
