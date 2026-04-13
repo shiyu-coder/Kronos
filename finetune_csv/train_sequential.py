@@ -11,8 +11,15 @@ sys.path.append('../')
 from model import Kronos, KronosTokenizer, KronosPredictor
 
 from config_loader import CustomFinetuneConfig
-from finetune_tokenizer import train_tokenizer, set_seed, setup_logging as setup_tokenizer_logging
-from finetune_base_model import train_model, create_dataloaders, setup_logging as setup_basemodel_logging
+from finetune_tokenizer import train_tokenizer
+from finetune_base_model import train_model, create_dataloaders
+
+from finetune.utils.common import (
+    setup_logging,
+    create_tokenizer_from_config,
+    create_predictor_from_config,
+)
+from finetune.utils.training_utils import set_seed, get_model_size, format_time
 
 
 class SequentialTrainer:
@@ -74,9 +81,9 @@ class SequentialTrainer:
             return True
         
         log_dir = os.path.join(self.config.base_save_path, "logs")
-        logger = setup_tokenizer_logging(self.config.exp_name, log_dir, self.rank)
+        logger = setup_logging("tokenizer_training", log_dir, self.rank)
         
-        set_seed(self.config.seed)
+        set_seed(self.config.seed, self.rank)
         
         if getattr(self.config, 'pre_trained_tokenizer', True):
             logger.info("Loading pretrained tokenizer...")
@@ -86,28 +93,7 @@ class SequentialTrainer:
         else:
             if self.rank == 0:
                 print("pre_trained_tokenizer=False, randomly initializing Tokenizer architecture")
-            import json
-            cfg_path = os.path.join(self.config.pretrained_tokenizer_path, 'config.json')
-            with open(cfg_path, 'r') as f:
-                arch = json.load(f)
-            tokenizer = KronosTokenizer(
-                d_in=arch.get('d_in', 6),
-                d_model=arch.get('d_model', 256),
-                n_heads=arch.get('n_heads', 4),
-                ff_dim=arch.get('ff_dim', 512),
-                n_enc_layers=arch.get('n_enc_layers', 4),
-                n_dec_layers=arch.get('n_dec_layers', 4),
-                ffn_dropout_p=arch.get('ffn_dropout_p', 0.0),
-                attn_dropout_p=arch.get('attn_dropout_p', 0.0),
-                resid_dropout_p=arch.get('resid_dropout_p', 0.0),
-                s1_bits=arch.get('s1_bits', 10),
-                s2_bits=arch.get('s2_bits', 10),
-                beta=arch.get('beta', 0.05),
-                gamma0=arch.get('gamma0', 1.0),
-                gamma=arch.get('gamma', 1.1),
-                zeta=arch.get('zeta', 0.05),
-                group_size=arch.get('group_size', 4)
-            )
+            tokenizer = create_tokenizer_from_config(self.config.pretrained_tokenizer_path)
         tokenizer = tokenizer.to(self.device)
         
         model_size = sum(p.numel() for p in tokenizer.parameters())
@@ -160,9 +146,9 @@ class SequentialTrainer:
             return True
         
         log_dir = os.path.join(self.config.base_save_path, "logs")
-        logger = setup_basemodel_logging(self.config.exp_name, log_dir, self.rank)
+        logger = setup_logging("basemodel_training", log_dir, self.rank)
         
-        set_seed(self.config.seed)
+        set_seed(self.config.seed, self.rank)
         
         if getattr(self.config, 'pre_trained_tokenizer', True):
             logger.info("Loading fine-tuned tokenizer...")
@@ -172,28 +158,7 @@ class SequentialTrainer:
         else:
             if self.rank == 0:
                 print("pre_trained_tokenizer=False, randomly initializing Tokenizer architecture for Predictor training")
-            import json
-            cfg_path = os.path.join(self.config.pretrained_tokenizer_path, 'config.json')
-            with open(cfg_path, 'r') as f:
-                arch = json.load(f)
-            tokenizer = KronosTokenizer(
-                d_in=arch.get('d_in', 6),
-                d_model=arch.get('d_model', 256),
-                n_heads=arch.get('n_heads', 4),
-                ff_dim=arch.get('ff_dim', 512),
-                n_enc_layers=arch.get('n_enc_layers', 4),
-                n_dec_layers=arch.get('n_dec_layers', 4),
-                ffn_dropout_p=arch.get('ffn_dropout_p', 0.0),
-                attn_dropout_p=arch.get('attn_dropout_p', 0.0),
-                resid_dropout_p=arch.get('resid_dropout_p', 0.0),
-                s1_bits=arch.get('s1_bits', 10),
-                s2_bits=arch.get('s2_bits', 10),
-                beta=arch.get('beta', 0.05),
-                gamma0=arch.get('gamma0', 1.0),
-                gamma=arch.get('gamma', 1.1),
-                zeta=arch.get('zeta', 0.05),
-                group_size=arch.get('group_size', 4)
-            )
+            tokenizer = create_tokenizer_from_config(self.config.pretrained_tokenizer_path)
         tokenizer = tokenizer.to(self.device)
         
         if getattr(self.config, 'pre_trained_predictor', True):
@@ -204,24 +169,7 @@ class SequentialTrainer:
         else:
             if self.rank == 0:
                 print("pre_trained_predictor=False, randomly initializing Predictor architecture")
-            import json
-            cfg_path = os.path.join(self.config.pretrained_predictor_path, 'config.json')
-            with open(cfg_path, 'r') as f:
-                arch = json.load(f)
-            print("model_config: ", arch)
-            model = Kronos(
-                s1_bits=arch.get('s1_bits', 10),
-                s2_bits=arch.get('s2_bits', 10),
-                n_layers=arch.get('n_layers', 12),
-                d_model=arch.get('d_model', 832),
-                n_heads=arch.get('n_heads', 16),
-                ff_dim=arch.get('ff_dim', 2048),
-                ffn_dropout_p=arch.get('ffn_dropout_p', 0.2),
-                attn_dropout_p=arch.get('attn_dropout_p', 0.0),
-                resid_dropout_p=arch.get('resid_dropout_p', 0.2),
-                token_dropout_p=arch.get('token_dropout_p', 0.0),
-                learn_te=arch.get('learn_te', True)
-            )
+            model = create_predictor_from_config(self.config.pretrained_predictor_path)
         model = model.to(self.device)
         
         model_size = sum(p.numel() for p in model.parameters())
