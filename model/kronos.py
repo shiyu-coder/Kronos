@@ -317,7 +317,7 @@ class Kronos(nn.Module, PyTorchModelHubMixin):
         Args:
             context (torch.Tensor): Context representation from the transformer (output of decode_s1).
                                      Shape: [batch_size, seq_len, d_model]
-            s1_ids (torch.torch.Tensor): Input tensor of s1 token IDs. Shape: [batch_size, seq_len]
+            s1_ids (torch.Tensor): Input tensor of s1 token IDs. Shape: [batch_size, seq_len]
             padding_mask (torch.Tensor, optional): Mask for padding tokens. Shape: [batch_size, seq_len]. Defaults to None.
 
         Returns:
@@ -379,7 +379,7 @@ def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_l
     probs = F.softmax(logits, dim=-1)
 
     if not sample_logits:
-        _, x = top_k(probs, k=1, dim=-1)
+        _, x = torch.topk(probs, k=1, dim=-1)
     else:
         x = torch.multinomial(probs, num_samples=1)
 
