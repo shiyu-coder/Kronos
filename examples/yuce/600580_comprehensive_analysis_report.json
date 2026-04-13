@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-10-01 01:53:45",
+  "stock_code": "600580",
+  "market_analysis": {
+    "overall_is_main_uptrend": false,
+    "overall_trend_strength": 0.5,
+    "market_status": "未知",
+    "detailed_analysis": {}
+  },
+  "sector_analysis": {
+    "industry": "电机",
+    "matched_sectors": [
+      {
+        "sector": "机器人",
+        "momentum": 0.85,
+        "limit_up_stocks": 18,
+        "is_active": true,
+        "description": "人形机器人、工业自动化"
+      },
+      {
+        "sector": "低空经济",
+        "momentum": 0.7,
+        "limit_up_stocks": 10,
+        "is_active": true,
+        "description": "无人机、eVTOL"
+      }
+    ],
+    "main_sector": {
+      "sector": "机器人",
+      "momentum": 0.85,
+      "limit_up_stocks": 18,
+      "is_active": true,
+      "description": "人形机器人、工业自动化"
+    },
+    "is_sector_hot": true,
+    "resonance_score": 0.7749999999999999,
+    "sector_count": 2
+  },
+  "macro_analysis": {
+    "us_rate_cycle": {
+      "current_rate": 4.25,
+      "trend": "降息周期",
+      "recent_cut": "2025年9月降息25个基点",
+      "expected_cuts_2025": 2,
+      "expected_cuts_2026": 2,
+      "impact_on_emerging_markets": "positive",
+      "usd_index_support": 95.0,
+      "analysis": "美联储开启宽松周期，利好全球流动性"
+    },
+    "domestic_policy": {
+      "monetary_policy": "稳健偏松",
+      "fiscal_policy": "积极财政",
+      "market_liquidity": "合理充裕",
+      "industrial_policy": "设备更新、以旧换新",
+      "employment_policy": "稳就业政策加力",
+      "analysis": "政策组合拳发力，经济稳中向好"
+    },
+    "industry_policy": {
+      "robot_policy": "机器人产业政策支持",
+      "chip_policy": "国产替代加速推进",
+      "AI_policy": "人工智能发展规划",
+      "low_altitude": "低空经济发展规划"
+    },
+    "global_liquidity_outlook": "改善",
+    "overall_macro_score": 0.75
+  },
+  "fundamental_analysis": {
+    "company_name": "卧龙电驱",
+    "business_areas": [
+      "工业电机",
+      "机器人关键部件",
+      "航空电机",
+      "新能源汽车驱动"
+    ],
+    "recent_developments": [
+      "与智元机器人实现双向持股，推进具身智能机器人技术研发",
+      "成立浙江龙飞电驱，专注航空电机业务",
+      "发布AI外骨骼机器人及灵巧手",
+      "布局高爆发关节模组、伺服驱动器等人形机器人关键部件"
+    ],
+    "growth_drivers": [
+      "设备更新政策推动工业电机需求",
+      "机器人产业快速发展",
+      "低空经济政策支持",
+      "出海战略加速"
+    ],
+    "risk_factors": [
+      "机器人业务营收占比仅2.71%，占比较低",
+      "工业需求景气度波动",
+      "原料价格波动风险"
+    ],
+    "investment_rating": "积极关注",
+    "fundamental_score": 0.7
+  },
+  "adjustment_factor": 1.1
+}
