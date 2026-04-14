@@ -53,7 +53,7 @@ else:
 predictor = KronosPredictor(model, tokenizer, device=device, max_context=512)
 
 # 3. Prepare Data
-df = pd.read_csv("./data/XSHG_5min_600977.csv")
+df = pd.read_csv("../data/XSHG_5min_600977.csv")
 df['timestamps'] = pd.to_datetime(df['timestamps'])
 
 lookback = 400
