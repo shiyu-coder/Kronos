@@ -50,7 +50,7 @@
 </div>
 
 ## 📰 News
-*   🚩 **[2025.11.10]** Kronos has been accpeted by AAAI 2026.
+*   🚩 **[2025.11.10]** Kronos has been accepted by AAAI 2026.
 *   🚩 **[2025.08.17]** We have released the scripts for fine-tuning! Check them out to adapt Kronos to your own tasks.
 *   🚩 **[2025.08.02]** Our paper is now available on [arXiv](https://arxiv.org/abs/2508.02739)!
 
