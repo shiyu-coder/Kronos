@@ -74,3 +74,5 @@ venv.bak/
 temp/
 tmp/
 .python-version
+generate_dummy_data.py
+data/
