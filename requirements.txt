@@ -3,7 +3,8 @@ pandas
 torch
 
 einops==0.8.1
-huggingface_hub==0.33.1
+huggingface_hub>=1.5.0
+transformers>=4.40.0
 matplotlib==3.9.3
 pandas==2.2.2
 tqdm==4.67.1

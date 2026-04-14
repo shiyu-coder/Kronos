@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys
+import torch
 sys.path.append("../")
 from model import Kronos, KronosTokenizer, KronosPredictor
 
@@ -43,7 +44,13 @@ tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
 model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
 
 # 2. Instantiate Predictor
-predictor = KronosPredictor(model, tokenizer, device="cuda:0", max_context=512)
+if torch.cuda.is_available():
+    device = "cuda:0"
+elif torch.backends.mps.is_available():
+    device = "mps"
+else:
+    device = "cpu"
+predictor = KronosPredictor(model, tokenizer, device=device, max_context=512)
 
 # 3. Prepare Data
 df = pd.read_csv("./data/XSHG_5min_600977.csv")
