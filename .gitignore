@@ -76,3 +76,5 @@ tmp/
 .python-version
 generate_dummy_data.py
 data/
+generate_dummy_data.py
+data/
