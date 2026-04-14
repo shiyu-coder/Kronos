@@ -56,6 +56,12 @@ class PredictRequest(BaseModel):
     temperature: float = Field(default=1.0, ge=0.1, le=2.0)
     top_p: float = Field(default=0.9, ge=0.1, le=1.0)
     sample_count: int = Field(default=1, ge=1, le=8)
+    use_ensemble: bool = Field(default=True, description="Enable ensemble indicator layer")
+    use_confidence: bool = Field(default=True, description="Enable Monte Carlo confidence intervals")
+    n_confidence_samples: int = Field(default=8, ge=1, le=16, description="MC samples for confidence bands")
+    use_realtime: bool = Field(default=True, description="Enable real-time news/sentiment enrichment")
+    realtime_limit: int = Field(default=50, ge=5, le=200, description="Max headlines to fetch")
+    hf_model: str = Field(default="ProsusAI/finbert", description="HuggingFace sentiment model")
 
 
 @app.get("/api/health")
@@ -110,6 +116,12 @@ def predict(body: PredictRequest):
         top_p=body.top_p,
         sample_count=body.sample_count,
         verbose=False,
+        use_ensemble=body.use_ensemble,
+        use_confidence=body.use_confidence,
+        n_confidence_samples=body.n_confidence_samples,
+        use_realtime=body.use_realtime,
+        realtime_limit=body.realtime_limit,
+        hf_model=body.hf_model,
     )
     try:
         return run_prediction(params)

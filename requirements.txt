@@ -13,6 +13,12 @@ safetensors==0.6.2
 ccxt
 ta
 transformers
+requests
+feedparser
+newsapi-python
+gnews
+newspaper3k
+beautifulsoup4
 
 # FastAPI stack for optional mybot REST UI — see also mybot/requirements-server.txt
 fastapi>=0.110.0

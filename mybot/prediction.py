@@ -1,5 +1,6 @@
 """
 Binance OHLCV (CCXT) + indicators + ``KronosPredictor`` — shared by API and CLI.
+Enhanced with ensemble indicators, confidence intervals, and market regime detection.
 
 Formerly ``predict_service.py``.
 """
@@ -21,6 +22,29 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from model import Kronos, KronosPredictor, KronosTokenizer
+
+# --- NEW: enhanced engine import ---------------------------------------------
+try:
+    from mybot.prediction_engine import (
+        MarketRegimeDetector,
+        TechnicalEnsemble,
+        enhanced_prediction,
+        compute_confidence_interval,
+    )
+    _HAS_ENGINE = True
+except Exception:  # pragma: no cover — graceful degradation
+    _HAS_ENGINE = False
+    enhanced_prediction = None  # type: ignore[assignment]
+
+# --- NEW: real-time data import ----------------------------------------------
+try:
+    from mybot.realtime_data import RealTimeDataAggregator, MarketPulse
+    _HAS_REALTIME = True
+except Exception:  # pragma: no cover — graceful degradation
+    _HAS_REALTIME = False
+    RealTimeDataAggregator = None
+    MarketPulse = None
+
 
 _MODEL_LOCK = threading.Lock()
 _CACHED: Dict[str, Any] = {}
@@ -120,6 +144,14 @@ class PredictParams:
     top_p: float = 0.9
     sample_count: int = 1
     verbose: bool = False
+    # --- NEW ensemble / confidence params ---
+    use_ensemble: bool = True          # enable technical-indicator ensemble
+    use_confidence: bool = True        # enable Monte Carlo confidence interval
+    n_confidence_samples: int = 8      # MC samples for confidence (1-16)
+    # --- NEW realtime data params ---
+    use_realtime: bool = True          # enable news/sentiment enrichment
+    realtime_limit: int = 50           # max headlines to fetch
+    hf_model: str = "ProsusAI/finbert" # HF sentiment model (or keyword fallback)
 
 
 def get_predictor(model_id: str, tokenizer_id: str, max_context: int) -> KronosPredictor:
@@ -205,6 +237,45 @@ def run_prediction(params: PredictParams) -> Dict[str, Any]:
     y_timestamp = pd.date_range(start=last_ts + step, periods=params.pred_len, freq=pd_freq)
 
     predictor = get_predictor(params.model_id, params.tokenizer_id, params.max_context)
+
+    df_input = df.tail(params.window_size).copy()
+    x_timestamp = df_input["timestamps"]
+    last_ts = df_input["timestamps"].iloc[-1]
+    y_timestamp = pd.date_range(start=last_ts + step, periods=params.pred_len, freq=pd_freq)
+
+    # ── NEW: enhanced pipeline ────────────────────────────────────────────
+    if _HAS_ENGINE and params.use_ensemble:
+        result_dict = enhanced_prediction(
+            df=df_input,
+            x_timestamp=x_timestamp,
+            y_timestamp=y_timestamp,
+            predictor=predictor,
+            pred_len=params.pred_len,
+            T=params.temperature,
+            top_p=params.top_p,
+            regime_detector=MarketRegimeDetector(),
+            rsi_period=params.rsi_period,
+            use_confidence=params.use_confidence,
+            n_confidence_samples=params.n_confidence_samples,
+            use_realtime=params.use_realtime,
+            realtime_limit=params.realtime_limit,
+            hf_model=params.hf_model,
+            symbol=params.symbol,
+        )
+        # Inject symbol / timeframe / legacy meta
+        result_dict["symbol"] = params.symbol
+        result_dict["timeframe"] = params.timeframe
+        result_dict["meta"] = {
+            "window_size": params.window_size,
+            "pred_len": params.pred_len,
+            "rsi_period": params.rsi_period,
+            "ema_fast": params.ema_fast,
+            "ema_slow": params.ema_slow,
+            "model_id": params.model_id,
+            "rows_used": len(df),
+        }
+        return result_dict
+    # ── Original pipeline (backward compat) ──────────────────────────────
     result = predictor.predict(
         df_input,
         x_timestamp=x_timestamp,

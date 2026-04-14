@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"/e/Kronos/venv/Scripts/python.exe -c \\\"\\nimport sys, os; sys.path.insert(0, '/e/Kronos')\\n\\nimport ast\\nfor f in ['E:/Kronos/mybot/realtime_data.py','E:/Kronos/mybot/prediction_engine.py',...",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 12, in <module>\r\nModuleNotFoundError: No module named 'mybot'\r\nOK  realtime_data.py\r\nOK  prediction_engine.py\r\nOK  prediction.py\r\nOK  server.py",
+  "timestamp": "2026-04-14T08:59:28.804Z",
+  "retry_count": 2
+}

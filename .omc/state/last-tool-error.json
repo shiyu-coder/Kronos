@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /e/Kronos/mybot/web && npx tsc --noEmit 2>&1\",\"description\":\"TypeScript check frontend\"}",
+  "error": "Exit code 2\nsrc/App.tsx(904,27): error TS2322: Type 'string' is not assignable to type 'number'.\r\nsrc/App.tsx(911,27): error TS2322: Type 'string' is not assignable to type 'number'.\r\nsrc/App.tsx(918,27): error TS2322: Type 'string' is not assignable to type 'number'.",
+  "timestamp": "2026-04-14T09:20:36.376Z",
+  "retry_count": 1
+}
