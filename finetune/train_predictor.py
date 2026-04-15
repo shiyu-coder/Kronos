@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
-
+import safetensors.torch 
 import comet_ml
 
 # Ensure project root is in path
@@ -170,9 +170,13 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
                 save_path = f"{save_dir}/checkpoints/best_model"
-                model.module.save_pretrained(save_path)
+                # 修复：直接保存 Predictor 模型权重，避免保存为 Tokenizer
+                os.makedirs(save_path, exist_ok=True)
+                safetensors.torch.save_file(
+                    model.module.state_dict(),
+                    os.path.join(save_path, "model.safetensors")
+                )
                 print(f"Best model saved to {save_path} (Val Loss: {best_val_loss:.4f})")
-
         dist.barrier()
 
     dt_result['best_val_loss'] = best_val_loss
