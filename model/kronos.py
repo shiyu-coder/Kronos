@@ -349,7 +349,6 @@ def top_k_top_p_filtering(
         # Remove all tokens with a probability less than the last token of the top-k
         indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
         logits[indices_to_remove] = filter_value
-        return logits
 
     if top_p < 1.0:
         sorted_logits, sorted_indices = torch.sort(logits, descending=True)
@@ -367,14 +366,14 @@ def top_k_top_p_filtering(
         # scatter sorted tensors to original indexing
         indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
         logits[indices_to_remove] = filter_value
-        return logits
+
+    return logits
 
 
 def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_logits=True):
     logits = logits / temperature
-    if top_k is not None or top_p is not None:
-        if top_k > 0 or top_p < 1.0:
-            logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
+    if (top_k is not None and top_k > 0) or (top_p is not None and top_p < 1.0):
+        logits = top_k_top_p_filtering(logits, top_k=top_k or 0, top_p=top_p or 1.0)
 
     probs = F.softmax(logits, dim=-1)
 
