@@ -108,9 +108,18 @@ First, load a pre-trained Kronos model and its corresponding tokenizer from the 
 from model import Kronos, KronosTokenizer, KronosPredictor
 
 # Load from Hugging Face Hub
-tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
-model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
+tokenizer = KronosTokenizer.from_pretrained(
+    "NeoQuasar/Kronos-Tokenizer-base",
+    revision="0e0117387f39004a9016484a186a908917e22426",
+)
+model = Kronos.from_pretrained(
+    "NeoQuasar/Kronos-small",
+    revision="901c26c1332695a2a8f243eb2f37243a37bea320",
+)
 ```
+
+Use the Kronos classes from this repository (`from model import ...`) instead of `transformers.AutoModel` / `AutoTokenizer`.
+The current Hugging Face repos for the released Kronos tokenizer and predictors include `config.json`; pinning the `revision` keeps the download reproducible and helps avoid stale-cache mismatches if your local Hugging Face cache still has an older snapshot. If you still see a config or initialization error, retry with `force_download=True`.
 
 #### 2. Instantiate the Predictor
 
