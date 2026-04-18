@@ -71,7 +71,7 @@ We have set up a live demo to visualize Kronos's forecasting results. The webpag
 
 **👉 [Access the Live Demo Here](https://shiyu-coder.github.io/Kronos-demo/)** 
 
-## 📦 Model Zoo 
+## 📦 Model Zoo
 We release a family of pre-trained models with varying capacities to suit different computational and application needs. All models are readily accessible from the Hugging Face Hub.
 
 | Model        | Tokenizer                                                                       | Context length | Params  | Open-source                                                               |
@@ -80,6 +80,12 @@ We release a family of pre-trained models with varying capacities to suit differ
 | Kronos-small | [Kronos-Tokenizer-base](https://huggingface.co/NeoQuasar/Kronos-Tokenizer-base) | 512            | 24.7M  | ✅ [NeoQuasar/Kronos-small](https://huggingface.co/NeoQuasar/Kronos-small) |
 | Kronos-base  | [Kronos-Tokenizer-base](https://huggingface.co/NeoQuasar/Kronos-Tokenizer-base) | 512            | 102.3M | ✅ [NeoQuasar/Kronos-base](https://huggingface.co/NeoQuasar/Kronos-base)   |
 | Kronos-large | [Kronos-Tokenizer-base](https://huggingface.co/NeoQuasar/Kronos-Tokenizer-base) | 512            | 499.2M | ❌                                                                         |
+
+### Pretraining data scope note
+
+The public Kronos repository and current Hugging Face model cards document that the released models were pre-trained on more than 12 billion K-line records from 45 global exchanges. They do not currently publish a per-exchange symbol list, the exact temporal cutoff date for the Kronos-base pretraining corpus, or an author-maintained "clean" held-out evaluation window.
+
+As a result, users should treat exchange-level coverage, bar granularities, and any out-of-sample cutoff for specific markets such as US equities as unspecified in the current public materials. If you need a strictly leakage-free evaluation protocol, define your own post-cutoff split from data you can verify locally and report that window explicitly alongside zero-shot or fine-tuned results.
 
 
 ## 🚀 Getting Started
