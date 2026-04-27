@@ -9,27 +9,35 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ComposedChart
+  ComposedChart,
+  ReferenceLine
 } from "recharts";
-import { priceData } from "@/lib/api/demo-data";
+import { type PricePredictionResponse } from "@/schemas/predictionSchema";
 
-const historyData = priceData.history.map((item) => ({
-  timestamp: item.timestamps,
-  price: item.close,
-  prediction: null,
-  type: "history"
-}));
+type PriceChartProps = {
+  data: PricePredictionResponse | null;
+};
 
-const predictionData = priceData.prediction.map((item) => ({
-  timestamp: item.timestamps,
-  price: null,
-  prediction: item.close,
-  type: "prediction"
-}));
+const PriceChart = ({ data }: PriceChartProps) => {
+  if (!data) {
+    return null;
+  }
 
-const allData = [...historyData, ...predictionData];
+  const historyData = data.history.map((item) => ({
+    timestamp: item.timestamps,
+    price: item.close,
+    prediction: null,
+    type: "history"
+  }));
 
-const PriceChart = () => {
+  const predictionData = data.prediction.map((item) => ({
+    timestamp: item.timestamps,
+    price: null,
+    prediction: item.close,
+    type: "prediction"
+  }));
+
+  const allData = [...historyData, ...predictionData];
   // Calculate dynamic Y-axis domain based on data
   const allPrices = allData.map((d) => d.price ?? d.prediction).filter((p) => p !== null) as number[];
 
@@ -44,17 +52,19 @@ const PriceChart = () => {
   const yMin = Math.floor(minPrice - padding);
   const yMax = Math.ceil(maxPrice + padding);
 
+  const predictionStartDate = data.prediction_start_timestamp;
+
   return (
-    <div className='h-[500px] w-full'>
+    <div className='h-[500px] w-full border'>
       <ResponsiveContainer width='100%' height='100%'>
-        <ComposedChart data={allData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+        <ComposedChart data={allData} margin={{ top: 30, right: 30, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='rgba(255,255,255,0.1)' />
 
           <XAxis
             dataKey='timestamp'
             tickLine={false}
             axisLine={false}
-            tickMargin={10}
+            tickMargin={20}
             tick={{ fontSize: 12 }}
             interval={Math.floor(allData.length / 7)} // Show ~6 labels across chart
             tickFormatter={(value) => {
@@ -74,13 +84,13 @@ const PriceChart = () => {
           />
 
           <Tooltip
-            labelFormatter={(value) => new Date(value).toLocaleDateString()}
+            labelFormatter={(value) => new Date(value).toLocaleString()}
             formatter={(value) => {
               if (value === null || value === undefined) return null;
               return [`$${Number(value).toLocaleString()}`, "Price"];
             }}
             contentStyle={{
-              backgroundColor: "rgba(0,0,0,0.8)",
+              backgroundColor: "oklch(0.214 0.009 43.1)",
               border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: "8px",
               color: "#fff"
@@ -88,6 +98,19 @@ const PriceChart = () => {
           />
 
           <Legend wrapperStyle={{ paddingTop: "20px" }} iconType='line' />
+
+          <ReferenceLine
+            x={predictionStartDate}
+            stroke='rgba(255,255,255,0.2)'
+            strokeWidth={1}
+            strokeDasharray='3 3'
+            label={{
+              value: "Prediction",
+              position: "top",
+              fill: "rgba(255,255,255,0.2)",
+              fontSize: 10
+            }}
+          />
 
           {/* Historical data - solid line */}
           <Line

@@ -5,7 +5,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from model import Kronos, KronosTokenizer, KronosPredictor
+from model import Kronos, KronosPredictor, KronosTokenizer
+
 from constants.available_models import AVAILABLE_MODELS
 
 
@@ -88,6 +89,55 @@ class KronosPredictionService:
             df=df,
             x_timestamp=x_timestamp,
             y_timestamp=y_timestamp,
+            pred_len=pred_len,
+            T=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            sample_count=sample_count,
+            verbose=verbose,
+        )
+
+    def predict_batch(
+        self,
+        df_list,
+        x_timestamp_list,
+        y_timestamp_list,
+        pred_len: int,
+        temperature: float = 1.0,
+        top_k: int = 0,
+        top_p: float = 0.9,
+        sample_count: int = 1,
+        verbose: bool = True,
+    ):
+        """
+        Run batch prediction on multiple time series in parallel.
+
+        Args:
+            df_list: List of DataFrames with OHLCVA columns
+            x_timestamp_list: List of historical timestamp indices
+            y_timestamp_list: List of future timestamp indices
+            pred_len: Number of prediction steps (must be identical for all series)
+            temperature: Sampling temperature
+            top_k: Top-k filtering
+            top_p: Top-p (nucleus) sampling
+            sample_count: Number of samples per series
+            verbose: Show progress
+
+        Returns:
+            List of prediction DataFrames in same order as input
+
+        Constraints:
+            - All DataFrames must have same number of rows
+            - All x_timestamp_list entries must have same length
+            - All y_timestamp_list entries must have same length
+        """
+        if self.predictor is None:
+            self.load()
+
+        return self.predictor.predict_batch(
+            df_list=df_list,
+            x_timestamp_list=x_timestamp_list,
+            y_timestamp_list=y_timestamp_list,
             pred_len=pred_len,
             T=temperature,
             top_k=top_k,

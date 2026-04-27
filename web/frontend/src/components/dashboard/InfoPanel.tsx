@@ -15,13 +15,40 @@ const getBatchMode = (modelName: string) => {
 };
 
 const InfoPanel = () => {
-  const params = usePricePredictionStore((state) => state.params);
+  const singleParams = usePricePredictionStore((state) => state.params);
+  const batchParamsState = usePricePredictionStore((state) => state.batchParams);
+  const mode = usePricePredictionStore((state) => state.mode);
+  const batchItems = usePricePredictionStore((state) => state.batchItems);
+  const batchResults = usePricePredictionStore((state) => state.batchResults);
+  const activeResultIndex = usePricePredictionStore((state) => state.activeResultIndex);
+
+  const isBatch = mode === "batch";
+  const params = isBatch ? batchParamsState : singleParams;
+
+  // In batch mode, show active result's symbol or the configured batch item symbol
+  const activeSymbol = isBatch
+    ? batchResults && batchResults.length > 0
+      ? batchResults[activeResultIndex]?.request.symbol || `Symbol #${activeResultIndex + 1}`
+      : batchItems[0]?.symbol || "Not selected"
+    : params.symbol || "Not selected";
+
+  const activeDataSource = isBatch
+    ? batchResults && batchResults.length > 0
+      ? batchResults[activeResultIndex]?.request.data_source
+      : batchItems[0]?.data_source || "binance"
+    : params.data_source;
+
+  const activeInterval = isBatch
+    ? batchResults && batchResults.length > 0
+      ? batchResults[activeResultIndex]?.request.interval
+      : batchItems[0]?.interval || "1h"
+    : params.interval;
 
   const DashboardData = [
     {
       label: "Selected market",
-      title: params.symbol || "Not selected",
-      subtitle: `${params.data_source}, ${params.interval} candles`,
+      title: activeSymbol,
+      subtitle: `${activeDataSource}, ${activeInterval} candles`,
       textColor: "text-green-300"
     },
     {
@@ -47,6 +74,14 @@ const InfoPanel = () => {
               {getBatchMode(params.model_name)}
             </div>
           )}
+
+          {/* Batch count badge on the first card */}
+          {index === 0 && isBatch && (
+            <div className='absolute top-2 right-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-medium rounded'>
+              Batch ({batchItems.length})
+            </div>
+          )}
+
           <CardHeader className='p-0'>
             <CardDescription className='text-neutral-500 text-xs capitalize'>{item.label}</CardDescription>
           </CardHeader>

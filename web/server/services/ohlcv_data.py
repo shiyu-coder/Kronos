@@ -4,8 +4,7 @@ from urllib.parse import urlencode
 import pandas as pd
 import requests
 import yfinance as yf
-
-from services.errors import (
+from errors.errors import (
     DataFormatError,
     DataNotFoundError,
     DataProviderError,

@@ -22,6 +22,8 @@ export const PricePredictionRequestSchema = z.object({
   verbose: z.boolean().default(false)
 });
 
+export const PricePredictionBatchRequestSchema = z.array(PricePredictionRequestSchema);
+
 export const AvailableModelSchema = z.object({
   name: z.string(),
   model_id: z.string(),
@@ -61,6 +63,11 @@ export const PricePredictionResponseSchema = z.object({
   prediction: z.array(CandleRecordSchema)
 });
 
+export const PricePredictionBatchResponseSchema = z.array(PricePredictionResponseSchema);
+
 export type PricePredictionRequest = z.infer<typeof PricePredictionRequestSchema>;
 export type PricePredictionResponse = z.infer<typeof PricePredictionResponseSchema>;
+export type PricePredictionBatchRequest = z.infer<typeof PricePredictionBatchRequestSchema>;
+export type PricePredictionBatchResponse = z.infer<typeof PricePredictionBatchResponseSchema>;
+
 export type PredictionOptionsResponse = z.infer<typeof PredictionOptionsResponseSchema>;

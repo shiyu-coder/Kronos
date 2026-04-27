@@ -30,13 +30,26 @@ const modelItems = [
 ];
 
 export default function ModelSelector() {
-  const model_name = usePricePredictionStore((state) => state.params.model_name);
+  const mode = usePricePredictionStore((state) => state.mode);
+  const singleModelName = usePricePredictionStore((state) => state.params.model_name);
+  const batchModelName = usePricePredictionStore((state) => state.batchParams.model_name);
   const setParam = usePricePredictionStore((state) => state.setParam);
+  const setBatchParam = usePricePredictionStore((state) => state.setBatchParam);
+
+  const model_name = mode === "single" ? singleModelName : batchModelName;
+  const handleChange = (value: string) => {
+    const typed = value as z.infer<typeof ModelNameEnum>;
+    if (mode === "single") {
+      setParam("model_name", typed);
+    } else {
+      setBatchParam("model_name", typed);
+    }
+  };
 
   return (
     <RadioGroup
       value={model_name}
-      onValueChange={(value) => setParam("model_name", value as z.infer<typeof ModelNameEnum>)}
+      onValueChange={handleChange}
       className='grid w-full grid-cols-3 gap-4 '
     >
       {modelItems.map((item) => (

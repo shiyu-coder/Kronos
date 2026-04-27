@@ -14,6 +14,7 @@ from schemas.prediction import (
 )
 from services.errors import PredictionAPIError
 from services.price_prediction import PricePredictionService
+from services.batch_price_prediction_service import BatchPricePredictionService
 
 app = FastAPI(
     title="Kronos Prediction Server",
@@ -30,6 +31,7 @@ app.add_middleware(
 )
 
 prediction_service = PricePredictionService()
+batch_prediction_service = BatchPricePredictionService()
 logger = logging.getLogger(__name__)
 
 
@@ -47,6 +49,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             }
         ),
     )
+
 
 @app.exception_handler(PredictionAPIError)
 async def prediction_api_exception_handler(request: Request, exc: PredictionAPIError):
@@ -71,6 +74,7 @@ async def unexpected_exception_handler(request: Request, exc: Exception):
 def health():
     return {"status": "ok"}
 
+
 @app.get("/scalar", include_in_schema=False)
 async def scalar_html():
     return get_scalar_api_reference(
@@ -80,11 +84,19 @@ async def scalar_html():
         scalar_proxy_url="https://proxy.scalar.com",
     )
 
+
 @app.get("/prediction/options", response_model=PredictionOptionsResponse)
-def prediction_options() -> PredictionOptionsResponse :
+def prediction_options() -> PredictionOptionsResponse:
     return prediction_service.get_options()
 
 
 @app.post("/prediction/price", response_model=PricePredictionResponse)
-def predict_price(request: PricePredictionRequest) -> PricePredictionResponse :
+def predict_price(request: PricePredictionRequest) -> PricePredictionResponse:
     return prediction_service.predict_price(request)
+
+
+@app.post("/prediction/price/batch", response_model=list[PricePredictionResponse])
+def predict_price(
+    request: list[PricePredictionRequest],
+) -> list[PricePredictionResponse]:
+    return batch_prediction_service.predict_batch(request)

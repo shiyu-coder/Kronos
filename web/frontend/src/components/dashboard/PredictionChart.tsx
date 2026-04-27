@@ -1,7 +1,12 @@
 import PriceChart from "@/components/charts/PriceChart";
+import { type PricePredictionResponse } from "@/schemas/predictionSchema";
 
-const PredictionChart = () => {
-  return <PriceChart />;
+type PredictionChartProps = {
+  data: PricePredictionResponse;
+};
+
+const PredictionChart = ({ data }: PredictionChartProps) => {
+  return <PriceChart data={data} />;
 };
 
 export default PredictionChart;
