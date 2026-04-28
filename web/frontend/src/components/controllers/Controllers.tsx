@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useMutation } from "@tanstack/react-query";
 import { PlayIcon, RefreshIcon, Setting07Icon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -22,9 +24,10 @@ import BatchItemCard from "./BatchItemCard";
 
 import { usePricePredictionStore, type PredictionMode } from "@/stores/pricePredictionStore";
 import { predictPrice, predictPriceBatch } from "@/lib/api";
+import { PredictionApiError } from "@/utils/handleAPI";
 import type { PricePredictionRequest } from "@/schemas/predictionSchema";
 
-const MAX_BATCH_SIZE = 10;
+const MAX_BATCH_SIZE = 20;
 
 const Controllers = () => {
   const params = usePricePredictionStore((state) => state.params);
@@ -35,6 +38,8 @@ const Controllers = () => {
   const setResult = usePricePredictionStore((state) => state.setResult);
   const setBatchResults = usePricePredictionStore((state) => state.setBatchResults);
   const setIsLoading = usePricePredictionStore((state) => state.setIsLoading);
+  const setError = usePricePredictionStore((state) => state.setError);
+  const clearError = usePricePredictionStore((state) => state.clearError);
   const batchItems = usePricePredictionStore((state) => state.batchItems);
   const addBatchItem = usePricePredictionStore((state) => state.addBatchItem);
   const setActiveResultIndex = usePricePredictionStore((state) => state.setActiveResultIndex);
@@ -44,16 +49,28 @@ const Controllers = () => {
     mutationFn: predictPrice,
     onSuccess: (data) => {
       setResult(data);
+      clearError();
       setIsLoading(false);
     },
     onError: (error) => {
       console.error("Prediction error:", error);
+      const apiErr = error instanceof PredictionApiError ? error : null;
+      const errTitle = apiErr?.code ? `${apiErr.code} (${apiErr.status})` : `Prediction Failed`;
+      const errMessage = apiErr?.message ?? error.message ?? "An unexpected error occurred.";
+
+      setError({ title: errTitle, message: errMessage, code: apiErr?.code, timestamp: new Date() });
+      toast.error(errTitle, {
+        description: errMessage,
+        duration: 6000
+      });
+
       setIsLoading(false);
       setResult(null);
     },
     onMutate: () => {
       setIsLoading(true);
       setResult(null);
+      clearError();
     }
   });
 
@@ -63,16 +80,28 @@ const Controllers = () => {
     onSuccess: (data) => {
       setBatchResults(data);
       setActiveResultIndex(0);
+      clearError();
       setIsLoading(false);
     },
     onError: (error) => {
       console.error("Batch prediction error:", error);
+      const apiErr = error instanceof PredictionApiError ? error : null;
+      const errTitle = apiErr?.code ? `${apiErr.code} (${apiErr.status})` : `Batch Prediction Failed`;
+      const errMessage = apiErr?.message ?? error.message ?? "An unexpected error occurred.";
+
+      setError({ title: errTitle, message: errMessage, code: apiErr?.code, timestamp: new Date() });
+      toast.error(errTitle, {
+        description: errMessage,
+        duration: 6000
+      });
+
       setIsLoading(false);
       setBatchResults(null);
     },
     onMutate: () => {
       setIsLoading(true);
       setBatchResults(null);
+      clearError();
     }
   });
 
@@ -81,10 +110,12 @@ const Controllers = () => {
       predictPriceMutation.mutate(params);
     } else {
       // Merge batch shared params with each batch item's per-item overrides
+
       const batchRequests: PricePredictionRequest[] = batchItems.map((item) => ({
         ...batchParams, // batch shared: model_name, device, lookback, pred_len
         ...item // per-item overrides: data_source, symbol, interval, period, limit, sampling params
       }));
+
       predictPriceBatchMutation.mutate(batchRequests);
     }
   };
@@ -123,38 +154,39 @@ const Controllers = () => {
           <ModelSelector />
         </div>
 
-        {/* Shared parameters (always visible) */}
-        <DataSelector />
+        <>
+          {/* Shared parameters (always visible) */}
+          <DataSelector />
+          {/* Batch items list (batch mode only) */}
+          {mode === "batch" && (
+            <div className='flex flex-col gap-2 '>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-sm font-semibold'>
+                  Symbols
+                  <span className='text-xs font-normal text-muted-foreground'>
+                    ({batchItems.length}/{MAX_BATCH_SIZE})
+                  </span>
+                </h2>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={addBatchItem}
+                  disabled={batchItems.length >= MAX_BATCH_SIZE}
+                  className='h-7 text-xs gap-1'
+                >
+                  <HugeiconsIcon icon={PlusSignIcon} size={12} strokeWidth={2} />
+                  Add
+                </Button>
+              </div>
 
-        {/* Batch items list (batch mode only) */}
-        {mode === "batch" && (
-          <div className='flex flex-col gap-2'>
-            <div className='flex items-center justify-between'>
-              <h2 className='text-sm font-semibold'>
-                Symbols{" "}
-                <span className='text-xs font-normal text-muted-foreground'>
-                  ({batchItems.length}/{MAX_BATCH_SIZE})
-                </span>
-              </h2>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={addBatchItem}
-                disabled={batchItems.length >= MAX_BATCH_SIZE}
-                className='h-7 text-xs gap-1'
-              >
-                <HugeiconsIcon icon={PlusSignIcon} size={12} strokeWidth={2} />
-                Add
-              </Button>
+              <div className='flex flex-col gap-2 max-h-[400px] overflow-y-auto py-1 pr-2'>
+                {batchItems.map((item, index) => (
+                  <BatchItemCard key={index} index={index} item={item} canRemove={batchItems.length > 1} />
+                ))}
+              </div>
             </div>
-
-            <div className='flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1'>
-              {batchItems.map((item, index) => (
-                <BatchItemCard key={index} index={index} item={item} canRemove={batchItems.length > 1} />
-              ))}
-            </div>
-          </div>
-        )}
+          )}
+        </>
       </CardContent>
 
       <CardFooter className='size-full flex gap-2 items-end'>

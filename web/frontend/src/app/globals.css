@@ -117,6 +117,11 @@
   --sidebar-ring: oklch(0.547 0.021 43.1);
 }
 
+* {
+  scrollbar-width: thin;
+  /* scrollbar-color: var(--icons-color) transparent; */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

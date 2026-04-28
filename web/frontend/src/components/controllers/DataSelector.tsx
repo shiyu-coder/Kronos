@@ -48,13 +48,6 @@ const DataSelector = () => {
   return (
     <div className='grid gap-3'>
       {/* Shared Parameters divider — visible in batch mode */}
-      {mode === "batch" && (
-        <div className='flex items-center gap-2 pt-1'>
-          <div className='h-px flex-1 bg-muted-foreground/20' />
-          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>Shared Parameters</span>
-          <div className='h-px flex-1 bg-muted-foreground/20' />
-        </div>
-      )}
 
       {/* Device — always visible (shared) */}
       <div className='grid gap-1'>
@@ -98,6 +91,22 @@ const DataSelector = () => {
           />
         </div>
       </div>
+
+      {mode === "batch" && (
+        <div className='flex items-center gap-2 pt-3 pb-1'>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>Shared Parameters</span>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+        </div>
+      )}
+
+      {mode === "single" && (
+        <div className='flex items-center gap-2 pt-3 pb-1'>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>Data Source</span>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+        </div>
+      )}
 
       {/* --- Per-item fields: only in Single mode --- */}
       {isSingle && (
@@ -170,6 +179,13 @@ const DataSelector = () => {
         </>
       )}
 
+      {mode === "single" && (
+        <div className='flex items-center gap-2 pt-3 pb-1'>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+          <span className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>Sampling</span>
+          <div className='h-px flex-1 bg-muted-foreground/20' />
+        </div>
+      )}
       {/* Sampling params — only in single mode (in batch, these are per-item in BatchItemCard) */}
       {isSingle && (
         <>

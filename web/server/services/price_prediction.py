@@ -2,7 +2,7 @@ import pandas as pd
 
 from constants.available_models import AVAILABLE_MODELS
 from schemas.prediction import PricePredictionRequest
-from services.errors import (
+from errors.errors  import (
     ModelLoadError,
     PredictionAPIError,
     PredictionRuntimeError,

@@ -6,7 +6,11 @@ type PredictionChartProps = {
 };
 
 const PredictionChart = ({ data }: PredictionChartProps) => {
-  return <PriceChart data={data} />;
+  return (
+    <div className='h-[500px]'>
+      <PriceChart data={data} />
+    </div>
+  );
 };
 
 export default PredictionChart;

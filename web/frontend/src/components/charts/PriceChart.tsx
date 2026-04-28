@@ -55,7 +55,7 @@ const PriceChart = ({ data }: PriceChartProps) => {
   const predictionStartDate = data.prediction_start_timestamp;
 
   return (
-    <div className='h-[500px] w-full border'>
+    <div className='size-full border'>
       <ResponsiveContainer width='100%' height='100%'>
         <ComposedChart data={allData} margin={{ top: 30, right: 30, bottom: 20, left: 20 }}>
           <CartesianGrid strokeDasharray='3 3' vertical={false} stroke='rgba(255,255,255,0.1)' />

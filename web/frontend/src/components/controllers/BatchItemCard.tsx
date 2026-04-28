@@ -46,7 +46,7 @@ const BatchItemCard = ({ index, item, canRemove }: BatchItemCardProps) => {
   const dataSource = item.data_source ?? "binance";
 
   return (
-    <div className='relative flex flex-col gap-2 border border-muted-foreground/20 p-3 mt-2'>
+    <div className='relative flex flex-col gap-2 border border-muted-foreground/20 p-3'>
       {/* Header row */}
       <div className='flex items-center justify-between'>
         <span className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>

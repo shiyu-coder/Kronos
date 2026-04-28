@@ -9,10 +9,10 @@ export default function Home() {
   return (
     <main className='relative min-h-screen mx-auto flex w-full max-w-8xl flex-col mb-8'>
       <header className='sticky z-50 top-0 bg-black/20 backdrop-blur border-b'>
-        <div className='flex flex-col gap-4 px-8 py-4 lg:flex-row lg:items-center lg:justify-between'>
+        <div className='flex flex-col gap-4 px-8 py-3 lg:flex-row lg:items-center lg:justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='grid size-9 place-items-center rounded-md border border-muted-foreground text-muted-foreground'>
-              <HugeiconsIcon icon={ChartCandlestickIcon} size={20} strokeWidth={1.8} />
+            <div className='grid size-7 place-items-center  border border-muted-foreground text-muted-foreground'>
+              <HugeiconsIcon icon={ChartCandlestickIcon} size={16} strokeWidth={1.8} />
             </div>
 
             <div>

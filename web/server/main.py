@@ -12,7 +12,7 @@ from schemas.prediction import (
     PricePredictionResponse,
     PredictionOptionsResponse,
 )
-from services.errors import PredictionAPIError
+from errors.errors  import PredictionAPIError
 from services.price_prediction import PricePredictionService
 from services.batch_price_prediction_service import BatchPricePredictionService
 

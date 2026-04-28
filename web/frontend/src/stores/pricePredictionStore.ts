@@ -6,9 +6,16 @@ import {
   type PricePredictionBatchResponse
 } from "@/schemas/predictionSchema";
 
+export type PredictionError = {
+  title: string;
+  message: string;
+  code?: string;
+  timestamp: Date;
+};
+
 export type PredictionMode = "single" | "batch";
 
-const MAX_BATCH_SIZE = 10;
+const MAX_BATCH_SIZE = 20;
 
 type PricePredictionStore = {
   // --- Mode ---
@@ -29,6 +36,8 @@ type PricePredictionStore = {
   result: PricePredictionResponse | null;
   setResult: (result: PricePredictionResponse | null) => void;
 
+  // ----------------------------------------
+
   // --- Batch items (per-request overrides) ---
   batchItems: Partial<PricePredictionRequest>[];
   addBatchItem: () => void;
@@ -44,6 +53,11 @@ type PricePredictionStore = {
   // --- Loading ---
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+
+  // --- Error ---
+  error: PredictionError | null;
+  setError: (error: PredictionError) => void;
+  clearError: () => void;
 
   // --- Convenience: get the active params for the current mode ---
   getActiveParams: () => PricePredictionRequest;
@@ -71,6 +85,8 @@ export const usePricePredictionStore = create<PricePredictionStore>((set, get) =
     set((state) => ({
       params: { ...state.params, ...params }
     })),
+
+  // ----------------------------------------
 
   // Batch shared params (independent copy)
   batchParams: { ...defaultParams },
@@ -118,6 +134,11 @@ export const usePricePredictionStore = create<PricePredictionStore>((set, get) =
   isLoading: false,
   setIsLoading: (loading) => set({ isLoading: loading }),
 
+  // Error
+  error: null,
+  setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
+
   // Convenience: returns the correct params for the current mode
   getActiveParams: () => {
     const state = get();
@@ -132,7 +153,8 @@ export const usePricePredictionStore = create<PricePredictionStore>((set, get) =
       result: null,
       batchItems: [{ ...defaultBatchItem }],
       batchResults: null,
-      activeResultIndex: 0
+      activeResultIndex: 0,
+      error: null
     }),
-  resetResult: () => set({ result: null, batchResults: null, activeResultIndex: 0 })
+  resetResult: () => set({ result: null, batchResults: null, activeResultIndex: 0, error: null })
 }));
