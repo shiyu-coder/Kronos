@@ -9,8 +9,9 @@ SERVER_ROOT = Path(__file__).resolve().parents[1]
 if str(SERVER_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVER_ROOT))
 
-import main
 from web.server.services.raw_data_service.ohlcv_data import OHLCVDataService
+
+import main
 
 
 class PredictionAPIErrorTest(unittest.TestCase):

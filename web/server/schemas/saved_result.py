@@ -13,10 +13,10 @@ so the frontend can pass the response straight through without any reshaping.
 """
 
 from typing import Annotated, Literal
+
 from pydantic import BaseModel, Field
 
 from schemas.prediction import PricePredictionResponse
-
 
 # ── Type discriminator ────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ PredictionData = PricePredictionResponse | list[PricePredictionResponse]
 
 
 # ── Request ───────────────────────────────────────────────────────────────────
+
 
 class SaveResultRequest(BaseModel):
     """Body sent by the client when saving a prediction result.
@@ -51,6 +52,7 @@ class SaveResultRequest(BaseModel):
 
 
 # ── Responses ─────────────────────────────────────────────────────────────────
+
 
 class SavedResultMeta(BaseModel):
     """Metadata-only view of a saved result (used in list responses)."""

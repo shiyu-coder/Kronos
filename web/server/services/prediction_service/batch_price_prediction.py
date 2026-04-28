@@ -1,17 +1,15 @@
 from typing import List
 
 import pandas as pd
-from errors.errors import (
-    ModelLoadError,
-    PredictionAPIError,
-    PredictionRuntimeError,
-    UnsupportedPredictionOptionError,
-)
 
 from constants.available_models import AVAILABLE_MODELS
-from schemas.prediction import PricePredictionRequest, PredictionOptionsResponse
-from services.raw_data_service.ohlcv_data import OHLCVDataService
+from errors.errors import (ModelLoadError, PredictionAPIError,
+                           PredictionRuntimeError,
+                           UnsupportedPredictionOptionError)
+from schemas.prediction import (PredictionOptionsResponse,
+                                PricePredictionRequest)
 from services.prediction_service.prediction import KronosPredictionService
+from services.raw_data_service.ohlcv_data import OHLCVDataService
 
 
 class BatchPricePredictionService:

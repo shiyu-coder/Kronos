@@ -1,15 +1,12 @@
 import pandas as pd
 
 from constants.available_models import AVAILABLE_MODELS
+from errors.errors import (ModelLoadError, PredictionAPIError,
+                           PredictionRuntimeError,
+                           UnsupportedPredictionOptionError)
 from schemas.prediction import PricePredictionRequest
-from errors.errors  import (
-    ModelLoadError,
-    PredictionAPIError,
-    PredictionRuntimeError,
-    UnsupportedPredictionOptionError,
-)
-from services.raw_data_service.ohlcv_data import OHLCVDataService
 from services.prediction_service.prediction import KronosPredictionService
+from services.raw_data_service.ohlcv_data import OHLCVDataService
 
 
 class PricePredictionService:

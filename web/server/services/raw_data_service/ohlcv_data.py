@@ -4,13 +4,10 @@ from urllib.parse import urlencode
 import pandas as pd
 import requests
 import yfinance as yf
-from errors.errors import (
-    DataFormatError,
-    DataNotFoundError,
-    DataProviderError,
-    DataProviderTimeoutError,
-    InsufficientDataError,
-)
+
+from errors.errors import (DataFormatError, DataNotFoundError,
+                           DataProviderError, DataProviderTimeoutError,
+                           InsufficientDataError)
 
 
 class OHLCVDataService:

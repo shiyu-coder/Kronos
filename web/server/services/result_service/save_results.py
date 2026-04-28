@@ -16,12 +16,8 @@ from datetime import datetime, timezone
 
 from db.connection import get_connection
 from schemas.prediction import PricePredictionResponse
-from schemas.saved_result import (
-    PredictionData,
-    ResultType,
-    SavedResultDetail,
-    SavedResultMeta,
-)
+from schemas.saved_result import (PredictionData, ResultType,
+                                  SavedResultDetail, SavedResultMeta)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +31,7 @@ def _deserialize_data(result_type: ResultType, raw_json: str) -> PredictionData:
 
 
 class SavedResultService:
-    
+
     # ── Write ────────────────────────────────────────────────────────────────
     def save(
         self,
@@ -77,13 +73,11 @@ class SavedResultService:
     def list_all(self) -> list[SavedResultMeta]:
         """Return metadata for all saved results, newest first."""
         with get_connection() as conn:
-            rows = conn.execute(
-                """
+            rows = conn.execute("""
                 SELECT id, type, label, created_at
                 FROM saved_results
                 ORDER BY created_at DESC
-                """
-            ).fetchall()
+                """).fetchall()
 
         return [
             SavedResultMeta(

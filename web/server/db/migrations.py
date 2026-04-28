@@ -8,6 +8,7 @@ Each migration is idempotent — safe to run on every server restart.
 """
 
 import logging
+
 from .connection import get_connection
 
 logger = logging.getLogger(__name__)
@@ -48,4 +49,5 @@ def run_migrations() -> None:
 
 def _get_db_path() -> str:
     from .connection import DB_PATH
+
     return str(DB_PATH)
