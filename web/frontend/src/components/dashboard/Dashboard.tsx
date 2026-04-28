@@ -1,10 +1,12 @@
 "use client";
+import { useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem } from "@/components/ui/combobox";
 
 import InfoPanel from "./InfoPanel";
 import PredictionChart from "./PredictionChart";
+import DownloadActions from "./DownloadActions";
 import { usePricePredictionStore } from "@/stores/pricePredictionStore";
 import { ChartCandlestickIcon, Alert02Icon, CancelCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -20,12 +22,15 @@ const Dashboard = () => {
   const error = usePricePredictionStore((state) => state.error);
   const clearError = usePricePredictionStore((state) => state.clearError);
 
+  const chartRef = useRef<HTMLDivElement>(null);
+
   const hasBatchResults = batchResults && batchResults.length > 0;
   const activeBatchResult = hasBatchResults ? batchResults[activeResultIndex] : null;
 
   // Determine which result to display
   const displayResult = mode === "batch" ? activeBatchResult : result;
   const hasResult = displayResult !== null;
+  const isBatch = mode === "batch";
 
   // Build combobox options from batch results
   const batchOptions = hasBatchResults
@@ -40,6 +45,26 @@ const Dashboard = () => {
 
   const activeOption = batchOptions[activeResultIndex];
 
+  /**
+   * Per-index chart capturer for batch ZIP.
+   * Switches the visible chart to `index`, waits two animation frames so
+   * React re-renders and Recharts finishes painting, then returns the live
+   * chartRef DOM node. downloadBatchAsZip calls this for every index in
+   * sequence, captures SVG/PNG while the element is live, then moves on.
+   */
+  const captureChart = useCallback(
+    async (index: number): Promise<HTMLElement | null> => {
+      setActiveResultIndex(index);
+      // Two rAF calls: first lets React flush the state update,
+      // second lets Recharts commit its SVG paint.
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      );
+      return chartRef.current;
+    },
+    [setActiveResultIndex]
+  );
+
   return (
     <section className='size-full border'>
       <Card className='size-full'>
@@ -49,11 +74,24 @@ const Dashboard = () => {
 
         <CardContent className='flex-1'>
           <div className='flex flex-col gap-4 h-full'>
-            <div className='flex flex-col gap-0'>
-              <h2 className='text-base font-semibold'>Prediction preview</h2>
-              <p className='text-sm/relaxed text-muted-foreground'>
-                History candles transition into the forecast region.
-              </p>
+            <div className='flex items-center justify-between'>
+              <div className='flex flex-col gap-0'>
+                <h2 className='text-base font-semibold'>Prediction preview</h2>
+                <p className='text-sm/relaxed text-muted-foreground'>
+                  History candles transition into the forecast region.
+                </p>
+              </div>
+
+              {/* Download actions — visible only when we have a result */}
+              {hasResult && displayResult && (
+                <DownloadActions
+                  chartRef={chartRef}
+                  displayResult={displayResult}
+                  batchResults={batchResults}
+                  isBatch={isBatch}
+              captureChart={captureChart}
+                />
+              )}
             </div>
 
             {hasResult && (
@@ -124,7 +162,7 @@ const Dashboard = () => {
                 <p className='text-xs text-red-400/40 font-mono'>{error.timestamp.toLocaleTimeString()}</p>
               </div>
             ) : hasResult ? (
-              <PredictionChart data={displayResult} />
+              <PredictionChart ref={chartRef} data={displayResult} />
             ) : (
               <div className='size-full border flex flex-col items-center justify-center gap-4'>
                 <HugeiconsIcon

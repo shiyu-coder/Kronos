@@ -120,7 +120,7 @@ const PriceChart = ({ data }: PriceChartProps) => {
             strokeWidth={2.5}
             dot={false}
             name='Historical Price'
-            isAnimationActive={true}
+            isAnimationActive={false}
           />
 
           {/* Prediction data - dashed line */}
@@ -132,7 +132,7 @@ const PriceChart = ({ data }: PriceChartProps) => {
             // strokeDasharray='5 5'
             dot={false}
             name='Predicted Price'
-            isAnimationActive={true}
+            isAnimationActive={false}
           />
         </ComposedChart>
       </ResponsiveContainer>
