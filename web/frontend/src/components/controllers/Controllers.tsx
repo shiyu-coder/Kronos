@@ -143,8 +143,8 @@ const Controllers = () => {
         {/* Mode toggle */}
         <Tabs value={mode} onValueChange={(value) => setMode(value as PredictionMode)} className='w-full'>
           <TabsList className='grid w-full grid-cols-2'>
-            <TabsTrigger value='single'>Single</TabsTrigger>
-            <TabsTrigger value='batch'>Batch</TabsTrigger>
+            <TabsTrigger value='single' className="cursor-pointer">Single</TabsTrigger>
+            <TabsTrigger value='batch' className="cursor-pointer">Batch</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -172,7 +172,7 @@ const Controllers = () => {
                   size='sm'
                   onClick={addBatchItem}
                   disabled={batchItems.length >= MAX_BATCH_SIZE}
-                  className='h-7 text-xs gap-1'
+                  className='h-7 text-xs gap-1 cursor-pointer'
                 >
                   <HugeiconsIcon icon={PlusSignIcon} size={12} strokeWidth={2} />
                   Add
@@ -190,11 +190,11 @@ const Controllers = () => {
       </CardContent>
 
       <CardFooter className='size-full flex gap-2 items-end'>
-        <Button type='submit' className='flex-2' onClick={handlePredict} disabled={isPending}>
+        <Button type='submit' className='flex-2 cursor-pointer' onClick={handlePredict} disabled={isPending}>
           <HugeiconsIcon icon={PlayIcon} size={16} strokeWidth={2} />
           {isPending ? "Predicting..." : mode === "batch" ? `Predict Batch (${batchItems.length})` : "Predict"}
         </Button>
-        <Button variant='outline' className='flex-1' onClick={handleReset}>
+        <Button variant='outline' className='flex-1 cursor-pointer' onClick={handleReset} disabled={isPending}>
           <HugeiconsIcon icon={RefreshIcon} size={16} strokeWidth={2} />
           Reset
         </Button>

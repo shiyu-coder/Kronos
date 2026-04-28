@@ -18,7 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ThemeProvider attribute='class' defaultTheme='dark' enableSystem={false} disableTransitionOnChange>
           <TooltipProvider>
             {children}
-            <Toaster position='top-right' richColors closeButton />
+            <Toaster position='bottom-right' richColors closeButton />
           </TooltipProvider>
         </ThemeProvider>
       </ReactQueryStreamedHydration>
@@ -26,4 +26,3 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
-

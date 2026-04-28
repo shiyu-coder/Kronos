@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,10 +42,6 @@ const DownloadActions = ({
 }: DownloadActionsProps) => {
   const [busy, setBusy] = useState(false);
   const prefix = buildFilenamePrefix(displayResult);
-
-  useEffect(() => {
-    console.log("ref=================================", chartRef.current);
-  }, [chartRef]);
 
   const handlePNG = async () => {
     if (!chartRef.current) return;
@@ -113,7 +109,7 @@ const DownloadActions = ({
             <Button
               variant='outline'
               size='sm'
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 p-0 cursor-pointer'
               onClick={handlePNG}
               disabled={busy}
               id='download-chart-png'
@@ -132,7 +128,7 @@ const DownloadActions = ({
             <Button
               variant='outline'
               size='sm'
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 p-0 cursor-pointer'
               onClick={handleSVG}
               disabled={busy}
               id='download-chart-svg'
@@ -151,7 +147,7 @@ const DownloadActions = ({
             <Button
               variant='outline'
               size='sm'
-              className='h-8 w-8 p-0'
+              className='h-8 w-8 p-0 cursor-pointer'
               onClick={handleCSV}
               disabled={busy}
               id='download-data-csv'
@@ -171,7 +167,7 @@ const DownloadActions = ({
               <Button
                 variant='outline'
                 size='sm'
-                className='h-8 gap-1.5 text-xs px-2.5'
+                className='h-8 gap-1.5 text-xs px-2.5 cursor-pointer'
                 onClick={handleBatchZip}
                 disabled={busy}
                 id='download-batch-zip'

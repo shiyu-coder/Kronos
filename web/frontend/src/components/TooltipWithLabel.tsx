@@ -1,5 +1,6 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 const LabelWithTooltip = ({ label, description }: { label: string; description: string }) => (
   <TooltipProvider>
@@ -8,7 +9,7 @@ const LabelWithTooltip = ({ label, description }: { label: string; description: 
       <Tooltip>
         <TooltipTrigger asChild>
           <button className='rounded-full p-0.5 hover:bg-accent'>
-            <InfoIcon className='size-3 text-muted-foreground' />
+            <HugeiconsIcon icon={InformationCircleIcon} className='size-3 text-muted-foreground' />
           </button>
         </TooltipTrigger>
         <TooltipContent className='bg-primary'>

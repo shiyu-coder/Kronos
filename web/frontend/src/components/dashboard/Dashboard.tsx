@@ -7,6 +7,7 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem } 
 import InfoPanel from "./InfoPanel";
 import PredictionChart from "./PredictionChart";
 import DownloadActions from "./DownloadActions";
+import SaveResultAction from "./SaveResultAction";
 import { usePricePredictionStore } from "@/stores/pricePredictionStore";
 import { ChartCandlestickIcon, Alert02Icon, CancelCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -84,13 +85,16 @@ const Dashboard = () => {
 
               {/* Download actions — visible only when we have a result */}
               {hasResult && displayResult && (
-                <DownloadActions
-                  chartRef={chartRef}
-                  displayResult={displayResult}
-                  batchResults={batchResults}
-                  isBatch={isBatch}
-              captureChart={captureChart}
-                />
+                <div className='flex items-center gap-2'>
+                  <SaveResultAction result={displayResult} batchResults={batchResults} isBatch={isBatch} />
+                  <DownloadActions
+                    chartRef={chartRef}
+                    displayResult={displayResult}
+                    batchResults={batchResults}
+                    isBatch={isBatch}
+                    captureChart={captureChart}
+                  />
+                </div>
               )}
             </div>
 
@@ -109,7 +113,7 @@ const Dashboard = () => {
                     <ComboboxContent>
                       <ComboboxList>
                         {batchOptions.map((opt) => (
-                          <ComboboxItem key={opt.value} value={opt.label}>
+                          <ComboboxItem key={opt.value} value={opt.label} className="cursor-pointer">
                             <div className='flex flex-col gap-0.5'>
                               <span className='font-medium'>{opt.label}</span>
                               <span className='text-[11px] text-muted-foreground uppercase'>{opt.detail}</span>

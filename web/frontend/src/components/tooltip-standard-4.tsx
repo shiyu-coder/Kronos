@@ -1,6 +1,7 @@
 "use client";
 
-import { InfoIcon } from "lucide-react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 import {
   Tooltip,
@@ -16,7 +17,7 @@ const Example = () => (
     <Tooltip>
       <TooltipTrigger asChild>
         <button className="rounded-full p-2 hover:bg-accent">
-          <InfoIcon className="size-4 text-muted-foreground" />
+          <HugeiconsIcon icon={InformationCircleIcon} className="size-4 text-muted-foreground" />
         </button>
       </TooltipTrigger>
       <TooltipContent>

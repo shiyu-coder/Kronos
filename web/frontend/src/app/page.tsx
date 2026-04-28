@@ -4,6 +4,7 @@ import Link from "next/link";
 import { endpoint } from "@/utils/handleAPI";
 import Controllers from "@/components/controllers/Controllers";
 import Dashboard from "@/components/dashboard/Dashboard";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
       <header className='sticky z-50 top-0 bg-black/20 backdrop-blur border-b'>
         <div className='flex flex-col gap-4 px-8 py-3 lg:flex-row lg:items-center lg:justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='grid size-7 place-items-center  border border-muted-foreground text-muted-foreground'>
+            <div className='grid size-7 place-items-center border border-muted-foreground text-muted-foreground'>
               <HugeiconsIcon icon={ChartCandlestickIcon} size={16} strokeWidth={1.8} />
             </div>
 
@@ -22,12 +23,14 @@ export default function Home() {
           </div>
 
           <div className='flex flex-wrap items-center gap-2 text-xs'>
-            <Link href={endpoint("/scalar")} target='_blank'>
-              <span className='rounded-md border border-muted-foreground/50 px-3 py-1'>API: localhost:8000</span>
+            <Link href='/saved-results'>
+              <span className=' border border-muted-foreground/40 bg-muted px-3 py-1'>Saved Results</span>
             </Link>
-            <span className=' rounded-md border  px-3 py-1 border-emerald-500/70 bg-emerald-500/20 text-emerald-400 '>
-              Ready
-            </span>
+            {/* <Separator orientation="vertical"  className="bg-muted-foreground"/> */}
+            <Link href={endpoint("/scalar")} target='_blank'>
+              <span className='border border-muted-foreground/40 px-3 py-1 bg-muted'>API: localhost:8000</span>
+            </Link>
+            <span className='border px-3 py-1 border-emerald-500/40 bg-emerald-500/20 text-emerald-400 '>Ready</span>
           </div>
         </div>
       </header>
