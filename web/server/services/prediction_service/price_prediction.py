@@ -1,15 +1,15 @@
 import pandas as pd
-from errors.errors import (
+
+from constants.available_models import AVAILABLE_MODELS
+from schemas.prediction import PricePredictionRequest
+from errors.errors  import (
     ModelLoadError,
     PredictionAPIError,
     PredictionRuntimeError,
     UnsupportedPredictionOptionError,
 )
-
-from constants.available_models import AVAILABLE_MODELS
-from schemas.prediction import PricePredictionRequest
-from services.ohlcv_data import OHLCVDataService
-from services.prediction import KronosPredictionService
+from services.raw_data_service.ohlcv_data import OHLCVDataService
+from services.prediction_service.prediction import KronosPredictionService
 
 
 class PricePredictionService:
@@ -164,9 +164,6 @@ class PricePredictionService:
 
     def _timestamp_to_json(self, timestamp):
         """Convert one timestamp value into an ISO string for JSON responses."""
-        if hasattr(timestamp, "isoformat"):
-            ts = timestamp
-            if ts.tz is not None:
-                ts = ts.tz_localize(None)
-            return ts.isoformat()
-        return str(timestamp)
+        return (
+            timestamp.isoformat() if hasattr(timestamp, "isoformat") else str(timestamp)
+        )

@@ -74,3 +74,8 @@ venv.bak/
 temp/
 tmp/
 .python-version
+
+# SQLite database
+*.db
+*.db-shm
+*.db-wal

@@ -10,8 +10,8 @@ from errors.errors import (
 
 from constants.available_models import AVAILABLE_MODELS
 from schemas.prediction import PricePredictionRequest, PredictionOptionsResponse
-from services.ohlcv_data import OHLCVDataService
-from services.prediction import KronosPredictionService
+from services.raw_data_service.ohlcv_data import OHLCVDataService
+from services.prediction_service.prediction import KronosPredictionService
 
 
 class BatchPricePredictionService:
