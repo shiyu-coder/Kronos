@@ -19,8 +19,11 @@ const devices = DeviceEnum.options;
 
 const fieldDescriptions = {
   dataSource: "Select the data source for fetching market data: binance, yfinance, or local CSV file.",
-  symbol:
-    "Trading pair symbol. For Binance use format like BTCUSDT, ETHUSDT. For yfinance use format like ETH-USD, BTC-USD.",
+  symbol: (source: string) => {
+    if (source === "binance") return "Trading pair symbol. Example: ETHUSDT, BTCUSDT.";
+    if (source === "yfinance") return "Symbol for yfinance. For crypto use ETH-USD, BTC-USD. For stocks use AAPL, MSFT.";
+    return "Symbol from uploaded CSV file.";
+  },
   lookback:
     "Number of historical candles to use for prediction. Higher values provide more context but require more data.",
   predLen: "Number of future candles to predict. Determines how far ahead the prediction extends.",
@@ -140,7 +143,7 @@ const DataSelector = () => {
 
           {params.data_source !== "local" && (
             <div className='grid gap-2'>
-              <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
+              <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol(params.data_source)} />
               <Input
                 placeholder='Enter symbol'
                 value={params.symbol ?? ""}

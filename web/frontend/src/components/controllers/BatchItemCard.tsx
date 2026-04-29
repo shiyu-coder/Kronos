@@ -22,8 +22,11 @@ const dataSources = DataSourceEnum.options;
 
 const fieldDescriptions = {
   dataSource: "Select the data source for fetching market data: binance, yfinance, or local CSV file.",
-  symbol:
-    "Trading pair symbol. For Binance use format like BTCUSDT, ETHUSDT. For yfinance use format like ETH-USD, BTC-USD.",
+  symbol: (source: string) => {
+    if (source === "binance") return "Trading pair symbol. Example: ETHUSDT, BTCUSDT.";
+    if (source === "yfinance") return "Symbol for yfinance. For crypto use ETH-USD, BTC-USD. For stocks use AAPL, MSFT.";
+    return "Symbol from uploaded CSV file.";
+  },
   period: "Time period for historical data (e.g., 30d, 90d, 1y). Format: number + unit (d=days, y=years).",
   limit:
     "Number of data points to fetch. Used for Binance data source. Example: interval 1h for 1 month data = limit: 720 (24 hours × 30 days)",
@@ -94,7 +97,7 @@ const BatchItemCard = ({ index, item, canRemove }: BatchItemCardProps) => {
 
         {dataSource !== "local" && (
           <div className='grid gap-1'>
-            <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
+            <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol(dataSource)} />
             <Input
               placeholder='e.g. BTCUSDT'
               className='text-xs'
