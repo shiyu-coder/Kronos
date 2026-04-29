@@ -52,6 +52,14 @@ export const PredictionOptionsResponseSchema = z.object({
   defaults: PricePredictionRequestSchema
 });
 
+export const UploadedDataFileResponseSchema = z.object({
+  filename: z.string(),
+  stored_path: z.string(),
+  size_bytes: z.number().int().nonnegative(),
+  row_count: z.number().int().nonnegative(),
+  columns: z.array(z.string())
+});
+
 export const PricePredictionResponseSchema = z.object({
   request: PricePredictionRequestSchema,
   model: AvailableModelSchema,
@@ -69,5 +77,6 @@ export type PricePredictionRequest = z.infer<typeof PricePredictionRequestSchema
 export type PricePredictionResponse = z.infer<typeof PricePredictionResponseSchema>;
 export type PricePredictionBatchRequest = z.infer<typeof PricePredictionBatchRequestSchema>;
 export type PricePredictionBatchResponse = z.infer<typeof PricePredictionBatchResponseSchema>;
+export type UploadedDataFileResponse = z.infer<typeof UploadedDataFileResponseSchema>;
 
 export type PredictionOptionsResponse = z.infer<typeof PredictionOptionsResponseSchema>;

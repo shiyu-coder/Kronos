@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import LabelWithTooltip from "@/components/TooltipWithLabel";
+import LocalCsvUpload from "./LocalCsvUpload";
 
 import { DataSourceEnum, DeviceEnum } from "@/schemas/predictionSchema";
 import { usePricePredictionStore } from "@/stores/pricePredictionStore";
@@ -116,7 +117,12 @@ const DataSelector = () => {
             <Combobox
               items={dataSources}
               value={params.data_source}
-              onValueChange={(value) => setParams({ data_source: value as z.infer<typeof DataSourceEnum> })}
+              onValueChange={(value) =>
+                setParams({
+                  data_source: value as z.infer<typeof DataSourceEnum>,
+                  local_path: value === "local" ? params.local_path : null
+                })
+              }
             >
               <ComboboxInput placeholder='Select a data' className='uppercase' style={{ textTransform: "uppercase" }} />
               <ComboboxContent>
@@ -132,14 +138,28 @@ const DataSelector = () => {
             </Combobox>
           </div>
 
-          <div className='grid gap-2'>
-            <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
-            <Input
-              placeholder='Enter symbol'
-              value={params.symbol ?? ""}
-              onChange={(e) => setParams({ symbol: e.target.value })}
-            />
-          </div>
+          {params.data_source !== "local" && (
+            <div className='grid gap-2'>
+              <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
+              <Input
+                placeholder='Enter symbol'
+                value={params.symbol ?? ""}
+                onChange={(e) => setParams({ symbol: e.target.value })}
+              />
+            </div>
+          )}
+
+          {params.data_source === "local" && (
+            <div className='grid gap-2'>
+              <LabelWithTooltip label='CSV File' description='Upload the local OHLC CSV file to use for prediction.' />
+              <LocalCsvUpload
+                storedPath={params.local_path}
+                filename={params.local_path ? params.symbol : null}
+                onUploaded={({ storedPath, filename }) => setParams({ local_path: storedPath, symbol: filename })}
+                onClear={() => setParams({ local_path: null })}
+              />
+            </div>
+          )}
 
           <div className={`grid ${params.data_source === "local" ? "grid-cols-1" : "grid-cols-2"} gap-2`}>
             {params.data_source === "binance" && (

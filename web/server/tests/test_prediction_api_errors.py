@@ -9,7 +9,7 @@ SERVER_ROOT = Path(__file__).resolve().parents[1]
 if str(SERVER_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVER_ROOT))
 
-from web.server.services.raw_data_service.ohlcv_data import OHLCVDataService
+from services.raw_data_service.ohlcv_data import OHLCVDataService
 
 import main
 
@@ -19,8 +19,12 @@ class PredictionAPIErrorTest(unittest.TestCase):
     def setUpClass(cls):
         cls.client = TestClient(main.app, raise_server_exceptions=False)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
+
     def test_prediction_price_validation_error_has_stable_shape(self):
-        response = self.client.post("/prediction/price", json={"lookback": 1})
+        response = self.client.post("/api/prediction/price", json={"lookback": 1})
 
         self.assertEqual(response.status_code, 422)
         body = response.json()
@@ -29,7 +33,7 @@ class PredictionAPIErrorTest(unittest.TestCase):
 
     def test_prediction_price_requires_symbol_for_binance(self):
         response = self.client.post(
-            "/prediction/price",
+            "/api/prediction/price",
             json={"data_source": "binance", "symbol": None},
         )
 
@@ -40,7 +44,7 @@ class PredictionAPIErrorTest(unittest.TestCase):
 
     def test_prediction_price_reports_missing_local_file(self):
         response = self.client.post(
-            "/prediction/price",
+            "/api/prediction/price",
             json={
                 "data_source": "local",
                 "local_path": "missing-file.csv",
@@ -55,7 +59,7 @@ class PredictionAPIErrorTest(unittest.TestCase):
 
     def test_prediction_price_rejects_unknown_model_name(self):
         response = self.client.post(
-            "/prediction/price",
+            "/api/prediction/price",
             json={"model_name": "bad-model"},
         )
 
@@ -83,6 +87,49 @@ class PredictionAPIErrorTest(unittest.TestCase):
             context.exception.details,
             {"required_rows": 3, "available_rows": 2},
         )
+
+    def test_upload_local_data_rejects_non_csv_file(self):
+        response = self.client.post(
+            "/api/prediction/local-data/upload",
+            files={"file": ("prices.txt", b"not,csv", "text/plain")},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        body = response.json()
+        self.assertEqual(body["error"]["code"], "DATA_FORMAT_ERROR")
+
+    def test_upload_local_data_validates_required_columns(self):
+        response = self.client.post(
+            "/api/prediction/local-data/upload",
+            files={
+                "file": ("prices.csv", b"timestamps,open\n2025-01-01,1\n", "text/csv")
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        body = response.json()
+        self.assertEqual(body["error"]["code"], "DATA_FORMAT_ERROR")
+        self.assertIn("missing_columns", body["error"]["details"])
+
+    def test_upload_local_data_returns_stored_path(self):
+        csv = (
+            "timestamps,open,high,low,close,volume\n"
+            "2025-01-01 00:00:00,1,2,0.5,1.5,100\n"
+            "2025-01-01 01:00:00,2,3,1.5,2.5,110\n"
+        )
+
+        response = self.client.post(
+            "/api/prediction/local-data/upload",
+            files={"file": ("prices.csv", csv.encode("utf-8"), "text/csv")},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["filename"], "prices.csv")
+        self.assertEqual(body["row_count"], 2)
+        stored_path = Path(body["stored_path"])
+        self.assertTrue(stored_path.exists())
+        stored_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

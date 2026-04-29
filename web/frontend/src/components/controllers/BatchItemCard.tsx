@@ -10,6 +10,7 @@ import {
   ComboboxList
 } from "@/components/ui/combobox";
 import LabelWithTooltip from "@/components/TooltipWithLabel";
+import LocalCsvUpload from "./LocalCsvUpload";
 import { DataSourceEnum } from "@/schemas/predictionSchema";
 import type { PricePredictionRequest } from "@/schemas/predictionSchema";
 import { usePricePredictionStore } from "@/stores/pricePredictionStore";
@@ -64,13 +65,18 @@ const BatchItemCard = ({ index, item, canRemove }: BatchItemCardProps) => {
       </div>
 
       {/* Data source + Symbol */}
-      <div className='grid grid-cols-2 gap-2'>
-        <div className='grid gap-1'>
+      <div className={`grid ${dataSource !== "local" && "grid-cols-2"} gap-2`}>
+        <div className='grid gap-1 w-full'>
           <LabelWithTooltip label='Source' description={fieldDescriptions.dataSource} />
           <Combobox
             items={dataSources}
             value={dataSource}
-            onValueChange={(value) => updateBatchItem(index, { data_source: value as z.infer<typeof DataSourceEnum> })}
+            onValueChange={(value) =>
+              updateBatchItem(index, {
+                data_source: value as z.infer<typeof DataSourceEnum>,
+                local_path: value === "local" ? item.local_path : null
+              })
+            }
           >
             <ComboboxInput placeholder='Source' className='uppercase text-xs' style={{ textTransform: "uppercase" }} />
             <ComboboxContent>
@@ -86,16 +92,33 @@ const BatchItemCard = ({ index, item, canRemove }: BatchItemCardProps) => {
           </Combobox>
         </div>
 
+        {dataSource !== "local" && (
+          <div className='grid gap-1'>
+            <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
+            <Input
+              placeholder='e.g. BTCUSDT'
+              className='text-xs'
+              value={item.symbol ?? ""}
+              onChange={(e) => updateBatchItem(index, { symbol: e.target.value })}
+            />
+          </div>
+        )}
+      </div>
+
+      {dataSource === "local" && (
         <div className='grid gap-1'>
-          <LabelWithTooltip label='Symbol' description={fieldDescriptions.symbol} />
-          <Input
-            placeholder='e.g. BTCUSDT'
-            className='text-xs'
-            value={item.symbol ?? ""}
-            onChange={(e) => updateBatchItem(index, { symbol: e.target.value })}
+          <LabelWithTooltip label='CSV File' description='Upload the local OHLC CSV file to use for this batch item.' />
+          <LocalCsvUpload
+            compact
+            storedPath={item.local_path}
+            filename={item.local_path ? item.symbol : null}
+            onUploaded={({ storedPath, filename }) =>
+              updateBatchItem(index, { local_path: storedPath, symbol: filename })
+            }
+            onClear={() => updateBatchItem(index, { local_path: null })}
           />
         </div>
-      </div>
+      )}
 
       {/* Source-specific fields + interval */}
       <div className={`grid ${dataSource === "local" ? "grid-cols-1" : "grid-cols-2"} gap-2`}>

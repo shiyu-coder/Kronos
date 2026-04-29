@@ -12,6 +12,11 @@ eggs/
 .eggs/
 lib/
 lib64/
+!web/frontend/src/lib/
+web/frontend/src/lib/*
+!web/frontend/src/lib/api/
+web/frontend/src/lib/api/*
+!web/frontend/src/lib/api/prediction.ts
 parts/
 sdist/
 var/
@@ -79,3 +84,6 @@ tmp/
 *.db
 *.db-shm
 *.db-wal
+
+# Uploaded local data
+web/server/uploads/

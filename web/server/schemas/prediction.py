@@ -63,6 +63,16 @@ class PredictionOptionsResponse(BaseModel):
     defaults: PricePredictionRequest
 
 
+class UploadedDataFileResponse(BaseModel):
+    """Metadata for a CSV uploaded for local predictions."""
+
+    filename: str
+    stored_path: str
+    size_bytes: int
+    row_count: int
+    columns: list[str]
+
+
 class PricePredictionResponse(BaseModel):
     """Prediction output with source history and future candles."""
 

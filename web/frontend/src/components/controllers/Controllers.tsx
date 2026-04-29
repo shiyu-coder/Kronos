@@ -107,8 +107,23 @@ const Controllers = () => {
 
   const handlePredict = () => {
     if (mode === "single") {
+      if (params.data_source === "local" && !params.local_path) {
+        toast.error("CSV file required", {
+          description: "Upload a CSV file before running a local prediction."
+        });
+        return;
+      }
+
       predictPriceMutation.mutate(params);
     } else {
+      const missingLocalFileIndex = batchItems.findIndex((item) => item.data_source === "local" && !item.local_path);
+      if (missingLocalFileIndex >= 0) {
+        toast.error("CSV file required", {
+          description: `Upload a CSV file for symbol #${missingLocalFileIndex + 1}.`
+        });
+        return;
+      }
+
       // Merge batch shared params with each batch item's per-item overrides
 
       const batchRequests: PricePredictionRequest[] = batchItems.map((item) => ({
@@ -128,6 +143,10 @@ const Controllers = () => {
   };
 
   const isPending = mode === "single" ? predictPriceMutation.isPending : predictPriceBatchMutation.isPending;
+  const isMissingLocalFile =
+    mode === "single"
+      ? params.data_source === "local" && !params.local_path
+      : batchItems.some((item) => item.data_source === "local" && !item.local_path);
 
   return (
     <Card className='flex size-full'>
@@ -190,7 +209,12 @@ const Controllers = () => {
       </CardContent>
 
       <CardFooter className='size-full flex gap-2 items-end'>
-        <Button type='submit' className='flex-2 cursor-pointer' onClick={handlePredict} disabled={isPending}>
+        <Button
+          type='submit'
+          className='flex-2 cursor-pointer'
+          onClick={handlePredict}
+          disabled={isPending || isMissingLocalFile}
+        >
           <HugeiconsIcon icon={PlayIcon} size={16} strokeWidth={2} />
           {isPending ? "Predicting..." : mode === "batch" ? `Predict Batch (${batchItems.length})` : "Predict"}
         </Button>
