@@ -1,0 +1,27 @@
+[project]
+name = "predict_server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "black>=26.3.1",
+    "einops==0.8.1",
+    "fastapi[standard]>=0.115.0",
+    "huggingface_hub==0.33.1",
+    "isort>=8.0.1",
+    "numpy",
+    "pandas",
+    "pydantic>=2.13.3",
+    "pytest>=9.0.3",
+    "requests>=2.32.0",
+    "safetensors==0.6.2",
+    "scalar-fastapi>=1.8.2",
+    "torch>=2.0.0",
+    "tqdm==4.67.1",
+    "uvicorn>=0.34.0",
+    "yfinance>=1.3.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-v"
