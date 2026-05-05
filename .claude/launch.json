@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kronos-nse-dashboard",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["webui/nse_dashboard.py"],
+      "port": 7071
+    }
+  ]
+}

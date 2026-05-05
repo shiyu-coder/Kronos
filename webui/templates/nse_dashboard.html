@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kronos · NSE Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   VARIABLES
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:        #0d0f1a;
+  --surface:   #111420;
+  --card:      #161b2e;
+  --border:    #21263d;
+  --border2:   #2d3453;
+  --accent:    #3b82f6;
+  --cyan:      #22d3ee;
+  --green:     #22c55e;
+  --red:       #ef4444;
+  --gold:      #f59e0b;
+  --purple:    #a855f7;
+  --text:      #e2e8f0;
+  --muted:     #64748b;
+  --dim:       #334155;
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --mono:      'JetBrains Mono', 'Consolas', monospace;
+  --sans:      'Inter', system-ui, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT SHELL
+═══════════════════════════════════════════════════════════ */
+#shell {
+  display: grid;
+  grid-template-rows: 52px 1fr;
+  grid-template-columns: 1fr 272px;
+  height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════════════════════ */
+#topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.logo {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.tb-sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
+
+/* ticker display */
+#ticker-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-right: 4px;
+  min-width: 160px;
+}
+#ticker-price {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+#ticker-change {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--card);
+}
+#ticker-change.up   { color: var(--green); background: rgba(34,197,94,.12); }
+#ticker-change.down { color: var(--red);   background: rgba(239,68,68,.12); }
+
+/* form controls */
+select, input[type="number"] {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-family: var(--sans);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+select:hover, select:focus,
+input[type="number"]:hover, input[type="number"]:focus {
+  border-color: var(--accent);
+}
+
+/* ORB badge */
+#orb-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+#orb-pill .lbl { color: var(--muted); }
+#orb-pill .h   { color: var(--cyan); font-weight: 700; }
+#orb-pill .l   { color: var(--red);  font-weight: 700; }
+#orb-pill .dot { color: var(--border2); }
+
+/* market status */
+#mkt-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mkt-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+#mkt-status.open .mkt-dot  { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+#mkt-status.closed .mkt-dot { background: var(--muted); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* IST clock */
+#ist-clock {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* buttons */
+.btn {
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn:not(:disabled):hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+.btn-primary  { background: var(--accent);     color: #fff; border-color: var(--accent); }
+.btn-success  { background: rgba(34,197,94,.15); color: var(--green); border-color: rgba(34,197,94,.3); }
+.btn-success:not(:disabled):hover { background: rgba(34,197,94,.25); }
+.btn-ghost    { background: var(--card); color: var(--text); border-color: var(--border2); }
+
+/* status toast */
+#status-toast {
+  position: fixed;
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 12px;
+  color: var(--muted);
+  z-index: 999;
+  pointer-events: none;
+  transition: opacity .3s;
+  opacity: 0;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#status-toast.show { opacity: 1; }
+#status-toast.ok  { border-color: rgba(34,197,94,.4); color: var(--green); }
+#status-toast.err { border-color: rgba(239,68,68,.4); color: var(--red); }
+#status-toast.loading { border-color: rgba(59,130,246,.4); color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════
+   CHART PANE
+═══════════════════════════════════════════════════════════ */
+#chart-pane {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+#chart-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+#chart { width: 100%; height: 100%; }
+
+/* zoom controls overlay */
+#zoom-controls {
+  position: absolute;
+  top: 10px; left: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+.zoom-btn {
+  width: 28px; height: 28px;
+  background: rgba(13,15,26,.8);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.zoom-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* info bar below chart */
+#chart-info {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.ci-item { color: var(--muted); }
+.ci-item span { color: var(--text); margin-left: 4px; }
+.ci-sep { color: var(--border2); }
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════════ */
+#sidebar {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel {
+  border-bottom: 1px solid var(--border);
+  padding: 14px;
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* form fields in sidebar */
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.field select, .field input[type="number"] { width: 100%; }
+
+/* range slider */
+.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+.sval {
+  min-width: 30px;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+/* model status pill */
+.mod-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  margin-bottom: 10px;
+  width: 100%;
+}
+.mod-status.loaded { border-color: rgba(34,197,94,.4); color: var(--green); }
+.mod-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.mod-status.loaded .mod-dot { background: var(--green); }
+
+/* stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  text-align: center;
+}
+.stat-card .s-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+.stat-card .s-val   { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text); }
+.stat-card.bull { border-color: rgba(34,197,94,.25); }
+.stat-card.bull .s-val { color: var(--green); }
+.stat-card.bear { border-color: rgba(239,68,68,.25); }
+.stat-card.bear .s-val { color: var(--red); }
+.stat-card.gold { border-color: rgba(245,158,11,.25); }
+.stat-card.gold .s-val { color: var(--gold); }
+.stat-card.cyan { border-color: rgba(34,211,238,.25); }
+.stat-card.cyan .s-val { color: var(--cyan); }
+
+/* prediction table */
+#pred-table-wrap { max-height: 200px; overflow-y: auto; margin-top: 8px; }
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+th {
+  color: var(--muted);
+  font-weight: 600;
+  text-align: right;
+  padding: 4px 5px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  position: sticky; top: 0;
+  background: var(--surface);
+}
+th:first-child { text-align: center; }
+td {
+  padding: 3px 5px;
+  text-align: right;
+  border-bottom: 1px solid rgba(33,38,61,.5);
+  font-size: 11px;
+}
+td:first-child { text-align: center; color: var(--muted); }
+tr:hover td { background: rgba(59,130,246,.05); }
+.t-bull { color: var(--green); }
+.t-bear { color: var(--red); }
+
+/* spinner */
+.spin {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rot .7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+@keyframes rot { to { transform: rotate(360deg); } }
+
+/* highlight row on hover */
+tr:hover { background: rgba(255,255,255,.02); }
+</style>
+</head>
+<body>
+
+<!-- ═══ SHELL ════════════════════════════════════════════════════════════ -->
+<div id="shell">
+
+  <!-- ══ TOP BAR ════════════════════════════════════════════════════════ -->
+  <div id="topbar">
+    <span class="logo">KRONOS</span>
+
+    <div id="ticker-display">
+      <span id="ticker-price">—</span>
+      <span id="ticker-change" class="up">+0.00 (0.00%)</span>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <select id="sym-select" style="width:150px"></select>
+    <select id="interval-select" style="width:65px"></select>
+
+    <select id="orb-select" style="width:88px">
+      <option value="5">ORB 5m</option>
+      <option value="10">ORB 10m</option>
+      <option value="15" selected>ORB 15m</option>
+      <option value="30">ORB 30m</option>
+    </select>
+
+    <button class="btn btn-primary" onclick="fetchData()">Fetch</button>
+
+    <div class="tb-sep"></div>
+
+    <div id="orb-pill">
+      <span class="lbl">ORB</span>
+      <span class="lbl">H:</span><span class="h" id="orb-high">—</span>
+      <span class="dot">|</span>
+      <span class="lbl">L:</span><span class="l" id="orb-low">—</span>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div id="mkt-status" class="closed">
+      <div class="mkt-dot"></div>
+      <span id="mkt-label">CLOSED</span>
+    </div>
+
+    <span id="ist-clock">00:00:00 IST</span>
+  </div>
+
+  <!-- ══ CHART PANE ═════════════════════════════════════════════════════ -->
+  <div id="chart-pane">
+    <div id="chart-wrap">
+      <div id="zoom-controls">
+        <button class="zoom-btn" title="Zoom In"  onclick="zoomChart(0.5)">+</button>
+        <button class="zoom-btn" title="Zoom Out" onclick="zoomChart(2)">−</button>
+        <button class="zoom-btn" title="Reset"    onclick="resetChart()" style="font-size:11px; width:36px;">Reset</button>
+      </div>
+      <div id="chart"></div>
+    </div>
+
+    <div id="chart-info">
+      <span class="ci-item">Symbol<span id="ci-symbol">—</span></span>
+      <span class="ci-sep">·</span>
+      <span class="ci-item">Interval<span id="ci-interval">—</span></span>
+      <span class="ci-sep">·</span>
+      <span class="ci-item">Candles<span id="ci-rows">—</span></span>
+      <span class="ci-sep">·</span>
+      <span class="ci-item">Range<span id="ci-range">—</span></span>
+    </div>
+  </div>
+
+  <!-- ══ SIDEBAR ════════════════════════════════════════════════════════ -->
+  <div id="sidebar">
+
+    <!-- Model panel -->
+    <div class="panel">
+      <div class="panel-title">Model</div>
+
+      <div id="mod-status-pill" class="mod-status">
+        <div class="mod-dot"></div>
+        <span id="mod-status-text">Not loaded</span>
+      </div>
+
+      <div class="field">
+        <label>Model</label>
+        <select id="model-select"></select>
+      </div>
+      <div class="field">
+        <label>Device</label>
+        <select id="device-select">
+          <option value="cpu">CPU</option>
+          <option value="cuda">CUDA (NVIDIA)</option>
+          <option value="mps">MPS (Apple)</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="loadModel()">
+        Load Model
+      </button>
+    </div>
+
+    <!-- Prediction params panel -->
+    <div class="panel">
+      <div class="panel-title">Prediction</div>
+
+      <div class="field">
+        <label>Lookback candles</label>
+        <input type="number" id="lookback" value="200" min="50" max="2048" step="50">
+      </div>
+      <div class="field">
+        <label>Predict candles</label>
+        <input type="number" id="pred-len" value="60" min="5" max="500" step="5">
+      </div>
+      <div class="field">
+        <label>Temperature</label>
+        <div class="slider-row">
+          <input type="range" id="temperature" min="0.1" max="2.0" step="0.1" value="1.0"
+                 oninput="document.getElementById('temp-val').textContent=parseFloat(this.value).toFixed(1)">
+          <span class="sval" id="temp-val">1.0</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Top-p</label>
+        <div class="slider-row">
+          <input type="range" id="top-p" min="0.1" max="1.0" step="0.05" value="0.9"
+                 oninput="document.getElementById('topp-val').textContent=parseFloat(this.value).toFixed(2)">
+          <span class="sval" id="topp-val">0.90</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Samples</label>
+        <input type="number" id="sample-count" value="1" min="1" max="5">
+      </div>
+
+      <button class="btn btn-success" id="predict-btn" style="width:100%;margin-top:8px"
+              onclick="runPrediction()" disabled>
+        Run Prediction
+      </button>
+    </div>
+
+    <!-- Stats panel -->
+    <div class="panel">
+      <div class="panel-title">Prediction Stats</div>
+      <div class="stat-grid">
+        <div class="stat-card" id="sc-trend" style="grid-column:1/-1">
+          <div class="s-label">Trend</div>
+          <div class="s-val" id="st-trend">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Last Close</div>
+          <div class="s-val" id="st-last">—</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="s-label">Pred Close</div>
+          <div class="s-val" id="st-pred">—</div>
+        </div>
+        <div class="stat-card bull">
+          <div class="s-label">Pred High</div>
+          <div class="s-val" id="st-high">—</div>
+        </div>
+        <div class="stat-card bear">
+          <div class="s-label">Pred Low</div>
+          <div class="s-val" id="st-low">—</div>
+        </div>
+        <div class="stat-card" id="sc-pct" style="grid-column:1/-1">
+          <div class="s-label">Expected Move</div>
+          <div class="s-val" id="st-pct">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Predicted candles table -->
+    <div class="panel" style="flex:1">
+      <div class="panel-title">Predicted Candles</div>
+      <div id="pred-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Open</th><th>High</th><th>Low</th><th>Close</th>
+            </tr>
+          </thead>
+          <tbody id="pred-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /shell -->
+
+<!-- status toast -->
+<div id="status-toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── state ──────────────────────────────────────────────────────────────────
+let modelLoaded  = false;
+let dataLoaded   = false;
+let currentChart = null;   // full Plotly figure object (for zoom)
+let toastTimer   = null;
+
+const $ = id => document.getElementById(id);
+
+// ── init ───────────────────────────────────────────────────────────────────
+async function init() {
+  startClock();
+  updateMarketStatus();
+  setInterval(updateMarketStatus, 60_000);
+
+  const res  = await axios.get('/api/symbols');
+  const { symbols, intervals } = res.data;
+
+  const symSel = $('sym-select');
+  Object.entries(symbols).forEach(([label, val]) => {
+    const o = new Option(label, val);
+    symSel.add(o);
+  });
+
+  const intSel = $('interval-select');
+  intervals.forEach(iv => {
+    const o = new Option(iv, iv);
+    if (iv === '5m') o.selected = true;
+    intSel.add(o);
+  });
+
+  const mRes   = await axios.get('/api/available-models');
+  const modSel = $('model-select');
+  Object.entries(mRes.data.models).forEach(([key, m]) => {
+    modSel.add(new Option(`${m.name}  (${m.params})`, key));
+  });
+
+  // Check if model already loaded (server restart case)
+  try {
+    const s = await axios.get('/api/model-status');
+    if (s.data.loaded) setModelLoaded(s.data.message);
+  } catch (_) {}
+}
+
+// ── clock ──────────────────────────────────────────────────────────────────
+function startClock() {
+  function tick() {
+    const now = new Date();
+    const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const hh  = String(ist.getHours()).padStart(2, '0');
+    const mm  = String(ist.getMinutes()).padStart(2, '0');
+    const ss  = String(ist.getSeconds()).padStart(2, '0');
+    $('ist-clock').textContent = `${hh}:${mm}:${ss} IST`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function updateMarketStatus() {
+  const now = new Date();
+  const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const h = ist.getHours(), m = ist.getMinutes(), day = ist.getDay();
+  const mins = h * 60 + m;
+  const isWeekday   = day >= 1 && day <= 5;
+  const isOpenTime  = mins >= 9 * 60 + 15 && mins < 15 * 60 + 30;
+  const isOpen      = isWeekday && isOpenTime;
+
+  const el = $('mkt-status');
+  el.className = isOpen ? 'open' : 'closed';
+  $('mkt-label').textContent = isOpen ? 'MARKET OPEN' : 'MARKET CLOSED';
+}
+
+// ── toast status ───────────────────────────────────────────────────────────
+function toast(msg, type = '', duration = 4000) {
+  const el = $('status-toast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  clearTimeout(toastTimer);
+  if (duration > 0) {
+    toastTimer = setTimeout(() => { el.className = ''; }, duration);
+  }
+}
+
+// ── fetch data ─────────────────────────────────────────────────────────────
+async function fetchData() {
+  const symbol      = $('sym-select').value;
+  const interval    = $('interval-select').value;
+  const orb_minutes = parseInt($('orb-select').value);
+
+  toast('Fetching live data from NSE…', 'loading', 0);
+  try {
+    const res = await axios.post('/api/fetch-data', { symbol, interval, orb_minutes });
+    const d   = res.data;
+
+    renderChart(d.chart);
+
+    // ORB
+    if (d.orb) {
+      $('orb-high').textContent = fmt(d.orb.high);
+      $('orb-low').textContent  = fmt(d.orb.low);
+    }
+
+    // Ticker
+    $('ticker-price').textContent = fmt(d.last_price);
+    const chgEl = $('ticker-change');
+    const sign  = d.change >= 0 ? '+' : '';
+    chgEl.textContent = `${sign}${fmt(d.change)} (${sign}${d.change_pct.toFixed(2)}%)`;
+    chgEl.className   = d.change >= 0 ? 'up' : 'down';
+
+    // Info bar
+    $('ci-symbol').textContent   = ' ' + symbol;
+    $('ci-interval').textContent = ' ' + interval;
+    $('ci-rows').textContent     = ' ' + d.rows.toLocaleString();
+    const s = d.start_date.slice(0, 10);
+    const e = d.end_date.slice(0, 10);
+    $('ci-range').textContent = ` ${s} → ${e}`;
+
+    dataLoaded = true;
+    if (modelLoaded) $('predict-btn').disabled = false;
+    toast(d.message, 'ok');
+  } catch (e) {
+    toast(e.response?.data?.error || e.message, 'err');
+  }
+}
+
+// ── load model ─────────────────────────────────────────────────────────────
+async function loadModel() {
+  const model_key = $('model-select').value;
+  const device    = $('device-select').value;
+
+  toast('Loading model… (first run downloads ~100-500 MB)', 'loading', 0);
+  try {
+    const res = await axios.post('/api/load-model', { model_key, device });
+    setModelLoaded(res.data.message);
+    toast(res.data.message, 'ok');
+  } catch (e) {
+    toast(e.response?.data?.error || e.message, 'err');
+  }
+}
+
+function setModelLoaded(msg) {
+  modelLoaded = true;
+  const pill  = $('mod-status-pill');
+  pill.classList.add('loaded');
+  $('mod-status-text').textContent = msg || 'Loaded';
+  if (dataLoaded) $('predict-btn').disabled = false;
+}
+
+// ── prediction ─────────────────────────────────────────────────────────────
+let _pollInterval = null;
+let _predStart    = null;
+
+async function runPrediction() {
+  const orb_minutes = parseInt($('orb-select').value);
+
+  $('predict-btn').disabled = true;
+  _predStart = Date.now();
+  toast('Starting prediction…', 'loading', 0);
+
+  let jobId;
+  try {
+    const res = await axios.post('/api/predict', {
+      lookback:     parseInt($('lookback').value),
+      pred_len:     parseInt($('pred-len').value),
+      temperature:  parseFloat($('temperature').value),
+      top_p:        parseFloat($('top-p').value),
+      sample_count: parseInt($('sample-count').value),
+      orb_minutes,
+    });
+    jobId = res.data.job_id;
+  } catch (e) {
+    toast(e.response?.data?.error || e.message, 'err');
+    $('predict-btn').disabled = false;
+    return;
+  }
+
+  // Poll every 2 s
+  clearInterval(_pollInterval);
+  _pollInterval = setInterval(async () => {
+    const elapsed = Math.round((Date.now() - _predStart) / 1000);
+    toast(`Model running on CPU… ${elapsed}s elapsed (this may take 1-3 min)`, 'loading', 0);
+
+    try {
+      const poll = await axios.get(`/api/predict-status/${jobId}`);
+      const d    = poll.data;
+
+      if (d.status === 'done') {
+        clearInterval(_pollInterval);
+        renderChart(d.chart);
+        updateStats(d.stats);
+        fillTable(d.prediction_results);
+        toast(d.message, 'ok');
+        $('predict-btn').disabled = false;
+      } else if (d.status === 'error') {
+        clearInterval(_pollInterval);
+        toast(d.error, 'err');
+        $('predict-btn').disabled = false;
+      }
+      // else still pending/running — keep polling
+    } catch (e) {
+      clearInterval(_pollInterval);
+      toast(e.message, 'err');
+      $('predict-btn').disabled = false;
+    }
+  }, 2000);
+}
+
+// ── chart ──────────────────────────────────────────────────────────────────
+function renderChart(chartJson) {
+  currentChart = JSON.parse(chartJson);
+  const config = {
+    responsive:     true,
+    displayModeBar: true,
+    displaylogo:    false,
+    scrollZoom:     true,
+    modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'select2d', 'lasso2d'],
+    modeBarButtonsToAdd: [],
+  };
+  Plotly.react('chart', currentChart.data, currentChart.layout, config);
+}
+
+function zoomChart(factor) {
+  if (!currentChart) return;
+  const xaxis = currentChart.layout.xaxis;
+  const range = xaxis.range || [0, currentChart.data[0]?.x?.length - 1];
+  const mid   = (range[0] + range[1]) / 2;
+  const half  = (range[1] - range[0]) / 2 * factor;
+  Plotly.relayout('chart', { 'xaxis.range': [mid - half, mid + half] });
+}
+
+function resetChart() {
+  if (!currentChart) return;
+  Plotly.relayout('chart', { 'xaxis.autorange': true, 'yaxis.autorange': true });
+}
+
+// ── stats ──────────────────────────────────────────────────────────────────
+function updateStats(s) {
+  const bull = s.trend === 'BULLISH';
+  $('st-trend').textContent  = s.trend;
+  $('st-last').textContent   = fmt(s.last_close);
+  $('st-pred').textContent   = fmt(s.pred_close);
+  $('st-high').textContent   = fmt(s.pred_high);
+  $('st-low').textContent    = fmt(s.pred_low);
+  const sign = s.pct_change >= 0 ? '+' : '';
+  $('st-pct').textContent    = `${sign}${s.pct_change.toFixed(2)}%`;
+
+  const tc = $('sc-trend');
+  tc.className = 'stat-card ' + (bull ? 'bull' : 'bear');
+  tc.style.gridColumn = '1/-1';
+
+  const pc = $('sc-pct');
+  pc.className = 'stat-card ' + (bull ? 'bull' : 'bear');
+  pc.style.gridColumn = '1/-1';
+}
+
+// ── table ──────────────────────────────────────────────────────────────────
+function fillTable(rows) {
+  const tb = $('pred-tbody');
+  tb.innerHTML = '';
+  rows.forEach((r, i) => {
+    const bull = r.close >= r.open;
+    const tr   = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${fmt(r.open)}</td>
+      <td class="t-bull">${fmt(r.high)}</td>
+      <td class="t-bear">${fmt(r.low)}</td>
+      <td class="${bull ? 't-bull' : 't-bear'}">${fmt(r.close)}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+// ── utils ──────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ── boot ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', init);
+
+// Auto-resize Plotly chart when window size changes
+window.addEventListener('resize', () => {
+  if (currentChart) Plotly.relayout('chart', { autosize: true });
+});
+</script>
+</body>
+</html>
