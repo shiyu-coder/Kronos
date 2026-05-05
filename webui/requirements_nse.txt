@@ -1,0 +1,7 @@
+flask
+flask-cors
+plotly
+yfinance
+pandas
+numpy
+pytz
