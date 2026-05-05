@@ -116,3 +116,29 @@ def format_time(seconds: float) -> str:
 
 
 
+def resolve_amp_dtype(amp_dtype):
+    """
+    Resolves the configured AMP dtype string into the arguments expected by
+    `torch.autocast`.
+
+    Currently only "bfloat16" is supported. Passing ``None`` disables
+    mixed-precision training; the returned dtype is then irrelevant and
+    autocast becomes a no-op.
+
+    Args:
+        amp_dtype (str | None): "bfloat16" or None.
+
+    Returns:
+        tuple[torch.dtype, bool]: (dtype, enabled) suitable for
+        ``torch.autocast(device_type=..., dtype=dtype, enabled=enabled)``.
+
+    Raises:
+        ValueError: If ``amp_dtype`` is set to an unsupported value.
+    """
+    if amp_dtype is None:
+        return torch.float32, False
+    if amp_dtype == "bfloat16":
+        return torch.bfloat16, True
+    raise ValueError(
+        f"Unsupported amp_dtype {amp_dtype!r}; expected 'bfloat16' or None."
+    )

@@ -61,6 +61,12 @@ class Config:
         # Gradient accumulation to simulate a larger batch size.
         self.accumulation_steps = 1
 
+        # Mixed-precision training. Set to "bfloat16" on Ampere-class
+        # or newer GPUs (RTX 30/40-series, A100, H100) to reduce step
+        # time and activation memory. ``None`` keeps full FP32 training
+        # and is the default for parity with earlier runs.
+        self.amp_dtype = None
+
         # AdamW optimizer parameters.
         self.adam_beta1 = 0.9
         self.adam_beta2 = 0.95

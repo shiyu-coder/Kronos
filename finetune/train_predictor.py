@@ -22,7 +22,8 @@ from utils.training_utils import (
     cleanup_ddp,
     set_seed,
     get_model_size,
-    format_time
+    format_time,
+    resolve_amp_dtype,
 )
 
 
@@ -68,6 +69,10 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
 
     train_loader, val_loader, train_dataset, valid_dataset = create_dataloaders(config, rank, world_size)
 
+    amp_dtype, amp_enabled = resolve_amp_dtype(config.get('amp_dtype'))
+    if rank == 0 and amp_enabled:
+        print(f"AMP enabled: autocast on cuda with dtype={amp_dtype}.")
+
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config['predictor_learning_rate'],
@@ -96,17 +101,18 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
             batch_x = batch_x.to(device, non_blocking=True)
             batch_x_stamp = batch_x_stamp.to(device, non_blocking=True)
 
-            # Tokenize input data on-the-fly
-            with torch.no_grad():
-                token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
+            with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=amp_enabled):
+                # Tokenize input data on-the-fly
+                with torch.no_grad():
+                    token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
 
-            # Prepare inputs and targets for the language model
-            token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
-            token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
+                # Prepare inputs and targets for the language model
+                token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
+                token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
 
-            # Forward pass and loss calculation
-            logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
-            loss, s1_loss, s2_loss = model.module.head.compute_loss(logits[0], logits[1], token_out[0], token_out[1])
+                # Forward pass and loss calculation
+                logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
+                loss, s1_loss, s2_loss = model.module.head.compute_loss(logits[0], logits[1], token_out[0], token_out[1])
 
             # Backward pass and optimization
             optimizer.zero_grad()
@@ -140,12 +146,13 @@ def train_model(model, tokenizer, device, config, save_dir, logger, rank, world_
                 batch_x = batch_x.to(device, non_blocking=True)
                 batch_x_stamp = batch_x_stamp.to(device, non_blocking=True)
 
-                token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
-                token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
-                token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
+                with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=amp_enabled):
+                    token_seq_0, token_seq_1 = tokenizer.encode(batch_x, half=True)
+                    token_in = [token_seq_0[:, :-1], token_seq_1[:, :-1]]
+                    token_out = [token_seq_0[:, 1:], token_seq_1[:, 1:]]
 
-                logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
-                val_loss, _, _ = model.module.head.compute_loss(logits[0], logits[1], token_out[0], token_out[1])
+                    logits = model(token_in[0], token_in[1], batch_x_stamp[:, :-1, :])
+                    val_loss, _, _ = model.module.head.compute_loss(logits[0], logits[1], token_out[0], token_out[1])
 
                 tot_val_loss_sum_rank += val_loss.item()
                 val_batches_processed_rank += 1
