@@ -26,6 +26,7 @@ from utils.training_utils import (
     set_seed,
     get_model_size,
     format_time,
+    resolve_amp_dtype,
 )
 
 
@@ -95,6 +96,10 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
 
     train_loader, val_loader, train_dataset, valid_dataset = create_dataloaders(config, rank, world_size)
 
+    amp_dtype, amp_enabled = resolve_amp_dtype(config.get('amp_dtype'))
+    if rank == 0 and amp_enabled:
+        print(f"AMP enabled: autocast on cuda with dtype={amp_dtype}.")
+
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config['tokenizer_learning_rate'],
@@ -133,15 +138,16 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
                 end_idx = (j + 1) * (ori_batch_x.shape[0] // config['accumulation_steps'])
                 batch_x = ori_batch_x[start_idx:end_idx]
 
-                # Forward pass
-                zs, bsq_loss, _, _ = model(batch_x)
-                z_pre, z = zs
+                with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=amp_enabled):
+                    # Forward pass
+                    zs, bsq_loss, _, _ = model(batch_x)
+                    z_pre, z = zs
 
-                # Loss calculation
-                recon_loss_pre = F.mse_loss(z_pre, batch_x)
-                recon_loss_all = F.mse_loss(z, batch_x)
-                recon_loss = recon_loss_pre + recon_loss_all
-                loss = (recon_loss + bsq_loss) / 2  # Assuming w_1=w_2=1
+                    # Loss calculation
+                    recon_loss_pre = F.mse_loss(z_pre, batch_x)
+                    recon_loss_all = F.mse_loss(z, batch_x)
+                    recon_loss = recon_loss_pre + recon_loss_all
+                    loss = (recon_loss + bsq_loss) / 2  # Assuming w_1=w_2=1
 
                 loss_scaled = loss / config['accumulation_steps']
                 current_batch_total_loss += loss.item()
@@ -177,9 +183,10 @@ def train_model(model, device, config, save_dir, logger, rank, world_size):
         with torch.no_grad():
             for ori_batch_x, _ in val_loader:
                 ori_batch_x = ori_batch_x.to(device, non_blocking=True)
-                zs, _, _, _ = model(ori_batch_x)
-                _, z = zs
-                val_loss_item = F.mse_loss(z, ori_batch_x)
+                with torch.autocast(device_type='cuda', dtype=amp_dtype, enabled=amp_enabled):
+                    zs, _, _, _ = model(ori_batch_x)
+                    _, z = zs
+                    val_loss_item = F.mse_loss(z, ori_batch_x)
 
                 tot_val_loss_sum_rank += val_loss_item.item() * ori_batch_x.size(0)
                 val_sample_count_rank += ori_batch_x.size(0)
