@@ -1,0 +1,1 @@
+"""PolyMarket bot package."""
