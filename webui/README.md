@@ -35,6 +35,16 @@ python app.py
 
 After successful startup, visit http://localhost:7070
 
+By default the development server binds to `127.0.0.1`, keeps Flask debug mode off, and only allows local API origins. Override with environment variables when needed:
+
+```bash
+KRONOS_WEBUI_HOST=127.0.0.1
+KRONOS_WEBUI_PORT=7070
+KRONOS_WEBUI_DEBUG=false
+KRONOS_WEBUI_DATA_DIR=/path/to/local/data
+KRONOS_WEBUI_CORS_ORIGINS=http://127.0.0.1:7070,http://localhost:7070
+```
+
 ## 📋 Usage Steps
 
 1. **Load data**: Select financial data file from data directory

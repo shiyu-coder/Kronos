@@ -317,7 +317,7 @@ class Kronos(nn.Module, PyTorchModelHubMixin):
         Args:
             context (torch.Tensor): Context representation from the transformer (output of decode_s1).
                                      Shape: [batch_size, seq_len, d_model]
-            s1_ids (torch.Tensor): Input tensor of s1 token IDs. Shape: [batch_size, seq_len]
+            s1_ids (torch.torch.Tensor): Input tensor of s1 token IDs. Shape: [batch_size, seq_len]
             padding_mask (torch.Tensor, optional): Mask for padding tokens. Shape: [batch_size, seq_len]. Defaults to None.
 
         Returns:
@@ -371,12 +371,44 @@ def top_k_top_p_filtering(
 
 
 def sample_from_logits(logits, temperature=1.0, top_k=None, top_p=None, sample_logits=True):
-    logits = logits / temperature
-    if top_k is not None or top_p is not None:
-        if top_k > 0 or top_p < 1.0:
-            logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
+    if temperature is None or temperature <= 0:
+        raise ValueError("temperature must be positive")
 
-    probs = F.softmax(logits, dim=-1)
+    safe_logits = (logits / temperature).clone()
+    finite_rows = torch.isfinite(safe_logits).any(dim=-1, keepdim=True)
+    finfo = torch.finfo(safe_logits.dtype)
+    safe_logits = torch.nan_to_num(
+        safe_logits,
+        nan=-finfo.max,
+        neginf=-finfo.max,
+        posinf=finfo.max,
+    )
+    safe_logits = torch.where(finite_rows, safe_logits, torch.zeros_like(safe_logits))
+
+    filter_top_k = 0 if top_k is None else top_k
+    filter_top_p = 1.0 if top_p is None else top_p
+    if filter_top_k == 1:
+        return torch.argmax(safe_logits, dim=-1, keepdim=True)
+    elif filter_top_k > 0 or filter_top_p < 1.0:
+        safe_logits = top_k_top_p_filtering(
+            safe_logits,
+            top_k=filter_top_k,
+            top_p=filter_top_p,
+        )
+        filtered_has_finite = torch.isfinite(safe_logits).any(dim=-1, keepdim=True)
+        safe_logits = torch.where(filtered_has_finite, safe_logits, torch.zeros_like(safe_logits))
+
+    probs = F.softmax(safe_logits, dim=-1)
+    prob_sums = probs.sum(dim=-1, keepdim=True)
+    bad_probs = (
+        (~torch.isfinite(probs).all(dim=-1, keepdim=True))
+        | (probs < 0).any(dim=-1, keepdim=True)
+        | (prob_sums <= 0)
+    )
+    fallback = torch.zeros_like(probs)
+    fallback[..., 0] = 1.0
+    probs = torch.where(bad_probs, fallback, probs)
+    probs = probs / probs.sum(dim=-1, keepdim=True).clamp_min(finfo.tiny)
 
     if not sample_logits:
         _, x = torch.topk(probs, k=1, dim=-1)
@@ -505,7 +537,17 @@ class KronosPredictor:
         self.tokenizer = self.tokenizer.to(self.device)
         self.model = self.model.to(self.device)
 
+    @staticmethod
+    def _reset_rotary_caches(module):
+        for child in module.modules():
+            if all(hasattr(child, attr) for attr in ("seq_len_cached", "cos_cached", "sin_cached")):
+                child.seq_len_cached = None
+                child.cos_cached = None
+                child.sin_cached = None
+
     def generate(self, x, x_stamp, y_stamp, pred_len, T, top_k, top_p, sample_count, verbose):
+        self._reset_rotary_caches(self.tokenizer)
+        self._reset_rotary_caches(self.model)
 
         x_tensor = torch.from_numpy(np.array(x).astype(np.float32)).to(self.device)
         x_stamp_tensor = torch.from_numpy(np.array(x_stamp).astype(np.float32)).to(self.device)

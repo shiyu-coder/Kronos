@@ -33,7 +33,7 @@ fi
 
 # Start application
 echo "🌐 Starting Web server..."
-echo "Access URL: http://localhost:7070"
+echo "Access URL: http://${KRONOS_WEBUI_HOST:-127.0.0.1}:${KRONOS_WEBUI_PORT:-7070}"
 echo "Press Ctrl+C to stop server"
 echo ""
 

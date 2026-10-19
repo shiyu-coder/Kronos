@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Fork note — three products, one repo.** This README documents the upstream Kronos research model only. The desktop forecasting app remains separate ([README_JAKE.md](README_JAKE.md)); the Potter Box scanner strategy was retired on 2026-08-20 and is preserved as an evidence archive ([retirement record](docs/RETIREMENT-2026-08-20.md)). Start at [REPO_MAP.md](REPO_MAP.md).
+
 <div align="center">
   <h2><b>Kronos: A Foundation Model for the Language of Financial Markets </b></h2>
 </div>

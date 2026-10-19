@@ -1,0 +1,218 @@
+[
+  {
+    "key": "volume_expansion",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6298,
+    "constant": false
+  },
+  {
+    "key": "volume_percentile",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 328,
+    "constant": false
+  },
+  {
+    "key": "breakout_strength_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 3810,
+    "constant": false
+  },
+  {
+    "key": "close_position_in_box",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 5270,
+    "constant": false
+  },
+  {
+    "key": "box_width_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6190,
+    "constant": false
+  },
+  {
+    "key": "range_compression_ratio",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6296,
+    "constant": false
+  },
+  {
+    "key": "realized_volatility_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6298,
+    "constant": false
+  },
+  {
+    "key": "no_trend_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6285,
+    "constant": false
+  },
+  {
+    "key": "doctrine_v2_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 22,
+    "constant": false
+  },
+  {
+    "key": "recent_return_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6244,
+    "constant": false
+  },
+  {
+    "key": "abs_breakout_distance_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 5853,
+    "constant": false
+  },
+  {
+    "key": "atr_value",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 6067,
+    "constant": false
+  },
+  {
+    "key": "bar_count",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 460,
+    "constant": false
+  },
+  {
+    "key": "bottom_touches",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 11,
+    "constant": false
+  },
+  {
+    "key": "top_touches",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 8,
+    "constant": false
+  },
+  {
+    "key": "breakout_distance_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 5973,
+    "constant": false
+  },
+  {
+    "key": "distance_to_target_pct",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 4827,
+    "constant": false
+  },
+  {
+    "key": "doctrine_v2_box_stack_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 4,
+    "constant": false
+  },
+  {
+    "key": "empty_space_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 4,
+    "constant": false
+  },
+  {
+    "key": "kronos_median_forecast_return_pct",
+    "finite_count": 0,
+    "n_bullish": 6298,
+    "populate_rate": 0.0,
+    "distinct_values": 0,
+    "constant": true
+  },
+  {
+    "key": "kronos_directional_agreement",
+    "finite_count": 0,
+    "n_bullish": 6298,
+    "populate_rate": 0.0,
+    "distinct_values": 0,
+    "constant": true
+  },
+  {
+    "key": "kronos_sample_count",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 1,
+    "constant": true
+  },
+  {
+    "key": "kronos_worst_sampled_return_pct",
+    "finite_count": 0,
+    "n_bullish": 6298,
+    "populate_rate": 0.0,
+    "distinct_values": 0,
+    "constant": true
+  },
+  {
+    "key": "research_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 35,
+    "constant": false
+  },
+  {
+    "key": "data_quality_score",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 1,
+    "constant": true
+  },
+  {
+    "key": "feed_confidence",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 1,
+    "constant": true
+  },
+  {
+    "key": "rr_ratio",
+    "finite_count": 6298,
+    "n_bullish": 6298,
+    "populate_rate": 1.0,
+    "distinct_values": 3799,
+    "constant": false
+  }
+]

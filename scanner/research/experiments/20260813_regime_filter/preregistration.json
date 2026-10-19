@@ -1,0 +1,50 @@
+{
+  "experiment": "regime_filter",
+  "registered_at": "2026-08-13",
+  "branch": "codex/finish-kronos-cleanup",
+  "supersedes_nothing": true,
+  "builds_on": "scanner/research/experiments/20260813_horizon_sweep",
+
+  "motivation": "Operator rule under test: take LONGS ONLY, and only while the broad market is in an uptrend; take no shorts at all; skip longs while the market is in a downtrend. The horizon sweep found that bullish setups underperform a same-ticker random-entry placebo in 28/28 cells, so the live question is whether a market-regime gate rescues selection value or merely harvests bull-market drift.",
+
+  "hypothesis": "Restricting long entries to bullish market regime produces net-positive expectancy at a 1:3 bracket that survives a REGIME-MATCHED random-entry placebo.",
+
+  "null": "A regime gate adds nothing beyond exposure: filtered setups do not beat random entries taken on the same regime days.",
+
+  "design": {
+    "direction": "bullish only. Bearish index records are DISCARDED, not reported - the operator does not take shorts.",
+    "entry_set": "The shipped index's bullish records (ticker, timestamp, risk_pct_used), same fixed-entry discipline as the horizon sweep.",
+    "regime_source": "SPY daily bars, period=5y so the 200-day SMA is defined at the first index date (verified: available 2024-09-24). Split-adjusted, same fetch/contract path as the index build.",
+    "regime_definitions_point_in_time": {
+      "R1_spy_above_200sma": "SPY close > SPY 200-day SMA, both evaluated on the DECISION bar",
+      "R2_spy_above_50sma": "SPY close > SPY 50-day SMA on the decision bar",
+      "R3_golden_cross": "SPY 50-day SMA > SPY 200-day SMA on the decision bar"
+    },
+    "lookahead_guard": "Every SMA is a trailing window ending at (and including) the decision bar. A record is assigned its regime from the SPY bar on its own decision date; if SPY has no bar that date the record is dropped, never forward-filled from a later bar.",
+    "targets_R": ["none", 2.0, 3.0, 4.0],
+    "primary_target": 3.0,
+    "horizons_bars": [5, 10, 20, 40],
+    "primary_horizon": 5,
+    "cells": 48,
+    "cost_model": "25 bps/side round trip, charged before every metric, identical to scanner/edge/validation.py:apply_transaction_costs."
+  },
+
+  "controls": {
+    "regime_matched_placebo": "THE DECISIVE CONTROL. The placebo runs the same plan at every bar of every ticker RESTRICTED TO BARS IN THE SAME REGIME. Comparing regime-filtered setups against an all-days placebo would credit the filter for bull-market drift that any random entry also collects, and is the single easiest way to fake a positive result here. Margin is computed on shared entry days.",
+    "skipped_bucket_reported": "The bear-regime long bucket - the trades the rule DECLINES - is computed and reported. A filter only has value if what it removes is worse than what it keeps; that comparison is the filter's actual evidence, and it is reported whichever way it falls.",
+    "fixed_cohort": "Entries resolvable at the longest horizon (40 bars), constant across cells.",
+    "dependence": "Day-clustered t on entry-day means, Newey-West lags = cell horizon.",
+    "harness": "Reuses walk_np from the horizon sweep, already validated at max |dR| = 0.000e+00 against scanner.edge.outcomes.walk_triple_barrier across 8,372 walks."
+  },
+
+  "acceptance_gates": {
+    "primary": "net average R > 0 AND day-clustered t >= 2.0",
+    "multiplicity": "48 pre-registered cells. PASS requires t >= 3.3 (two-sided 0.05/48). t in [2.0, 3.3) is SUGGESTIVE ONLY.",
+    "placebo": "A passing cell must beat its REGIME-MATCHED placebo with margin > 0 at day-clustered t >= 2.0. Net-positive but placebo-failing is recorded as EXPOSURE, NOT EDGE.",
+    "no_promotion": "Cannot promote readiness or change live config. A pass is grounds for a follow-up walk-forward run through the production audit."
+  },
+
+  "prestated_power_limitation": "The index window (2024-08 -> 2026-08) is overwhelmingly a bull tape: SPY closed above its 200-day SMA on 417 of 472 index days (88.3%). R1 therefore excludes only ~12% of days and the declined bucket is small, so this experiment has LOW POWER to prove a downtrend filter helps. R2 (SPY > 50SMA) excludes ~24% and is the more discriminating test. This limitation is stated BEFORE results are read: a null here means 'not demonstrable in this window', which is weaker than the horizon sweep's 'demonstrably absent'. A positive result on R1 in particular must be treated as fragile.",
+
+  "falsification": "If no regime-gated cell clears net R > 0 with t >= 2.0, or every net-positive cell fails its regime-matched placebo, then the regime gate does not add selection value in this window and the rule is harvesting drift, not edge."
+}

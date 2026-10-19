@@ -1,0 +1,49 @@
+{
+  "status": "retired",
+  "retired_at": "2026-08-20T10:55:00-05:00",
+  "scope": "Potter Box scanner trading strategy and daily go-live program",
+  "reason": "Mature out-of-sample evidence is net-negative and 0 of 256 registered trials passed acceptance or shipped.",
+  "live_mode_blocked": true,
+  "scheduled_research_blocked": true,
+  "daily_brief_telegram_enabled": false,
+  "retirement_record": "docs/RETIREMENT-2026-08-20.md",
+  "final_evidence": {
+    "audit_run_id": "20260819T183310Z-a6c8c0d0",
+    "readiness": "blocked",
+    "blockers": [
+      "validation_threshold_55_unsupported",
+      "ranking_evidence_unsupported"
+    ],
+    "threshold_55": {
+      "raw_signals": 32,
+      "independent_days": 27,
+      "net_r_per_day": -0.2434,
+      "hac_t": -2.1654,
+      "precision_lower_bound": 0.2155,
+      "required_precision_lower_bound": 0.55
+    },
+    "top_decile": {
+      "raw_signals": 150,
+      "independent_days": 55,
+      "net_r_per_day": -0.2102,
+      "hac_t": -2.1188,
+      "precision_lower_bound": 0.2932,
+      "required_precision_lower_bound": 0.45
+    },
+    "rank_ic": 0.0362,
+    "rank_ic_clustered_p": 0.139661,
+    "required_rank_ic": 0.07,
+    "required_rank_ic_p_max": 0.05,
+    "registered_trials": 256,
+    "accepted_trials": 0,
+    "shipped_trials": 0
+  },
+  "revival_requires": [
+    "A genuinely new strategy mechanism, not a threshold, target, horizon, regime, retest, stop, chart-pattern, loss-function, or direction slice of the retired design.",
+    "A preregistration committed before outcomes are read, with immutable input hashes and explicit failure criteria.",
+    "Purged walk-forward evaluation net of at least 25 bps per side and a same-day ticker-universe drift control.",
+    "All production ranking, top-decile, precision, direction, provenance, data-quality, and execution-quality gates passing.",
+    "Confirmation on at least 20 new post-retirement independent market days that were not used to invent the strategy.",
+    "Explicit human authorization to remove this marker, re-enable scheduled tasks, and unpause the Codex automation."
+  ]
+}

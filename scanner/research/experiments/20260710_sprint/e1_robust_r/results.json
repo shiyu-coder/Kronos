@@ -1,0 +1,207 @@
+{
+  "summary": "E1 robust/rank targets sprint (2026-07-10). HYPOTHESIS FAILED. Harness sanity check: repo walk_forward_calibration(objective='expected_r') gives IC=-0.0876, n=5849; our harness's plain ridge-on-R cell reproduces IC=-0.0876, n=5849 exactly - harness confirmed correct before any pre-registered cell ran. All 4 pre-registered cells ran clean (no errors), n_evaluated=5849 for all, and ZERO cells pass the 6-gate acceptance (IC>=0.07, day-clustered p<=0.05, n>=300, tercile spread CI-low>0, tail retention>=pro-rata, beats naive MSE). huber_r: IC=0.0134 (p_day=0.390), tercile spread CI [-0.2235,-0.0259] SIGNIFICANTLY NEGATIVE, tail retention 0.226 vs 0.333 expected (below pro-rata), MSE worse than naive. quantile_r_75 (tau=0.75): IC=-0.0883 (p_day=0.967, same failure direction as raw ridge), tercile spread CI [-0.0646,0.1328] includes zero, tail retention 0.590 vs 0.333 expected (well above pro-rata - the only cell/gate combo that passes, driven mechanically by the tau=0.75 objective targeting the upper quantile), MSE worse. winsor_ridge: IC=-0.0930 (p_day=0.974, essentially reproduces plain ridge - winsorizing the target barely moves the fit), tercile spread CI [-0.1781,0.0176] includes zero, tail retention 0.458 vs 0.333 (passes), MSE worse. rank_ridge: IC=0.0161 (p_day=0.369), tercile spread CI [-0.2103,-0.0296] SIGNIFICANTLY NEGATIVE, tail retention 0.229 vs 0.333 (below pro-rata), MSE worse. Interpretation: two cells (huber_r, rank_ridge) move IC off the significantly-negative floor to a small insignificant positive, but BOTH show statistically significant NEGATIVE tercile spread - i.e. the model's top-ranked tercile underperforms its bottom-ranked tercile out-of-fold, the same qualitative failure as expected_r, just attenuated, plus below-pro-rata tail retention (models steer away from the right-tail trades the edge depends on). The other two cells (quantile_r_75, winsor_ridge) simply reproduce expected_r's negative IC almost exactly, meaning target-side robustness (capping/reweighting extreme R values) barely changes the fit - the problem is not tail-value domination of a squared loss, since objectives built explicitly to not be tail-sensitive (Huber down-weighting, asymmetric pinball loss, winsorization, full rank transform) all land in the same place. quantile_r_75's strong tail capture (59% vs 33% pro-rata) is dissociated from ranking quality (IC still -0.088) - good tail capture and good ranking are not the same property here. Combined with the earlier P(win) result (anti-informative on this feature set) and expected_r's failure, this is now three different objective families (win-probability, raw-R ridge, four tail-robust/rank R variants) that all fail to find a stable linear OOF ranking signal in the 10 META_FEATURE_KEYS. Recommended next fork: not another loss-function variant on the same linear model/feature set - question whether a linear model on this feature set can ever rank this edge, whether nonlinear interactions or a different feature set are needed, or whether take-all-bullish is simply the correct standing policy.",
+  "n_records_total": 11026,
+  "n_records_bullish": 6298,
+  "harness_sanity": {
+    "repo_expected_r_ic": -0.0876,
+    "repo_expected_r_n_evaluated": 5849,
+    "our_harness_ridge_r_ic": -0.0876,
+    "our_harness_ridge_r_n_evaluated": 5849,
+    "ic_match_within_0.005": true,
+    "harness_confirmed_ok": true
+  },
+  "cells": {
+    "huber_r": {
+      "status": "ok",
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": 0.0134,
+          "p_value": 0.152581,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.390227
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.0519,
+          "middle_mean_r": 0.0706,
+          "bottom_mean_r": 0.1847,
+          "spread_r": -0.1328,
+          "spread_ci_low": -0.2235,
+          "spread_ci_high": -0.0259,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 80,
+          "expected_share": 0.3332,
+          "observed_share": 0.226
+        },
+        "oof_mse_raw_r": 1.663976,
+        "naive_mse_raw_r": 1.612973,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": false,
+          "beats_naive": false
+        }
+      }
+    },
+    "quantile_r_75": {
+      "status": "ok",
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": -0.0883,
+          "p_value": 1.0,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.967298
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.1333,
+          "middle_mean_r": 0.0704,
+          "bottom_mean_r": 0.1034,
+          "spread_r": 0.0299,
+          "spread_ci_low": -0.0646,
+          "spread_ci_high": 0.1328,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 209,
+          "expected_share": 0.3332,
+          "observed_share": 0.5904
+        },
+        "oof_mse_raw_r": 1.98368,
+        "naive_mse_raw_r": 1.612973,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      }
+    },
+    "winsor_ridge": {
+      "status": "ok",
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": -0.093,
+          "p_value": 1.0,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.973858
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.0401,
+          "middle_mean_r": 0.144,
+          "bottom_mean_r": 0.1231,
+          "spread_r": -0.0829,
+          "spread_ci_low": -0.1781,
+          "spread_ci_high": 0.0176,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 162,
+          "expected_share": 0.3332,
+          "observed_share": 0.4576
+        },
+        "oof_mse_raw_r": 1.629732,
+        "naive_mse_raw_r": 1.612973,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      }
+    },
+    "rank_ridge": {
+      "status": "ok",
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": 0.0161,
+          "p_value": 0.108882,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.368808
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.0437,
+          "middle_mean_r": 0.0903,
+          "bottom_mean_r": 0.1732,
+          "spread_r": -0.1295,
+          "spread_ci_low": -0.2103,
+          "spread_ci_high": -0.0296,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 81,
+          "expected_share": 0.3332,
+          "observed_share": 0.2288
+        },
+        "oof_mse_raw_r": 1.775871,
+        "naive_mse_raw_r": 1.612973,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": false,
+          "beats_naive": false
+        }
+      }
+    }
+  }
+}

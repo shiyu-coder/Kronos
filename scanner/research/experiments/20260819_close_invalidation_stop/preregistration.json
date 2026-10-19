@@ -1,0 +1,57 @@
+{
+  "experiment": "close_based_cost_basis_invalidation",
+  "registered_at": "2026-08-19T18:07:13-05:00",
+  "branch": "codex/finish-kronos-cleanup",
+  "git_commit_before_experiment": "7f454d5f5cb89acc255382323eb8c87411f1c13c",
+  "motivation": "The shipped five-session plan stops when an intraday wick crosses the Potter cost-basis midpoint, even though the source-derived doctrine explicitly gives candle closes priority over wick extremes. The 2026-08-13 horizon sweep left stop placement as the only untested part of exit geometry, and the 2026-08-18 retest-entry rule was falsified.",
+  "hypothesis": "For source-valid bullish Potter breaks, requiring a completed daily close beyond cost basis before invalidation removes recoverable wick stop-outs and produces positive net five-session expectancy that beats both the shipped wick-stop plan on the exact same setups and same-day arbitrary exposure.",
+  "null": "Close-based invalidation is not positive after 25 bps per side, does not improve the exact same setups with dependence-aware significance, or does not beat same-day same-universe drift.",
+  "pinned_inputs": {
+    "edge_index_path": "scanner/reports/edge_retrieval_index.json",
+    "edge_index_sha256": "sha256:23f81b9dd74dc2f7fbceff0e49a682a8a645faf2fd5da5fc9cfe45980714a8fc",
+    "edge_index_records": 11030,
+    "edge_feature_version": 4,
+    "bars_cache_path": "scanner/research/experiments/20260813_horizon_sweep/bars_cache.pkl",
+    "bars_cache_sha256": "sha256:10547b1eecf43e31f5aeff60c22fbb9504dc7cbcc7c80c02d567e5b18588d192"
+  },
+  "design": {
+    "entry_set": "Records with feature_version=4 and potter_passed=1. Signals are fixed from the pinned index; detection is not re-run.",
+    "independence": "Within each ticker and direction, keep the earliest signal then embargo the next five sessions so outcome windows do not overlap. Statistics additionally aggregate by entry day and use Newey-West lag 5.",
+    "entry": "Decision-bar close, identical to production.",
+    "risk_denominator": "The exact shipped risk_pct_used, whose price level is the Potter cost-basis midpoint. No stop-distance tuning is allowed.",
+    "control": "Production walk_triple_barrier: intraday Low/High crossing cost basis exits at the stop (or worse opening gap), no profit target, five future daily bars.",
+    "treatment": "The same cost-basis price invalidates only when a completed future daily Close is beyond it. Exit at that Close, allowing losses beyond -1R; otherwise exit at the fifth-bar Close. No target and no intraday recovery assumption.",
+    "costs": "Subtract 25 bps per side (0.50 percentage points round trip) from each return before dividing by the unchanged risk denominator.",
+    "drift_placebo": "On the treatment cohort's entry days, evaluate the identical close-invalidation plan across every cached ticker with that ticker/direction's median treatment-cohort risk. Compare day means on shared days.",
+    "primary_direction": "bullish",
+    "locked_diagnostic_direction": "bearish"
+  },
+  "controls": {
+    "input_hashes": "Abort unless both pinned hashes match.",
+    "baseline_reproduction": "Before treatment results are read, the production barrier re-walk on cached bars must match stored index gross R in aggregate: absolute delta mean <= 0.005 R and Pearson correlation >= 0.99. This permits vendor revision noise but not a broken harness.",
+    "fixed_cohort": "Treatment and production control use exactly the same non-overlapping rows and five complete future bars.",
+    "adverse_fill": "A close-based stop fills at the observed invalidating Close, not at the cost-basis line, so delayed invalidation can lose more than 1R.",
+    "dependence": "All headline t-statistics use entry-day means and Newey-West lag 5."
+  },
+  "acceptance_gates": {
+    "coverage": "At least 100 bullish rows and 40 independent entry days.",
+    "absolute": "Bullish treatment day-mean net R > 0 and HAC t >= 2.0.",
+    "same_setup": "Paired treatment-minus-production day-mean margin > 0 and HAC t >= 2.0.",
+    "drift": "Treatment-minus-placebo day-mean margin > 0 and HAC t >= 2.0.",
+    "decision": "All four gates must pass. A pass authorizes only a separately versioned shadow/walk-forward confirmation; this experiment cannot change production, promotion, paper trading, or live readiness by itself. Any failed gate closes this exact daily-close/cost-basis rule with no direction, threshold, delay, or stop-distance rescue."
+  },
+  "known_limitations": [
+    "The immutable bar cache ends before the newest index rows; rows without five complete cached future sessions are excluded before either arm is evaluated.",
+    "A daily close stop is modeled at the closing price and charged the production cost floor; real market-on-close slippage could be worse.",
+    "The experiment does not test intraday or multi-timeframe invalidation, a different cost-basis level, ATR buffers, or profit targets."
+  ],
+  "amendments": [
+    {
+      "at": "2026-08-19T18:07:34-05:00",
+      "field": "registered_at",
+      "original_value": "2026-08-19T18:25:00-05:00",
+      "corrected_value": "2026-08-19T18:07:13-05:00",
+      "reason": "The preregistration was created at 18:07:13 CT, ten seconds before the runner produced output at 18:07:23 CT, but its hand-entered timestamp said 18:25. Corrected from the file creation timestamp after output; no hypothesis, cohort, rule, hash, control, gate, or decision changed."
+    }
+  ]
+}

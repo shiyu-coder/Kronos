@@ -1,0 +1,441 @@
+{
+  "snapshot_path": "scanner\\research\\experiments\\20260711_kronos_backfill\\kronos_index_snapshot.json",
+  "snapshot_sha256": "b34bcb20dcdf3edd9f669eeaea2c4d001593d274c3f7e2736cf3644ba983a13e",
+  "n_records_total": 10919,
+  "n_records_bullish": 6194,
+  "kronos_feature_availability": {
+    "n_bullish_rows": 6194,
+    "kronos_directional_agreement": {
+      "finite": 6194,
+      "finite_rate": 1.0
+    },
+    "kronos_median_forecast_return_pct": {
+      "finite": 6194,
+      "finite_rate": 1.0
+    },
+    "kronos_worst_sampled_return_pct": {
+      "finite": 6194,
+      "finite_rate": 1.0
+    }
+  },
+  "run_cells_flag": true,
+  "purge_days_used": 11,
+  "harness_sanity": {
+    "repo_expected_r_ic": -0.0996,
+    "repo_expected_r_n_evaluated": 5792,
+    "our_harness_standard10_ic": -0.0996,
+    "our_harness_standard10_n_evaluated": 5792,
+    "purge_days_used": 11,
+    "ic_match_within_0.005": true,
+    "harness_confirmed_ok": true
+  },
+  "cells": {
+    "control_standard10": {
+      "status": "ok",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.0996,
+          "p_value": 1.0,
+          "p_value_two_sided": 0.0,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.999743,
+          "p_value_day_clustered_two_sided": 0.000514,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0915,
+          "middle_mean_r": 0.0828,
+          "bottom_mean_r": 0.1343,
+          "spread_r": -0.0428,
+          "spread_ci_low": -0.167,
+          "spread_ci_high": 0.091,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 184,
+          "expected_share": 0.3332,
+          "observed_share": 0.5183
+        },
+        "oof_mse_raw_r": 1.645707,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": 0.0
+    },
+    "combined_standard10_plus_kronos3": {
+      "status": "ok",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct",
+        "kronos_directional_agreement",
+        "kronos_median_forecast_return_pct",
+        "kronos_worst_sampled_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.1024,
+          "p_value": 1.0,
+          "p_value_two_sided": 0.0,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.999851,
+          "p_value_day_clustered_two_sided": 0.000297,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0829,
+          "middle_mean_r": 0.1095,
+          "bottom_mean_r": 0.1162,
+          "spread_r": -0.0332,
+          "spread_ci_low": -0.1419,
+          "spread_ci_high": 0.0982,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 175,
+          "expected_share": 0.3332,
+          "observed_share": 0.493
+        },
+        "oof_mse_raw_r": 1.651862,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": -0.0028
+    },
+    "solo_kronos3": {
+      "status": "ok",
+      "feature_keys": [
+        "kronos_directional_agreement",
+        "kronos_median_forecast_return_pct",
+        "kronos_worst_sampled_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.0625,
+          "p_value": 0.999999,
+          "p_value_two_sided": 2e-06,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.982345,
+          "p_value_day_clustered_two_sided": 0.035311,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0799,
+          "middle_mean_r": 0.0931,
+          "bottom_mean_r": 0.1356,
+          "spread_r": -0.0557,
+          "spread_ci_low": -0.1881,
+          "spread_ci_high": 0.098,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 147,
+          "expected_share": 0.3332,
+          "observed_share": 0.4141
+        },
+        "oof_mse_raw_r": 1.631403,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": 0.0371
+    },
+    "ablate_drop_kronos_directional_agreement": {
+      "status": "ok",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct",
+        "kronos_median_forecast_return_pct",
+        "kronos_worst_sampled_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.098,
+          "p_value": 1.0,
+          "p_value_two_sided": 0.0,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.999708,
+          "p_value_day_clustered_two_sided": 0.000585,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0841,
+          "middle_mean_r": 0.0916,
+          "bottom_mean_r": 0.1329,
+          "spread_r": -0.0489,
+          "spread_ci_low": -0.1528,
+          "spread_ci_high": 0.0941,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 180,
+          "expected_share": 0.3332,
+          "observed_share": 0.507
+        },
+        "oof_mse_raw_r": 1.649043,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": 0.0016,
+      "delta_ic_vs_combined_standard10_plus_kronos3": 0.0044
+    },
+    "ablate_drop_kronos_median_forecast_return_pct": {
+      "status": "ok",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct",
+        "kronos_directional_agreement",
+        "kronos_worst_sampled_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.101,
+          "p_value": 1.0,
+          "p_value_two_sided": 0.0,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.999791,
+          "p_value_day_clustered_two_sided": 0.000418,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0874,
+          "middle_mean_r": 0.1076,
+          "bottom_mean_r": 0.1136,
+          "spread_r": -0.0263,
+          "spread_ci_low": -0.138,
+          "spread_ci_high": 0.1032,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 174,
+          "expected_share": 0.3332,
+          "observed_share": 0.4901
+        },
+        "oof_mse_raw_r": 1.647772,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": -0.0014,
+      "delta_ic_vs_combined_standard10_plus_kronos3": 0.0014
+    },
+    "ablate_drop_kronos_worst_sampled_return_pct": {
+      "status": "ok",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct",
+        "kronos_directional_agreement",
+        "kronos_median_forecast_return_pct"
+      ],
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5792,
+        "rank_ic_r": {
+          "ic": -0.1095,
+          "p_value": 1.0,
+          "p_value_two_sided": 0.0,
+          "p_value_alternative": "greater",
+          "n": 5792,
+          "n_days": 429,
+          "p_value_day_clustered": 0.999953,
+          "p_value_day_clustered_two_sided": 9.4e-05,
+          "day_cluster_method": "entry_day_cluster_hac_lag5_cr1"
+        },
+        "tercile_lift": {
+          "n": 5792,
+          "insufficient": false,
+          "top_mean_r": 0.0817,
+          "middle_mean_r": 0.093,
+          "bottom_mean_r": 0.1338,
+          "spread_r": -0.0522,
+          "spread_ci_low": -0.1747,
+          "spread_ci_high": 0.0804,
+          "distinct_days": 429,
+          "bootstrap_method": "circular_moving_entry_day_blocks",
+          "bootstrap_block_days": 5
+        },
+        "tail_retention": {
+          "n": 5792,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 355,
+          "tail_in_top_tercile": 174,
+          "expected_share": 0.3332,
+          "observed_share": 0.4901
+        },
+        "oof_mse_raw_r": 1.650935,
+        "naive_mse_raw_r": 1.620574,
+        "beats_naive": false
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "delta_ic_vs_standard10_control": -0.0099,
+      "delta_ic_vs_combined_standard10_plus_kronos3": -0.0071
+    }
+  }
+}

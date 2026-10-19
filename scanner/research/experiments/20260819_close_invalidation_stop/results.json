@@ -1,0 +1,137 @@
+{
+  "all_primary_gates_passed": false,
+  "baseline_reproduction": {
+    "correlation": 0.99999657,
+    "delta_mean_r": 0.00007286,
+    "passed": true,
+    "rows": 1373
+  },
+  "by_direction": {
+    "bearish": {
+      "drift_placebo": {
+        "day_mean_net_r": -0.141697,
+        "days": 264,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -3.1315,
+        "row_mean_net_r": -0.141697,
+        "rows": 14520,
+        "win_rate": 0.440152
+      },
+      "exit_transitions": {
+        "horizon->horizon": 452,
+        "stop->close_invalidation": 119,
+        "stop->horizon": 51
+      },
+      "median_risk_pct": 10.390982,
+      "production_same_setups": {
+        "day_mean_net_r": -0.110374,
+        "days": 264,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -1.5851,
+        "row_mean_net_r": -0.139463,
+        "rows": 622,
+        "win_rate": 0.426045
+      },
+      "treatment": {
+        "day_mean_net_r": -0.115112,
+        "days": 264,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -1.5505,
+        "row_mean_net_r": -0.154743,
+        "rows": 622,
+        "win_rate": 0.442122
+      },
+      "treatment_minus_drift": {
+        "day_mean_margin_r": 0.026586,
+        "days": 264,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": 0.5429
+      },
+      "treatment_minus_production": {
+        "day_mean_margin_r": -0.004738,
+        "days": 264,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.2104
+      }
+    },
+    "bullish": {
+      "drift_placebo": {
+        "day_mean_net_r": -0.016716,
+        "days": 314,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.4316,
+        "row_mean_net_r": -0.016709,
+        "rows": 17269,
+        "win_rate": 0.466385
+      },
+      "exit_transitions": {
+        "horizon->horizon": 577,
+        "stop->close_invalidation": 115,
+        "stop->horizon": 59
+      },
+      "median_risk_pct": 8.4247,
+      "production_same_setups": {
+        "day_mean_net_r": -0.01604,
+        "days": 314,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.2443,
+        "row_mean_net_r": 0.006438,
+        "rows": 751,
+        "win_rate": 0.480692
+      },
+      "treatment": {
+        "day_mean_net_r": -0.018903,
+        "days": 314,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.2671,
+        "row_mean_net_r": 0.027259,
+        "rows": 751,
+        "win_rate": 0.49534
+      },
+      "treatment_minus_drift": {
+        "day_mean_margin_r": -0.002187,
+        "days": 314,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.0445
+      },
+      "treatment_minus_production": {
+        "day_mean_margin_r": -0.002863,
+        "days": 314,
+        "dependence_method": "entry_day_mean_hac_lag5",
+        "hac_t": -0.2337
+      }
+    }
+  },
+  "cohort": {
+    "exclusion_counts": {
+      "incomplete_outcome_window": 13,
+      "not_source_valid_setup": 8686,
+      "overlapping_trigger": 958
+    },
+    "retained_non_overlapping_rows": 1373
+  },
+  "config": {
+    "cost_bps_per_side": 25.0,
+    "horizon_bars": 5,
+    "invalidation_observation": "daily_close",
+    "round_trip_cost_pct": 0.5,
+    "stop_level": "potter_cost_basis",
+    "target_mode": "none"
+  },
+  "experiment": "close_based_cost_basis_invalidation",
+  "generated_at": "2026-08-19T18:07:23.209806-05:00",
+  "primary_gates": {
+    "absolute": false,
+    "coverage": true,
+    "drift": false,
+    "same_setup": false
+  },
+  "production_change_authorized": false,
+  "source": {
+    "bars_cache_sha256": "sha256:10547b1eecf43e31f5aeff60c22fbb9504dc7cbcc7c80c02d567e5b18588d192",
+    "bars_cache_tickers": 55,
+    "edge_index_records": 11030,
+    "edge_index_sha256": "sha256:23f81b9dd74dc2f7fbceff0e49a682a8a645faf2fd5da5fc9cfe45980714a8fc"
+  },
+  "verdict": "falsified_no_change"
+}

@@ -69,17 +69,18 @@ def main():
     
     # Start server
     try:
-        from app import app
+        from app import app, get_server_config
+        server_config = get_server_config()
         print("✅ Web server started successfully!")
-        print(f"🌐 Access URL: http://localhost:7070")
+        print(f"🌐 Access URL: http://{server_config['host']}:{server_config['port']}")
         print("💡 Tip: Press Ctrl+C to stop server")
         
         # Auto-open browser
         time.sleep(2)
-        webbrowser.open('http://localhost:7070')
+        webbrowser.open(f"http://{server_config['host']}:{server_config['port']}")
         
         # Start Flask application
-        app.run(debug=True, host='0.0.0.0', port=7070)
+        app.run(**server_config)
         
     except Exception as e:
         print(f"❌ Startup failed: {e}")

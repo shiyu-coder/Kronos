@@ -1,0 +1,125 @@
+{
+  "written_at": "2026-07-10",
+  "author": "e3_features research sprint",
+  "purpose": "Test whether the fixed 10-feature META_FEATURE_KEYS set drowns tail_prob rank signal under L2 regularization (drop-one ablation, compact subset) and whether unused decision-time record fields (doctrine_v2 sub-scores, kronos forecast fields, empty_space_score, research_score, geometry fields) carry rank information the standard 10 miss.",
+  "data": {
+    "source": "load_edge_index(EDGE_INDEX_PATH)",
+    "filter": "direction == 'bullish'",
+    "n_bullish_records": 6298,
+    "note": "n_bullish is the raw record count before purge/min_train/min_class_events filtering inside walk_forward_calibration; n_evaluated (OOF) will be lower."
+  },
+  "harness_sanity_check": {
+    "control": "scanner.edge.calibration.walk_forward_calibration(records, direction='bullish', objective='tail_prob')",
+    "expected_ic": -0.066,
+    "tolerance": 0.005,
+    "note": "Must reproduce before any cell below is trusted. Generalized harness (own 10-key run at tail_r=2.0, lambda=1.0) must match the repo control within the same tolerance."
+  },
+  "fixed_config": {
+    "objective": "tail_prob",
+    "y_definition": "R >= tail_r",
+    "tail_r": 2.0,
+    "l2_lambda": 1.0,
+    "refit_every_days": 21,
+    "purge_days": 9,
+    "min_train": 300,
+    "min_class_events_per_fit": 25,
+    "acceptance_min_n": 300,
+    "model_class": "l2_logistic_irls (scanner.edge.calibration._fit_logistic_irls)",
+    "standardization": "scanner.edge.calibration._standardize_train (winsorize 1/99, median-impute, standardize) - frozen per training window, applied to OOF rows"
+  },
+  "exclusions_applied_before_cell_definition": {
+    "always_excluded": ["rr_ratio"],
+    "excluded_non_numeric_or_constant": [
+      "kronos_median_forecast_return_pct (populate_rate=0.0, 0/6298 finite)",
+      "kronos_directional_agreement (populate_rate=0.0, 0/6298 finite)",
+      "kronos_worst_sampled_return_pct (populate_rate=0.0, 0/6298 finite)",
+      "kronos_sample_count (populate_rate=1.0 but constant, always 0.0, 1 distinct value)",
+      "data_quality_score (populate_rate=1.0 but constant, 1 distinct value)",
+      "feed_confidence (populate_rate=1.0 but constant, 1 distinct value)"
+    ],
+    "lookahead_sanity_check": "All 27 candidate feature names inspected for outcome-knowledge implication (exit/target-hit/R-multiple/mae/mfe/label semantics). None found - every field is computed inside extract_edge_features() from `window = bars up to and including the decision bar` (scanner/edge/retrieval.py build_edge_records_from_bars, scanner/edge/features.py). kronos_* fields are decision-time-shaped (forecast made before entry) but are simply never populated in this historical index because build_edge_records_from_bars never threads a kronos object into extract_edge_features (retrieval.py never passes kronos=...)."
+  },
+  "standard_10_keys": [
+    "volume_expansion",
+    "volume_percentile",
+    "breakout_strength_pct",
+    "close_position_in_box",
+    "box_width_pct",
+    "range_compression_ratio",
+    "realized_volatility_pct",
+    "no_trend_score",
+    "doctrine_v2_score",
+    "recent_return_pct"
+  ],
+  "cells": [
+    {"id": 1, "name": "drop_volume_expansion", "keys_dropped": ["volume_expansion"]},
+    {"id": 2, "name": "drop_volume_percentile", "keys_dropped": ["volume_percentile"]},
+    {"id": 3, "name": "drop_breakout_strength_pct", "keys_dropped": ["breakout_strength_pct"]},
+    {"id": 4, "name": "drop_close_position_in_box", "keys_dropped": ["close_position_in_box"]},
+    {"id": 5, "name": "drop_box_width_pct", "keys_dropped": ["box_width_pct"]},
+    {"id": 6, "name": "drop_range_compression_ratio", "keys_dropped": ["range_compression_ratio"]},
+    {"id": 7, "name": "drop_realized_volatility_pct", "keys_dropped": ["realized_volatility_pct"]},
+    {"id": 8, "name": "drop_no_trend_score", "keys_dropped": ["no_trend_score"]},
+    {"id": 9, "name": "drop_doctrine_v2_score", "keys_dropped": ["doctrine_v2_score"]},
+    {"id": 10, "name": "drop_recent_return_pct", "keys_dropped": ["recent_return_pct"]},
+    {
+      "id": 11,
+      "name": "compact5",
+      "keys": ["volume_expansion", "volume_percentile", "breakout_strength_pct", "realized_volatility_pct", "recent_return_pct"]
+    },
+    {
+      "id": 12,
+      "name": "extended",
+      "keys": [
+        "volume_expansion", "volume_percentile", "breakout_strength_pct", "close_position_in_box",
+        "box_width_pct", "range_compression_ratio", "realized_volatility_pct", "no_trend_score",
+        "doctrine_v2_score", "recent_return_pct",
+        "abs_breakout_distance_pct", "atr_value", "bar_count", "bottom_touches", "top_touches",
+        "breakout_distance_pct", "distance_to_target_pct", "doctrine_v2_box_stack_score",
+        "empty_space_score", "research_score"
+      ],
+      "note": "10 standard keys + 10 of the 16 candidate unused fields that cleared >=60% populate-rate AND non-constant. Excluded from the candidate list: kronos_median_forecast_return_pct, kronos_directional_agreement, kronos_worst_sampled_return_pct (0% populate), kronos_sample_count, data_quality_score, feed_confidence (constant)."
+    },
+    {
+      "id": 13,
+      "name": "kronos_only",
+      "keys": ["kronos_median_forecast_return_pct", "kronos_directional_agreement", "kronos_worst_sampled_return_pct", "kronos_sample_count"],
+      "note": "Populate rate <60% for 3/4 keys (0.0%) and the 4th (kronos_sample_count) is constant. Per protocol: run anyway on the populated subset and report reduced n prominently. Populated subset for the 3 forecast fields is EMPTY (n=0) - literally no bullish record in this index carries a kronos forecast. Will still execute the harness (all-NaN/constant columns degrade to the _standardize_train dead-column fallback per calibration.py) to document the degenerate result rather than skip silently."
+    },
+    {
+      "id": 14,
+      "name": "interactions",
+      "keys": [
+        "volume_expansion", "volume_percentile", "breakout_strength_pct", "close_position_in_box",
+        "box_width_pct", "range_compression_ratio", "realized_volatility_pct", "no_trend_score",
+        "doctrine_v2_score", "recent_return_pct",
+        "volume_expansion*breakout_strength_pct", "realized_volatility_pct*box_width_pct"
+      ],
+      "interaction_pairs": [["volume_expansion", "breakout_strength_pct"], ["realized_volatility_pct", "box_width_pct"]],
+      "note": "Products computed per-row on raw feature values before winsorize/impute/standardize; the product itself then flows through the same _standardize_train pipeline as any other raw column."
+    }
+  ],
+  "metrics_per_cell": [
+    "n_evaluated",
+    "rank_ic_r.ic",
+    "rank_ic_r.p_value_day_clustered",
+    "tercile_lift.spread_ci_low",
+    "tail_retention (observed_share vs expected_share)",
+    "oof_loss (Brier) vs naive_loss",
+    "6-gate acceptance verdict (ic>=0.07, p_day<=0.05, n>=300, tercile_spread_ci_low>0, tail_retention>=pro_rata, beats_naive)",
+    "delta_ic_vs_control (ablations only, control = own 10-key harness run)"
+  ],
+  "multiplicity": {
+    "n_cells": 14,
+    "alpha_per_cell": 0.05,
+    "expected_false_positives_under_global_null": 0.7,
+    "policy": "Any single-cell pass is reported with this multiplicity caveat attached; no cell is treated as a standalone discovery without noting 14 simultaneous tests were run."
+  },
+  "hard_rules": [
+    "Only ADD files under scanner/research/experiments/20260710_sprint/e3_features/",
+    "No scanner.main",
+    "No writes to scanner/reports or scanner/models",
+    "Fail closed, deterministic",
+    "OOF only - no in-sample metrics reported as evidence"
+  ]
+}

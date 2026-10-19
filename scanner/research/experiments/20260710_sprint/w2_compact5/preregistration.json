@@ -1,0 +1,120 @@
+{
+  "written_at": "2026-07-10",
+  "author": "w2_compact5 robustness battery",
+  "purpose": "Stress-test the E3 finding that dropping the box-geometry/compression cluster {close_position_in_box, box_width_pct, range_compression_ratio, no_trend_score, doctrine_v2_score} down to a compact5 set {volume_expansion, volume_percentile, breakout_strength_pct, realized_volatility_pct, recent_return_pct} improves tail_prob OOF rank IC from -0.0664 (10-key control) to -0.0233 (best of 14 E3 cells, still fails gates). This is a robustness battery, not tuning: the deliverable is whether the compact5 lead over the 10-key control is STABLE across L2 lambda, objective, time halves, and purge window - not a better IC number.",
+  "prior_result_on_disk": {
+    "path": "scanner/research/experiments/20260710_sprint/e3_features/results.json",
+    "control_10key_tail_prob_lambda1_ic": -0.0664,
+    "control_10key_n_evaluated": 5809,
+    "compact5_tail_prob_lambda1_ic": -0.0233,
+    "compact5_n_evaluated": 5809
+  },
+  "data": {
+    "source": "load_edge_index(EDGE_INDEX_PATH)",
+    "filter": "direction == 'bullish'"
+  },
+  "harness_sanity_check": {
+    "step_1": "Reproduce E3's 10-key control: own generic harness, feature_keys=STANDARD_10, objective=tail_prob, l2_lambda=1.0, purge_days=9. Expect ic=-0.0664, n_evaluated=5809, tolerance 0.005.",
+    "step_2": "Reproduce E3's compact5 cell: own generic harness, feature_keys=COMPACT5, objective=tail_prob, l2_lambda=1.0, purge_days=9. Expect ic=-0.0233, n_evaluated=5809, tolerance 0.005.",
+    "abort_condition": "If either reproduction misses tolerance, stop and fix before running any pre-registered cell."
+  },
+  "fixed_config_unless_varied_by_cell": {
+    "objective": "tail_prob",
+    "y_definition": "R >= tail_r",
+    "tail_r": 2.0,
+    "l2_lambda": 1.0,
+    "refit_every_days": 21,
+    "purge_days": 9,
+    "min_train": 300,
+    "min_class_events_per_fit": 25,
+    "acceptance_min_n": 300,
+    "model_class": "l2_logistic_irls (scanner.edge.calibration._fit_logistic_irls)",
+    "standardization": "scanner.edge.calibration._standardize_train (winsorize 1/99, median-impute, standardize) - frozen per training window, applied to OOF rows"
+  },
+  "feature_sets": {
+    "standard_10": [
+      "volume_expansion", "volume_percentile", "breakout_strength_pct", "close_position_in_box",
+      "box_width_pct", "range_compression_ratio", "realized_volatility_pct", "no_trend_score",
+      "doctrine_v2_score", "recent_return_pct"
+    ],
+    "compact5": [
+      "volume_expansion", "volume_percentile", "breakout_strength_pct", "realized_volatility_pct", "recent_return_pct"
+    ],
+    "geometry5": [
+      "close_position_in_box", "box_width_pct", "range_compression_ratio", "no_trend_score", "doctrine_v2_score"
+    ]
+  },
+  "cells": [
+    {"id": 1, "name": "compact5_tail_prob_lambda_0.3", "keys": "compact5", "objective": "tail_prob", "l2_lambda": 0.3, "purge_days": 9},
+    {"id": 2, "name": "compact5_tail_prob_lambda_3.0", "keys": "compact5", "objective": "tail_prob", "l2_lambda": 3.0, "purge_days": 9},
+    {"id": 3, "name": "compact5_tail_prob_lambda_10.0", "keys": "compact5", "objective": "tail_prob", "l2_lambda": 10.0, "purge_days": 9},
+    {
+      "id": 4,
+      "name": "compact5_p_win_lambda_1.0",
+      "keys": "compact5",
+      "objective": "p_win",
+      "l2_lambda": 1.0,
+      "purge_days": 9,
+      "note": "y = R > 0 instead of R >= 2.0. Tests whether the geometry-drop helps the control-arm objective too or is tail-specific."
+    },
+    {
+      "id": 5,
+      "name": "geometry5_tail_prob_lambda_1.0",
+      "keys": "geometry5",
+      "objective": "tail_prob",
+      "l2_lambda": 1.0,
+      "purge_days": 9,
+      "note": "If the geometry/compression cluster is pure noise this should be as bad as or worse than the 10-key control (IC <= -0.0664)."
+    },
+    {
+      "id": 6,
+      "name": "compact5_tail_prob_first_half",
+      "keys": "compact5",
+      "objective": "tail_prob",
+      "l2_lambda": 1.0,
+      "purge_days": 9,
+      "temporal_split": "first_half",
+      "note": "Single walk-forward run (same config as prior_result compact5 cell) split by median OOF entry-day into two evaluation windows. No separate refit; same OOF predictions, evaluated on two disjoint day sets."
+    },
+    {
+      "id": 7,
+      "name": "compact5_tail_prob_second_half",
+      "keys": "compact5",
+      "objective": "tail_prob",
+      "l2_lambda": 1.0,
+      "purge_days": 9,
+      "temporal_split": "second_half",
+      "note": "Same run as cell 6, second half of OOF days."
+    },
+    {
+      "id": 8,
+      "name": "compact5_tail_prob_purge14",
+      "keys": "compact5",
+      "objective": "tail_prob",
+      "l2_lambda": 1.0,
+      "purge_days": 14,
+      "note": "Purge robustness: if the compact5 improvement is honest (not a leakage artifact) the IC should barely move vs the purge=9 compact5 result."
+    }
+  ],
+  "metrics_per_cell": [
+    "n_evaluated",
+    "rank_ic_r.ic",
+    "rank_ic_r.p_value_day_clustered",
+    "tercile_lift.spread_ci_low",
+    "tail_retention (observed_share vs expected_share, pro_rata=0.3333)",
+    "oof_loss (Brier) vs naive_loss",
+    "6-gate acceptance verdict (ic>=0.07, p_day<=0.05, n>=300, tercile_spread_ci_low>0, tail_retention>=pro_rata, beats_naive)"
+  ],
+  "verdict_criterion": {
+    "stable": "compact5's IC lead over the -0.0664 10-key control (i.e. IC materially > -0.0664, direction and rough magnitude of improvement preserved) holds across all of: lambda in {0.3,1.0,3.0,10.0}, both objectives, both time halves, and purge in {9,14}.",
+    "fragile": "The lead collapses, reverses, or is driven by one half/lambda/purge setting - i.e. sign or magnitude of delta-vs-control is inconsistent across cells."
+  },
+  "hard_rules": [
+    "Only ADD files under scanner/research/experiments/20260710_sprint/w2_compact5/",
+    "No scanner.main",
+    "No writes to scanner/reports or scanner/models",
+    "No modifications to e3_features files",
+    "Fail closed, deterministic",
+    "OOF only - no in-sample metrics reported as evidence"
+  ]
+}

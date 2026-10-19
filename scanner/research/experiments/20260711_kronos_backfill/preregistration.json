@@ -1,0 +1,148 @@
+{
+  "experiment_id": "20260711_kronos_backfill",
+  "registered_at": "2026-07-11T00:00:00Z",
+  "hypothesis": "The three Kronos forecast fields computed per decision window - kronos_directional_agreement, kronos_median_forecast_return_pct, kronos_worst_sampled_return_pct - carry within-direction ranking signal on the 5-bar triple-barrier R outcome for BULLISH records BEYOND the 10 frozen META_FEATURE_KEYS. Historically these three fields were 0-finite in every saved index record because build_edge_records_from_bars never passed kronos= into extract_edge_features (SPRINT_REPORT.md finding #4); the 20260711 wiring fix populates them live-parity and leak-free, and this experiment measures whether they add OOF rank-IC / gate acceptance once populated. Each field set is tested (a) as the standard-10 control, (b) combined standard-10 + 3 kronos, (c) kronos-3 alone, and (d) leave-one-out ablation dropping each kronos field from the combined model, all through the SAME purged expanding-window walk-forward harness and the SAME 6-gate acceptance the production ranking model uses (scanner.edge.calibration). This is the still-open 'Kronos-feature backfill' thread flagged in SPRINT_REPORT.md as the top open experiment, distinct from and downstream of the closed loss-function iteration (0/48 cells) and the parallel chart_patterns nonlinear-interaction thread.",
+  "data": {
+    "source": "scanner.edge.retrieval.load_edge_index(scanner/research/experiments/20260711_kronos_backfill/kronos_index_snapshot.json)",
+    "snapshot_producer": "scanner/research/experiments/20260711_kronos_backfill/run_backfill.py --universe full --bullish-only-kronos",
+    "snapshot_note": "The snapshot is a fresh rebuild of the SAME 55-ticker index universe (scanner.tickers.WATCHLIST + scanner.config.EDGE_INDEX_EXTRA_UNIVERSE) through the exact production bar-fetch + cleanup path (fetch_daily_bars research=True adjustment=EDGE_BARS_ADJUSTMENT, drop_in_progress_daily_bar, drop_vendor_placeholder_bars), differing from scanner/reports/edge_retrieval_index.json ONLY by the three now-populated kronos_* forecast fields on bullish records. It is written under this experiment dir and NEVER overwrites scanner/reports/edge_retrieval_index.json.",
+    "parent_production_index": {
+      "path": "scanner/reports/edge_retrieval_index.json",
+      "sha256_at_scaffold_time": "b4a2f74ed4ec8ddaa231485ddaf0aaa0a84f94d2b22befacd26180658fee045a",
+      "size_bytes": 30345338,
+      "n_records_total": 11055,
+      "n_records_bullish": 6317,
+      "n_records_bearish": 4738,
+      "sha_purpose": "Documents the parent index the snapshot mirrors. The snapshot's own record count is expected to closely match (same universe, same fetch path) but need NOT be byte-identical: vendor daily history can be revised/backfilled between runs, so exact reproduction of the parent bytes is neither required nor claimed."
+    },
+    "direction_scope": "bullish only. Mirrors e1_robust_r, chart_patterns, and the standing take-all-bullish policy; bearish stays blocked and is out of scope. This is also why the snapshot is built with kronos_direction_filter='bullish' - the ranking test never reads bearish kronos fields, so evaluating Kronos on bearish windows would be pure wasted compute.",
+    "record_schema_note": "Each record stores only the scalar fields extract_edge_features() computes at decision time (scanner/edge/features.py). The 3 kronos fields under test are read directly off record.features - no augmentation/reconstruction step, unlike chart_patterns which derived features from stored geometry."
+  },
+  "features_under_test": {
+    "standard_10": [
+      "volume_expansion",
+      "volume_percentile",
+      "breakout_strength_pct",
+      "close_position_in_box",
+      "box_width_pct",
+      "range_compression_ratio",
+      "realized_volatility_pct",
+      "no_trend_score",
+      "doctrine_v2_score",
+      "recent_return_pct"
+    ],
+    "standard_10_source": "scanner.edge.calibration.META_FEATURE_KEYS (imported live, not hardcoded - the list above is documentation; run_cells.py reads the tuple from the module so it can never drift stale).",
+    "kronos_3": [
+      "kronos_directional_agreement",
+      "kronos_median_forecast_return_pct",
+      "kronos_worst_sampled_return_pct"
+    ],
+    "kronos_sample_count_excluded": "kronos_sample_count is deliberately NOT a candidate: it equals the fixed config constant KRONOS_SAMPLE_COUNT (10) on every evaluated row, so it is a dead constant column with zero ranking information. Including it would only add a degenerate feature and inflate the multiplicity ledger."
+  },
+  "harness": {
+    "reused_from": "scanner.edge.calibration.walk_forward_calibration skeleton, generalized over an arbitrary feature-key tuple exactly as scanner/research/experiments/20260711_chart_patterns/experiment.py did (ridge/expected_r objective, closed-form _fit_ridge, _standardize_train imported not reimplemented).",
+    "expanding_window": true,
+    "refit_every_days": 21,
+    "purge_days_source": "scanner.config.EDGE_EMBARGO_DAYS, read live at run time (currently 11 calendar days after the 2026-07-10 hardening from 9, commit 9b55138). NOT hardcoded, so it can never silently drift stale the way e1's frozen number did.",
+    "min_train": 300,
+    "objective": "expected_r (L2 ridge on raw R-multiple), matching e1_robust_r and chart_patterns so the self-consistency control is a like-for-like reproduction of the repo's own expected_r arm.",
+    "standardization": "scanner.edge.calibration._standardize_train (winsorize 1/99 + median-impute + standardize; imported). Median imputation means a bullish row whose kronos eval errored (kr=None -> kronos fields absent/None) degrades to the train-window median for those columns rather than poisoning the fit - the same feature-outage handling the production model uses.",
+    "oof_only": true
+  },
+  "sanity_check": {
+    "description": "MANDATORY pre-flight, run every time before any cell is trusted, on the SAME snapshot records the cells use: (1) run the repo's own scanner.edge.calibration.walk_forward_calibration(direction='bullish', objective='expected_r'); (2) run this experiment's generalized harness restricted to the standard 10 keys (STANDARD_10 == META_FEATURE_KEYS, zero kronos features involved); (3) require the two OOF rank ICs to match within +/-0.005. If they do not match, the harness is broken and the run aborts before any cell executes.",
+    "no_hardcoded_expected_ic": "Deliberately NOT pinning a specific expected_ic/expected_n. E1's preregistration.json hardcoded -0.086/n=5764 from a purge=9 run and SPRINT_REPORT.md later documented that number went stale the instant the purge window was hardened to 11 days. This scaffold repeats chart_patterns' fix instead: a LIVE self-consistency requirement (repo control vs. our reimplementation, both computed at run time on the snapshot) rather than a number frozen before the purge change. Both sides of the check use ZERO kronos features, so it is a harness-fidelity check, never a peek at kronos signal.",
+    "tolerance": 0.005
+  },
+  "cells": [
+    {
+      "id": "control_standard10",
+      "role": "control",
+      "type": "control",
+      "feature_keys": "META_FEATURE_KEYS (10)",
+      "description": "The production feature set with no kronos fields. Baseline every other cell's delta_ic is measured against. Not itself a test of kronos signal - it is the reference arm."
+    },
+    {
+      "id": "combined_standard10_plus_kronos3",
+      "role": "kronos_test",
+      "type": "combined",
+      "feature_keys": "META_FEATURE_KEYS + [kronos_directional_agreement, kronos_median_forecast_return_pct, kronos_worst_sampled_return_pct] (13)",
+      "description": "Primary hypothesis test: does adding the 3 kronos forecast fields to the frozen production 10 improve OOF rank IC / gate acceptance over the standard-10 control?"
+    },
+    {
+      "id": "solo_kronos3",
+      "role": "kronos_test",
+      "type": "solo",
+      "feature_keys": "[kronos_directional_agreement, kronos_median_forecast_return_pct, kronos_worst_sampled_return_pct] (3)",
+      "description": "The 3 kronos fields alone, no standard features. Isolates whether kronos carries standalone ranking signal independent of the setup-geometry features."
+    },
+    {
+      "id": "ablate_drop_kronos_directional_agreement",
+      "role": "kronos_ablation",
+      "type": "ablation",
+      "feature_keys": "combined_standard10_plus_kronos3 minus kronos_directional_agreement (12)",
+      "description": "Leave-one-out: how much of the combined model's IC depends on kronos_directional_agreement specifically."
+    },
+    {
+      "id": "ablate_drop_kronos_median_forecast_return_pct",
+      "role": "kronos_ablation",
+      "type": "ablation",
+      "feature_keys": "combined_standard10_plus_kronos3 minus kronos_median_forecast_return_pct (12)",
+      "description": "Leave-one-out: how much of the combined model's IC depends on kronos_median_forecast_return_pct specifically."
+    },
+    {
+      "id": "ablate_drop_kronos_worst_sampled_return_pct",
+      "role": "kronos_ablation",
+      "type": "ablation",
+      "feature_keys": "combined_standard10_plus_kronos3 minus kronos_worst_sampled_return_pct (12)",
+      "description": "Leave-one-out: how much of the combined model's IC depends on kronos_worst_sampled_return_pct specifically."
+    }
+  ],
+  "metrics_per_cell": [
+    "n_evaluated",
+    "rank_ic_r.ic",
+    "rank_ic_r.p_value_day_clustered",
+    "tercile_lift.spread_ci_low",
+    "tail_retention (observed_share vs expected_share)",
+    "oof_mse_raw_r vs naive_mse_raw_r",
+    "6-gate acceptance verdict",
+    "delta_ic_vs_standard10_control (all cells)",
+    "delta_ic_vs_combined_standard10_plus_kronos3 (ablation cells only)"
+  ],
+  "acceptance_gates": {
+    "ic_at_least": 0.07,
+    "day_clustered_p_at_most": 0.05,
+    "n_at_least": 300,
+    "tercile_spread_ci_low_positive": true,
+    "tail_retention_at_least_pro_rata": true,
+    "beats_naive_mse_on_raw_r": true,
+    "source": "scanner.edge.calibration.META_ACCEPT_MIN_IC / META_ACCEPT_MAX_P_DAY / META_ACCEPT_MIN_N, read live at run time.",
+    "note": "IDENTICAL to the production ranking gate and to e1_robust_r / chart_patterns. Not softened, not relaxed, no cell-specific carve-outs. May not be loosened after seeing results."
+  },
+  "multiplicity": {
+    "n_cells_total": 6,
+    "n_kronos_signal_cells": 5,
+    "control_cells": 1,
+    "alpha_per_cell": 0.05,
+    "expected_false_positives_under_global_null_6_cells": 0.30,
+    "expected_false_positives_under_global_null_5_kronos_cells": 0.25,
+    "policy": "Up to 5 kronos-signal-bearing OOF tests (combined + solo + 3 ablations) are run under this preregistration; control_standard10 is the reference arm, not a discovery test. Any single-cell pass must be reported with this multiplicity caveat attached - no cell is a standalone discovery. No multiplicity correction is applied to loosen OR tighten the per-cell 0.07 IC gate; the ledger exists for honest reporting, not to change acceptance."
+  },
+  "reporting_rule": "Report ALL 6 cells regardless of outcome, including losers and the control. No dropping losers, no cherry-picking the combined model over the solo or ablations or vice versa. A cell that errors reports status:errored with the exception and traceback, never silently skipped or omitted. The kronos feature availability (finite-rate of each of the 3 fields on the evaluated bullish rows) is reported alongside so a null result cannot be silently caused by an unpopulated snapshot.",
+  "hard_rules": [
+    "No gate weakening: acceptance thresholds are frozen and identical to production; they may not be loosened after seeing results.",
+    "No peeking: no kronos field's correlation with outcomes was computed before this file and the runners existed. The hypothesis was written from the known wiring gap and the design intent of the Kronos forecast fields, not from any OOF or in-sample run.",
+    "No scored cell runs until this preregistration is reviewed - run_cells.py's --run-cells flag defaults to OFF specifically to enforce this.",
+    "Deterministic: no randomness anywhere in scoring (ridge is closed-form; tercile_lift's day-block bootstrap uses the repo's own fixed seed=7). The ONLY stochastic step is Kronos sampling during snapshot BUILD (KronosPredictor draws KRONOS_SAMPLE_COUNT paths); that is upstream of and frozen into the snapshot before any cell runs, so cell scoring on a fixed snapshot is fully deterministic and reproducible.",
+    "Isolation: only ADD files under scanner/research/experiments/20260711_kronos_backfill/. run_cells.py is read-only against scanner/ and writes only under this dir. run_backfill.py fetches bars live (a network read) but writes only the snapshot + checkpoint under this dir and NEVER writes scanner/reports/ or scanner/models/. No scanner.main execution.",
+    "OOF only: no in-sample metric is ever reported as evidence.",
+    "Leakage: the snapshot is produced by build_edge_records_from_bars, whose per-window leakage guard asserts Kronos only ever saw bars at-or-before each decision timestamp. Cells add no new data dependency (they read fields already frozen into the snapshot)."
+  ],
+  "constraints": {
+    "no_modification_under_scanner_except_wiring": "The only scanner/ change in this workstream is the reviewed, default-off kronos wiring in scanner/edge/retrieval.py (build_edge_records_from_bars kronos= / kronos_direction_filter=). No gate/threshold/acceptance/audit code is touched.",
+    "output_dir": "scanner/research/experiments/20260711_kronos_backfill/",
+    "never_overwrite_production_index": "scanner/reports/edge_retrieval_index.json",
+    "no_scanner_main_execution": true,
+    "no_randomness_in_scoring": true
+  }
+}

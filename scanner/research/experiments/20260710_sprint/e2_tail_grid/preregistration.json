@@ -1,0 +1,75 @@
+{
+  "experiment": "e2_tail_grid",
+  "registered_at": "2026-07-10",
+  "hypothesis": "The tail_prob objective's fixed tail_r=2.0 and l2_lambda=1.0 were set by convention, not evidence. Nearby (tail_r, l2_lambda) settings may rank the right tail better than the control cell, or the whole tail_prob family may be dead across the neighborhood -- both are valid pre-registered findings.",
+  "data_source": "scanner.edge.retrieval.load_edge_index(scanner.config.EDGE_INDEX_PATH), filtered to direction == 'bullish' (n ~= 6298 records before purge/eval filtering)",
+  "machinery_reused": [
+    "scanner.edge.calibration._standardize_train",
+    "scanner.edge.calibration._fit_logistic_irls",
+    "scanner.edge.calibration._feature_matrix",
+    "scanner.edge.calibration.META_FEATURE_KEYS",
+    "scanner.edge.stats.spearman_rank_ic",
+    "scanner.edge.stats.tercile_lift",
+    "scanner.edge.stats.tail_retention"
+  ],
+  "harness_design": {
+    "walk_forward": "expanding window, refit every 21 calendar days, 9-day purge (matches EDGE_EMBARGO_DAYS), min_train=300",
+    "class_minimum": "min 25 positive AND 25 negative class events in the training window at fit time, else skip refit and keep the prior model",
+    "labels": "y = 1[R >= tail_r] built per-cell; fit_model() is NOT reused for label construction because it hardcodes tail_r=2.0 via META_TAIL_R -- everything else in the logistic path (standardize -> IRLS L2 logistic with intercept unshrunk) is identical to fit_model",
+    "oof_only": "each prediction is made by the model fit strictly before its own purge-adjusted training cutoff; predictions before the first successful fit are dropped",
+    "determinism": "no randomness in the fit/predict path; tercile_lift's day-block bootstrap uses seed=7 (its own default) for the CI"
+  },
+  "grid": {
+    "tail_r": [1.5, 2.0, 2.5, 3.0],
+    "l2_lambda": [0.3, 1.0, 3.0, 10.0],
+    "cells": [
+      {"tail_r": 1.5, "l2_lambda": 0.3},
+      {"tail_r": 1.5, "l2_lambda": 1.0},
+      {"tail_r": 1.5, "l2_lambda": 3.0},
+      {"tail_r": 1.5, "l2_lambda": 10.0},
+      {"tail_r": 2.0, "l2_lambda": 0.3},
+      {"tail_r": 2.0, "l2_lambda": 1.0},
+      {"tail_r": 2.0, "l2_lambda": 3.0},
+      {"tail_r": 2.0, "l2_lambda": 10.0},
+      {"tail_r": 2.5, "l2_lambda": 0.3},
+      {"tail_r": 2.5, "l2_lambda": 1.0},
+      {"tail_r": 2.5, "l2_lambda": 3.0},
+      {"tail_r": 2.5, "l2_lambda": 10.0},
+      {"tail_r": 3.0, "l2_lambda": 0.3},
+      {"tail_r": 3.0, "l2_lambda": 1.0},
+      {"tail_r": 3.0, "l2_lambda": 3.0},
+      {"tail_r": 3.0, "l2_lambda": 10.0}
+    ],
+    "control_cell": {"tail_r": 2.0, "l2_lambda": 1.0},
+    "n_cells": 16
+  },
+  "evaluation": {
+    "rank_ic": "spearman_rank_ic(scores, RAW R outcomes, day_keys) -- same target as the repo's own evaluation, for every cell regardless of the cell's own tail_r",
+    "tercile_lift": "tercile_lift(scores, RAW R outcomes, day_keys, row_ids) with the built-in day-block bootstrap, spread_ci_low reported",
+    "tail_retention_fixed": "tail_retention(scores, RAW R outcomes, row_ids, tail_r=2.0) for ALL cells -- fixed evaluation tail so cells are comparable to each other and to the repo control",
+    "tail_retention_own": "tail_retention(scores, RAW R outcomes, row_ids, tail_r=cell's own tail_r) -- secondary, labeled, not used in the gate verdict",
+    "brier_vs_naive": "Brier of OOF predictions vs base-rate Brier, computed on labels at the CELL's own tail_r (matches what the model was actually trained to predict)",
+    "refits_skipped": "count of scheduled refit checkpoints where the 25/25 class-minimum was not met and the prior model was kept (report per cell; expected to rise with tail_r)"
+  },
+  "acceptance_gates_six": [
+    "ic >= 0.07",
+    "p_value_day_clustered <= 0.05",
+    "n_evaluated >= 300",
+    "tercile spread_ci_low > 0",
+    "tail_retention (fixed, at 2.0) observed_share >= expected_share (pro-rata)",
+    "beats_naive (oof Brier < base-rate Brier, at cell's own tail_r)"
+  ],
+  "multiplicity_note": "16 cells tested at alpha=0.05 on the day-clustered p-value; under a global null, ~1 cell is expected to show p<=0.05 by chance alone (16 * 0.05 = 0.8). Any single cell that clears the p<=0.05 gate but is not corroborated by neighboring cells in the grid should be flagged with this caveat, not treated as a discovery.",
+  "sanity_check_required_before_grid": {
+    "step_1": "run scanner.edge.calibration.walk_forward_calibration(records, direction='bullish', objective='tail_prob') and confirm rank IC ~= -0.066 (+/- 0.005), n ~= 5.7k",
+    "step_2": "run this experiment's own harness at (tail_r=2.0, l2_lambda=1.0) and confirm it reproduces the same IC (+/- 0.005) and same n_evaluated as step 1",
+    "on_disagreement": "harness is broken; fix before running the grid; do not report grid results built on an unverified harness"
+  },
+  "constraints": {
+    "no_modification_under_scanner": true,
+    "output_dir": "scanner/research/experiments/20260710_sprint/e2_tail_grid/",
+    "no_scanner_main": true,
+    "no_writes_to_reports_or_models": true,
+    "deterministic": true
+  }
+}

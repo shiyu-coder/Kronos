@@ -1,0 +1,144 @@
+{
+  "experiment_id": "20260711_chart_patterns",
+  "registered_at": "2026-07-11T00:00:00Z",
+  "hypothesis": "Classic chart 'shapes' (coiled-range breakouts, base-defense asymmetry, volume-climax co-occurrence, ATR-relative compression, staircase basing, measured-move overshoot) carry within-direction ranking signal on the 5-bar triple-barrier R outcome beyond the 10 standard META_FEATURE_KEYS, because they are nonlinear interactions/ratios among stored geometry and volume fields that the current linear ridge model on additive terms cannot express. Each candidate is tested alone, in a combined model added to the standard 10, and via drop-one ablation of the combined model, all through the SAME purged walk-forward harness and 6-gate acceptance the production ranking model uses. This is explicitly the 'nonlinear interactions' research thread flagged as next-in-line in scanner/research/experiments/20260710_sprint/SPRINT_REPORT.md, after loss-function iteration on the linear model was closed (0/48 cells passed) and ahead of the still-open Kronos-feature backfill.",
+  "data": {
+    "source": "scanner.edge.retrieval.load_edge_index(scanner.config.EDGE_INDEX_PATH)",
+    "index_path": "scanner/reports/edge_retrieval_index.json",
+    "index_sha256_at_scaffold_time": "b4a2f74ed4ec8ddaa231485ddaf0aaa0a84f94d2b22befacd26180658fee045a",
+    "index_size_bytes": 30345338,
+    "n_records_total": 11055,
+    "n_records_bullish": 6317,
+    "direction_scope": "bullish only (mirrors e1_robust_r / the standing take-all-bullish policy; bearish is a separate, smaller population and out of scope for this scaffold)",
+    "record_schema_note": "Each record stores only the ~61 scalar fields extract_edge_features() computes at decision time (scanner/edge/features.py) - no raw per-bar OHLCV is persisted in the index or cached anywhere in this repo."
+  },
+  "feature_availability_finding": {
+    "computable_from_index_alone": true,
+    "reasoning": "All 6 candidate pattern features below are pure functions of fields already present in every record's `features` dict (box_top/box_bottom-derived geometry, top_touches/bottom_touches, volume_expansion, volume_percentile, atr_value, doctrine_v2_box_stack_score, range_compression_ratio, breakout_strength_pct, abs_breakout_distance_pct, box_width_pct, latest_close). Each of those inputs is itself computed inside extract_edge_features() from bars up to and including the decision bar, so no candidate introduces look-ahead or a new data dependency.",
+    "excluded_patterns": [
+      {
+        "name": "upper/lower wick-rejection ratio",
+        "reason_excluded": "Requires per-bar OHLC (individual bar high/low/open/close) to measure wick length vs body. Not stored in the index; no local bar cache exists anywhere in this repo (verified: no bars/*.parquet, *.csv, or cache directory keyed by ticker+date). Bars are only ever fetched live from a paid provider at scan time."
+      },
+      {
+        "name": "gap state (open vs prior close)",
+        "reason_excluded": "Same as above - the index stores only `latest_close` (one price), not the entry bar's open or the prior bar's close, so a literal gap cannot be reconstructed from stored fields."
+      }
+    ],
+    "decision": "Deliberately did NOT build a raw-bar loader for the two excluded patterns. Fetching ~11,055 historical (ticker, date) bar windows live from a provider would be slow, would burn API budget, and - critically - is NOT deterministic run-to-run (vendor history can be revised/backfilled), which violates this lab's no-randomness/reproducible-experiment convention and the isolation rule (experiments must not have live network side effects). The atr_relative_coil and breakout_snap_ratio candidates below cover an adjacent part of the same 'contraction / overshoot' hypothesis space using only stored fields, as a substitute axis - not a like-for-like replacement. If wick/gap signal specifically is wanted later, it requires a dedicated point-in-time bar cache built as its own prerequisite experiment, not an ad hoc live fetch inside a scoring cell."
+  },
+  "candidate_features": [
+    {
+      "id": "compression_breakout_thrust",
+      "formula": "breakout_strength_pct / max(range_compression_ratio, 0.05)",
+      "hypothesis": "Coiled-spring thrust: a breakout of a given strength coming out of an unusually tight prior range carries more continuation energy than the same-strength breakout out of a loose range - a ratio a linear model holding the two terms additively cannot express."
+    },
+    {
+      "id": "box_retest_asymmetry",
+      "formula": "(bottom_touches - top_touches) / (bottom_touches + top_touches + 1)",
+      "hypothesis": "Wyckoff-style base-defense asymmetry: a bullish base whose floor was tested/held more often than its ceiling before breaking out signals firmer accumulation and should predict stronger follow-through than one where the ceiling saw more of the pre-breakout action."
+    },
+    {
+      "id": "volume_thrust_interaction",
+      "formula": "volume_expansion * volume_percentile",
+      "hypothesis": "Climax/thrust volume shape: rows high on BOTH volume_expansion (vs recent average) AND volume_percentile (vs recent history) at once mark synchronized participation that either dimension alone - used linearly, as today - cannot isolate."
+    },
+    {
+      "id": "atr_relative_coil",
+      "formula": "box_width_pct / max((atr_value / latest_close * 100), 0.05)",
+      "hypothesis": "NR7/inside-bar-style compression measured against the stock's own absolute volatility (ATR-as-percent-of-price) rather than against its own recent range (which range_compression_ratio already covers). A base tight relative to typical daily movement is a truer coil than one merely tight relative to its own possibly-already-quiet history."
+    },
+    {
+      "id": "box_stack_coil",
+      "formula": "doctrine_v2_box_stack_score * (1 - clip(range_compression_ratio, 0, 1))",
+      "hypothesis": "Staircase-base shape: rows that are BOTH already-stacked (multiple prior validated bases) AND currently coiling proxy a maturing VCP/stage-2 staircase pattern, a joint read box_stack_score and range_compression_ratio don't capture when used separately."
+    },
+    {
+      "id": "breakout_snap_ratio",
+      "formula": "abs_breakout_distance_pct / max(box_width_pct, 0.05)",
+      "hypothesis": "Measured-move overshoot: a breakout that has already traveled a large fraction of its own base height at signal time proxies for a partially pre-spent measured-move target - classic TA treats this as a chase-risk flag distinct from raw breakout_strength_pct alone."
+    }
+  ],
+  "harness": {
+    "reused_from": "scanner.edge.calibration.walk_forward_calibration skeleton, generalized over an arbitrary feature-key tuple the way 20260710_sprint/e3_features/run_experiment.py generalized its tail_prob harness (this experiment uses the expected_r/ridge objective instead, matching e1_robust_r)",
+    "expanding_window": true,
+    "refit_every_days": 21,
+    "purge_days": 11,
+    "purge_days_source": "scanner.config.EDGE_EMBARGO_DAYS (hardened from 9 to 11 calendar days on 2026-07-10, commit 9b55138; this scaffold reads the live constant rather than hardcoding a value so it can never silently drift stale)",
+    "min_train": 300,
+    "objective": "expected_r (L2 ridge on raw R-multiple, closed-form _fit_ridge)",
+    "standardization": "scanner.edge.calibration._standardize_train (imported, not reimplemented)",
+    "oof_only": true
+  },
+  "sanity_check": {
+    "description": "MANDATORY pre-flight, run every time before any cell is trusted: run the repo's own scanner.edge.calibration.walk_forward_calibration(direction='bullish', objective='expected_r') fresh, then run this file's generalized harness restricted to the standard 10 keys (STANDARD_10 == META_FEATURE_KEYS, zero pattern features involved) and require the two rank ICs to match within +/-0.005. If they do not match, the harness is broken and the run aborts before any cell executes.",
+    "no_hardcoded_expected_ic": "Deliberately NOT pinning a specific expected_ic/expected_n number here. E1's preregistration.json hardcoded -0.086/n=5764 from a purge=9 run; SPRINT_REPORT.md later documents that number went stale the moment the purge window was hardened to 11 days ('the prereg file is deliberately left untouched - post-hoc edits to preregistrations are worse than stale targets'). This scaffold avoids repeating that failure mode by defining the check as a live self-consistency requirement (repo control vs. our reimplementation, computed at run time) rather than a number frozen before the purge change. This is a harness-fidelity check, not a peek at pattern signal: it uses zero pattern features."
+  },
+  "cells": [
+    {"id": "solo_compression_breakout_thrust", "type": "solo", "feature_keys": ["compression_breakout_thrust"]},
+    {"id": "solo_box_retest_asymmetry", "type": "solo", "feature_keys": ["box_retest_asymmetry"]},
+    {"id": "solo_volume_thrust_interaction", "type": "solo", "feature_keys": ["volume_thrust_interaction"]},
+    {"id": "solo_atr_relative_coil", "type": "solo", "feature_keys": ["atr_relative_coil"]},
+    {"id": "solo_box_stack_coil", "type": "solo", "feature_keys": ["box_stack_coil"]},
+    {"id": "solo_breakout_snap_ratio", "type": "solo", "feature_keys": ["breakout_snap_ratio"]},
+    {
+      "id": "combined_all_patterns",
+      "type": "combined",
+      "feature_keys": [
+        "volume_expansion", "volume_percentile", "breakout_strength_pct", "close_position_in_box",
+        "box_width_pct", "range_compression_ratio", "realized_volatility_pct", "no_trend_score",
+        "doctrine_v2_score", "recent_return_pct",
+        "compression_breakout_thrust", "box_retest_asymmetry", "volume_thrust_interaction",
+        "atr_relative_coil", "box_stack_coil", "breakout_snap_ratio"
+      ],
+      "description": "Standard 10 (META_FEATURE_KEYS) + all 6 pattern features (16 total). Tests whether adding the full pattern set to the production feature set improves on the standard-10 control."
+    },
+    {"id": "ablate_drop_compression_breakout_thrust", "type": "ablation", "feature_keys": "combined_all_patterns minus compression_breakout_thrust"},
+    {"id": "ablate_drop_box_retest_asymmetry", "type": "ablation", "feature_keys": "combined_all_patterns minus box_retest_asymmetry"},
+    {"id": "ablate_drop_volume_thrust_interaction", "type": "ablation", "feature_keys": "combined_all_patterns minus volume_thrust_interaction"},
+    {"id": "ablate_drop_atr_relative_coil", "type": "ablation", "feature_keys": "combined_all_patterns minus atr_relative_coil"},
+    {"id": "ablate_drop_box_stack_coil", "type": "ablation", "feature_keys": "combined_all_patterns minus box_stack_coil"},
+    {"id": "ablate_drop_breakout_snap_ratio", "type": "ablation", "feature_keys": "combined_all_patterns minus breakout_snap_ratio"}
+  ],
+  "metrics_per_cell": [
+    "n_evaluated",
+    "rank_ic_r.ic",
+    "rank_ic_r.p_value_day_clustered",
+    "tercile_lift.spread_ci_low",
+    "tail_retention (observed_share vs expected_share)",
+    "oof_mse_raw_r vs naive_mse_raw_r",
+    "6-gate acceptance verdict",
+    "delta_ic_vs_standard10_control (all cells)",
+    "delta_ic_vs_combined_all_patterns (ablation cells only)"
+  ],
+  "acceptance_gates": {
+    "ic_at_least": 0.07,
+    "day_clustered_p_at_most": 0.05,
+    "n_at_least": 300,
+    "tercile_spread_ci_low_positive": true,
+    "tail_retention_at_least_pro_rata": true,
+    "beats_naive_mse_on_raw_r": true,
+    "note": "Identical to the production ranking gate (scanner.edge.calibration.META_ACCEPT_*) and to e1_robust_r's gate. Not softened, not relaxed, no cell-specific carve-outs."
+  },
+  "multiplicity": {
+    "n_cells": 13,
+    "alpha_per_cell": 0.05,
+    "expected_false_positives_under_global_null": 0.65,
+    "policy": "13 simultaneous OOF tests are run under this preregistration. Any single-cell pass must be reported with this multiplicity caveat attached - no cell is a standalone discovery. No multiplicity correction is applied to loosen or tighten the per-cell 0.07 IC gate itself; the ledger exists for honest reporting, not to change acceptance."
+  },
+  "reporting_rule": "Report ALL 13 cells regardless of outcome. No dropping losers, no cherry-picking the combined model over the solos or vice versa. A cell that errors reports status:errored with the exception and traceback, never silently skipped or omitted.",
+  "hard_rules": [
+    "No gate weakening: acceptance thresholds above are frozen and identical to production; they may not be loosened after seeing results.",
+    "No peeking: no candidate feature's correlation with outcomes was computed before this file and experiment.py existed. The 6 hypotheses above were written from feature semantics and chart-pattern literature, not from any OOF or in-sample run.",
+    "No scored pattern cell runs until this preregistration is reviewed - experiment.py's --run-cells flag defaults to OFF specifically to enforce this.",
+    "Deterministic: no randomness anywhere (no RNG seeds needed - ridge is closed-form; tercile_lift's day-block bootstrap uses the repo's own fixed seed=7 default).",
+    "Isolation: only ADD files under scanner/research/experiments/20260711_chart_patterns/. Read-only against scanner/. No writes to scanner/reports or scanner/models. No scanner.main execution.",
+    "OOF only: no in-sample metric is ever reported as evidence."
+  ],
+  "constraints": {
+    "no_modification_under_scanner": true,
+    "output_dir": "scanner/research/experiments/20260711_chart_patterns/",
+    "no_scanner_main_execution": true,
+    "no_randomness": true
+  }
+}

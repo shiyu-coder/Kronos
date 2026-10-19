@@ -1,0 +1,141 @@
+{
+  "experiment": "post_breakout_retest_entry",
+  "generated_at": "2026-08-18T18:07:58.336692-05:00",
+  "verdict": "falsified_no_change",
+  "production_change_authorized": false,
+  "all_primary_gates_passed": false,
+  "primary_gates": {
+    "coverage": true,
+    "absolute": false,
+    "same_setup": true,
+    "drift": false
+  },
+  "source": {
+    "edge_index_records": 11028,
+    "edge_index_sha256": "sha256:1ac995987845b477c02d19e13395c86221884402920ed7b52e687be21f93c812",
+    "bars_cache_tickers": 55,
+    "bars_cache_sha256": "sha256:10547b1eecf43e31f5aeff60c22fbb9504dc7cbcc7c80c02d567e5b18588d192"
+  },
+  "config": {
+    "wait_bars": 3,
+    "horizon_bars": 5,
+    "dependence_lags": 8,
+    "cost_bps_per_side": 25.0,
+    "round_trip_cost_pct": 0.5,
+    "target_mode": "none"
+  },
+  "cohort": {
+    "retained_non_overlapping_triggers": 1167,
+    "exclusion_counts": {
+      "not_source_valid_setup": 8686,
+      "overlapping_trigger": 1157,
+      "incomplete_wait_or_outcome_window": 18
+    }
+  },
+  "by_direction": {
+    "bullish": {
+      "eligible_triggers": 632,
+      "confirmed_entries": 179,
+      "confirmation_rate": 0.283228,
+      "no_confirmation": 453,
+      "invalid_retest_risk": 0,
+      "delay_counts": {
+        "1": 102,
+        "2": 43,
+        "3": 34
+      },
+      "median_entry_improvement_pct": 0.949289,
+      "retest": {
+        "rows": 179,
+        "days": 138,
+        "row_mean_net_r": 0.036008,
+        "day_mean_net_r": 0.038628,
+        "hac_t": 0.3537,
+        "win_rate": 0.458101,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "immediate_same_setups": {
+        "rows": 179,
+        "days": 131,
+        "row_mean_net_r": -0.223581,
+        "day_mean_net_r": -0.232331,
+        "hac_t": -3.7977,
+        "win_rate": 0.374302,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "retest_minus_immediate": {
+        "days": 131,
+        "day_mean_margin_r": 0.185916,
+        "hac_t": 3.6683,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "drift_placebo": {
+        "rows": 7314,
+        "days": 138,
+        "row_mean_net_r": -0.001713,
+        "day_mean_net_r": -0.001713,
+        "hac_t": -0.0317,
+        "win_rate": 0.447498,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "retest_minus_drift": {
+        "days": 138,
+        "day_mean_margin_r": 0.04034,
+        "hac_t": 0.4507,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      }
+    },
+    "bearish": {
+      "eligible_triggers": 535,
+      "confirmed_entries": 181,
+      "confirmation_rate": 0.338318,
+      "no_confirmation": 354,
+      "invalid_retest_risk": 0,
+      "delay_counts": {
+        "1": 106,
+        "2": 46,
+        "3": 29
+      },
+      "median_entry_improvement_pct": 1.408452,
+      "retest": {
+        "rows": 181,
+        "days": 135,
+        "row_mean_net_r": -0.149944,
+        "day_mean_net_r": -0.198411,
+        "hac_t": -2.4313,
+        "win_rate": 0.414365,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "immediate_same_setups": {
+        "rows": 181,
+        "days": 123,
+        "row_mean_net_r": -0.284913,
+        "day_mean_net_r": -0.312431,
+        "hac_t": -5.4386,
+        "win_rate": 0.325967,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "retest_minus_immediate": {
+        "days": 123,
+        "day_mean_margin_r": 0.134787,
+        "hac_t": 2.186,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "drift_placebo": {
+        "rows": 7155,
+        "days": 135,
+        "row_mean_net_r": -0.19224,
+        "day_mean_net_r": -0.19224,
+        "hac_t": -4.0022,
+        "win_rate": 0.396226,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      },
+      "retest_minus_drift": {
+        "days": 135,
+        "day_mean_margin_r": -0.006171,
+        "hac_t": -0.0892,
+        "dependence_method": "entry_day_mean_hac_lag8"
+      }
+    }
+  }
+}

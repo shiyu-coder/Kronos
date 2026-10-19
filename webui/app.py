@@ -9,10 +9,16 @@ from flask_cors import CORS
 import sys
 import warnings
 import datetime
+from pathlib import Path
+from uuid import uuid4
 warnings.filterwarnings('ignore')
 
 # Add project root directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+WEBUI_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = WEBUI_ROOT.parent
+DATA_DIR = Path(os.getenv("KRONOS_WEBUI_DATA_DIR", PROJECT_ROOT / "data")).expanduser().resolve()
+PREDICTION_RESULTS_DIR = WEBUI_ROOT / "prediction_results"
+sys.path.append(str(PROJECT_ROOT))
 
 try:
     from model import Kronos, KronosTokenizer, KronosPredictor
@@ -21,8 +27,39 @@ except ImportError:
     MODEL_AVAILABLE = False
     print("Warning: Kronos model cannot be imported, will use simulated data for demonstration")
 
+def _parse_bool(value, default=False):
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def get_server_config():
+    """Return safe local defaults for the development web server."""
+    try:
+        port = int(os.getenv("KRONOS_WEBUI_PORT", "7070"))
+    except ValueError:
+        port = 7070
+    return {
+        "host": os.getenv("KRONOS_WEBUI_HOST", "127.0.0.1").strip() or "127.0.0.1",
+        "port": port,
+        "debug": _parse_bool(os.getenv("KRONOS_WEBUI_DEBUG"), default=False),
+    }
+
+
+def get_cors_origins():
+    raw = os.getenv("KRONOS_WEBUI_CORS_ORIGINS")
+    if raw:
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    config = get_server_config()
+    port = config["port"]
+    hosts = {config["host"], "127.0.0.1", "localhost"}
+    hosts.discard("0.0.0.0")
+    hosts.discard("")
+    return [f"http://{host}:{port}" for host in sorted(hosts)]
+
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": get_cors_origins()}})
 
 # Global variables to store models
 tokenizer = None
@@ -59,29 +96,47 @@ AVAILABLE_MODELS = {
 
 def load_data_files():
     """Scan data directory and return available data files"""
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
     data_files = []
     
-    if os.path.exists(data_dir):
-        for file in os.listdir(data_dir):
-            if file.endswith(('.csv', '.feather')):
-                file_path = os.path.join(data_dir, file)
-                file_size = os.path.getsize(file_path)
+    if DATA_DIR.exists():
+        for file_path in sorted(DATA_DIR.iterdir()):
+            if file_path.is_file() and file_path.suffix.lower() in {'.csv', '.feather'}:
+                file_size = file_path.stat().st_size
                 data_files.append({
-                    'name': file,
-                    'path': file_path,
+                    'name': file_path.name,
+                    'path': str(file_path),
                     'size': f"{file_size / 1024:.1f} KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.1f} MB"
                 })
     
     return data_files
 
+def _resolve_data_file_path(file_path):
+    """Resolve a requested data file and require it to stay under DATA_DIR."""
+    if not file_path:
+        raise ValueError("File path cannot be empty")
+    requested = Path(str(file_path)).expanduser()
+    if not requested.is_absolute():
+        requested = DATA_DIR / requested
+    resolved = requested.resolve()
+    data_dir = DATA_DIR.resolve()
+    try:
+        resolved.relative_to(data_dir)
+    except ValueError as exc:
+        raise ValueError("Data file path is outside allowed data directory") from exc
+    if resolved.suffix.lower() not in {'.csv', '.feather'}:
+        raise ValueError("Unsupported file format")
+    if not resolved.exists() or not resolved.is_file():
+        raise ValueError("Data file does not exist")
+    return resolved
+
 def load_data_file(file_path):
     """Load data file"""
     try:
-        if file_path.endswith('.csv'):
-            df = pd.read_csv(file_path)
-        elif file_path.endswith('.feather'):
-            df = pd.read_feather(file_path)
+        safe_path = _resolve_data_file_path(file_path)
+        if safe_path.suffix.lower() == '.csv':
+            df = pd.read_csv(safe_path)
+        elif safe_path.suffix.lower() == '.feather':
+            df = pd.read_feather(safe_path)
         else:
             return None, "Unsupported file format"
         
@@ -126,13 +181,13 @@ def save_prediction_results(file_path, prediction_type, prediction_results, actu
     """Save prediction results to file"""
     try:
         # Create prediction results directory
-        results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prediction_results')
-        os.makedirs(results_dir, exist_ok=True)
+        results_dir = Path(PREDICTION_RESULTS_DIR)
+        results_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate filename
-        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'prediction_{timestamp}.json'
-        filepath = os.path.join(results_dir, filename)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+        filename = f'prediction_{timestamp}_{uuid4().hex[:8]}.json'
+        filepath = results_dir / filename
         
         # Prepare data for saving
         save_data = {
@@ -162,10 +217,9 @@ def save_prediction_results(file_path, prediction_type, prediction_results, actu
         }
         
         # If actual data exists, perform comparison analysis
-        if actual_data and len(actual_data) > 0:
+        if actual_data and len(actual_data) > 0 and prediction_results and len(prediction_results) > 0:
             # Calculate continuity analysis
-            if len(prediction_results) > 0 and len(actual_data) > 0:
-                last_pred = prediction_results[0]  # First prediction point
+            last_pred = prediction_results[0]  # First prediction point
             first_actual = actual_data[0]      # First actual point
                 
             save_data['analysis']['continuity'] = {
@@ -200,7 +254,7 @@ def save_prediction_results(file_path, prediction_type, prediction_results, actu
             json.dump(save_data, f, indent=2, ensure_ascii=False)
         
         print(f"Prediction results saved to: {filepath}")
-        return filepath
+        return str(filepath)
         
     except Exception as e:
         print(f"Failed to save prediction results: {e}")
@@ -705,4 +759,5 @@ if __name__ == '__main__':
     else:
         print("Tip: Will use simulated data for demonstration")
     
-    app.run(debug=True, host='0.0.0.0', port=7070)
+    server_config = get_server_config()
+    app.run(**server_config)

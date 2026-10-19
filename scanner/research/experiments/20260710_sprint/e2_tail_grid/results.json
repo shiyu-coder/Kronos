@@ -1,0 +1,1048 @@
+{
+  "sanity_check": {
+    "repo_ic": -0.0664,
+    "repo_n_evaluated": 5809,
+    "repo_p_day": 0.916009,
+    "own_harness_ic": -0.0664,
+    "own_harness_n_evaluated": 5809,
+    "own_harness_p_day": 0.916009,
+    "ic_diff": 0.0,
+    "n_diff": 0,
+    "harness_matches_repo_within_tolerance": true
+  },
+  "status": "OK",
+  "grid": [
+    {
+      "tail_r": 1.5,
+      "l2_lambda": 0.3,
+      "n_evaluated": 5849,
+      "refit_stats": {
+        "refit_checkpoints": 480,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 0,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0768,
+        "p_value": 1.0,
+        "n": 5849,
+        "n_days": 434,
+        "p_value_day_clustered": 0.945194
+      },
+      "tercile_lift": {
+        "n": 5849,
+        "insufficient": false,
+        "top_mean_r": 0.1635,
+        "middle_mean_r": 0.0614,
+        "bottom_mean_r": 0.0822,
+        "spread_r": 0.0813,
+        "spread_ci_low": -0.0208,
+        "spread_ci_high": 0.185,
+        "distinct_days": 434
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 221,
+        "expected_share": 0.3332,
+        "observed_share": 0.6243
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 1.5,
+        "tail_count": 538,
+        "tail_in_top_tercile": 302,
+        "expected_share": 0.3332,
+        "observed_share": 0.5613
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.092,
+        "oof_brier": 0.081511,
+        "naive_brier": 0.083521,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 1.5,
+      "l2_lambda": 1.0,
+      "n_evaluated": 5849,
+      "refit_stats": {
+        "refit_checkpoints": 480,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 0,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0768,
+        "p_value": 1.0,
+        "n": 5849,
+        "n_days": 434,
+        "p_value_day_clustered": 0.945368
+      },
+      "tercile_lift": {
+        "n": 5849,
+        "insufficient": false,
+        "top_mean_r": 0.1626,
+        "middle_mean_r": 0.0591,
+        "bottom_mean_r": 0.0856,
+        "spread_r": 0.077,
+        "spread_ci_low": -0.0268,
+        "spread_ci_high": 0.183,
+        "distinct_days": 434
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 218,
+        "expected_share": 0.3332,
+        "observed_share": 0.6158
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 1.5,
+        "tail_count": 538,
+        "tail_in_top_tercile": 302,
+        "expected_share": 0.3332,
+        "observed_share": 0.5613
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.092,
+        "oof_brier": 0.081467,
+        "naive_brier": 0.083521,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 1.5,
+      "l2_lambda": 3.0,
+      "n_evaluated": 5849,
+      "refit_stats": {
+        "refit_checkpoints": 480,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 0,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0771,
+        "p_value": 1.0,
+        "n": 5849,
+        "n_days": 434,
+        "p_value_day_clustered": 0.946053
+      },
+      "tercile_lift": {
+        "n": 5849,
+        "insufficient": false,
+        "top_mean_r": 0.1714,
+        "middle_mean_r": 0.0432,
+        "bottom_mean_r": 0.0927,
+        "spread_r": 0.0787,
+        "spread_ci_low": -0.0272,
+        "spread_ci_high": 0.1803,
+        "distinct_days": 434
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 218,
+        "expected_share": 0.3332,
+        "observed_share": 0.6158
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 1.5,
+        "tail_count": 538,
+        "tail_in_top_tercile": 305,
+        "expected_share": 0.3332,
+        "observed_share": 0.5669
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.092,
+        "oof_brier": 0.081405,
+        "naive_brier": 0.083521,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 1.5,
+      "l2_lambda": 10.0,
+      "n_evaluated": 5849,
+      "refit_stats": {
+        "refit_checkpoints": 480,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 0,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0771,
+        "p_value": 1.0,
+        "n": 5849,
+        "n_days": 434,
+        "p_value_day_clustered": 0.946101
+      },
+      "tercile_lift": {
+        "n": 5849,
+        "insufficient": false,
+        "top_mean_r": 0.1703,
+        "middle_mean_r": 0.0399,
+        "bottom_mean_r": 0.097,
+        "spread_r": 0.0733,
+        "spread_ci_low": -0.0374,
+        "spread_ci_high": 0.1796,
+        "distinct_days": 434
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 222,
+        "expected_share": 0.3332,
+        "observed_share": 0.6271
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5849,
+        "insufficient": false,
+        "tail_r_threshold": 1.5,
+        "tail_count": 538,
+        "tail_in_top_tercile": 308,
+        "expected_share": 0.3332,
+        "observed_share": 0.5725
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.092,
+        "oof_brier": 0.081362,
+        "naive_brier": 0.083521,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.0,
+      "l2_lambda": 0.3,
+      "n_evaluated": 5809,
+      "refit_stats": {
+        "refit_checkpoints": 520,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 40,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0671,
+        "p_value": 1.0,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.918245
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.1701,
+        "middle_mean_r": 0.0715,
+        "bottom_mean_r": 0.0693,
+        "spread_r": 0.1007,
+        "spread_ci_low": -0.0071,
+        "spread_ci_high": 0.2212,
+        "distinct_days": 431
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 218,
+        "expected_share": 0.3333,
+        "observed_share": 0.6158
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 218,
+        "expected_share": 0.3333,
+        "observed_share": 0.6158
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0609,
+        "oof_brier": 0.056355,
+        "naive_brier": 0.057226,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.0,
+      "l2_lambda": 1.0,
+      "n_evaluated": 5809,
+      "refit_stats": {
+        "refit_checkpoints": 520,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 40,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0664,
+        "p_value": 1.0,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.916009
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.1732,
+        "middle_mean_r": 0.0617,
+        "bottom_mean_r": 0.076,
+        "spread_r": 0.0972,
+        "spread_ci_low": -0.0101,
+        "spread_ci_high": 0.212,
+        "distinct_days": 431
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 219,
+        "expected_share": 0.3333,
+        "observed_share": 0.6186
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 219,
+        "expected_share": 0.3333,
+        "observed_share": 0.6186
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0609,
+        "oof_brier": 0.056169,
+        "naive_brier": 0.057226,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.0,
+      "l2_lambda": 3.0,
+      "n_evaluated": 5809,
+      "refit_stats": {
+        "refit_checkpoints": 520,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 40,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0668,
+        "p_value": 1.0,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.917169
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.183,
+        "middle_mean_r": 0.0482,
+        "bottom_mean_r": 0.0798,
+        "spread_r": 0.1032,
+        "spread_ci_low": 0.0036,
+        "spread_ci_high": 0.2199,
+        "distinct_days": 431
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 225,
+        "expected_share": 0.3333,
+        "observed_share": 0.6356
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 225,
+        "expected_share": 0.3333,
+        "observed_share": 0.6356
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0609,
+        "oof_brier": 0.055946,
+        "naive_brier": 0.057226,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": true,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.0,
+      "l2_lambda": 10.0,
+      "n_evaluated": 5809,
+      "refit_stats": {
+        "refit_checkpoints": 520,
+        "refit_succeeded": 31,
+        "refit_skipped_class_min": 40,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0663,
+        "p_value": 1.0,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.915622
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.1705,
+        "middle_mean_r": 0.0592,
+        "bottom_mean_r": 0.0812,
+        "spread_r": 0.0894,
+        "spread_ci_low": -0.01,
+        "spread_ci_high": 0.1998,
+        "distinct_days": 431
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 217,
+        "expected_share": 0.3333,
+        "observed_share": 0.613
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 217,
+        "expected_share": 0.3333,
+        "observed_share": 0.613
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0609,
+        "oof_brier": 0.055766,
+        "naive_brier": 0.057226,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.5,
+      "l2_lambda": 0.3,
+      "n_evaluated": 5578,
+      "refit_stats": {
+        "refit_checkpoints": 750,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 271,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0701,
+        "p_value": 1.0,
+        "n": 5578,
+        "n_days": 419,
+        "p_value_day_clustered": 0.92443
+      },
+      "tercile_lift": {
+        "n": 5578,
+        "insufficient": false,
+        "top_mean_r": 0.1508,
+        "middle_mean_r": 0.0593,
+        "bottom_mean_r": 0.0546,
+        "spread_r": 0.0962,
+        "spread_ci_low": -0.0206,
+        "spread_ci_high": 0.2059,
+        "distinct_days": 419
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 204,
+        "expected_share": 0.3333,
+        "observed_share": 0.6239
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.5,
+        "tail_count": 214,
+        "tail_in_top_tercile": 139,
+        "expected_share": 0.3333,
+        "observed_share": 0.6495
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0384,
+        "oof_brier": 0.036109,
+        "naive_brier": 0.036893,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.5,
+      "l2_lambda": 1.0,
+      "n_evaluated": 5578,
+      "refit_stats": {
+        "refit_checkpoints": 750,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 271,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0702,
+        "p_value": 1.0,
+        "n": 5578,
+        "n_days": 419,
+        "p_value_day_clustered": 0.924665
+      },
+      "tercile_lift": {
+        "n": 5578,
+        "insufficient": false,
+        "top_mean_r": 0.1572,
+        "middle_mean_r": 0.0452,
+        "bottom_mean_r": 0.0623,
+        "spread_r": 0.0948,
+        "spread_ci_low": -0.0312,
+        "spread_ci_high": 0.2037,
+        "distinct_days": 419
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 208,
+        "expected_share": 0.3333,
+        "observed_share": 0.6361
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.5,
+        "tail_count": 214,
+        "tail_in_top_tercile": 142,
+        "expected_share": 0.3333,
+        "observed_share": 0.6636
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0384,
+        "oof_brier": 0.035998,
+        "naive_brier": 0.036893,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.5,
+      "l2_lambda": 3.0,
+      "n_evaluated": 5578,
+      "refit_stats": {
+        "refit_checkpoints": 750,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 271,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0696,
+        "p_value": 1.0,
+        "n": 5578,
+        "n_days": 419,
+        "p_value_day_clustered": 0.922939
+      },
+      "tercile_lift": {
+        "n": 5578,
+        "insufficient": false,
+        "top_mean_r": 0.1529,
+        "middle_mean_r": 0.0419,
+        "bottom_mean_r": 0.0699,
+        "spread_r": 0.083,
+        "spread_ci_low": -0.0214,
+        "spread_ci_high": 0.1954,
+        "distinct_days": 419
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 208,
+        "expected_share": 0.3333,
+        "observed_share": 0.6361
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.5,
+        "tail_count": 214,
+        "tail_in_top_tercile": 143,
+        "expected_share": 0.3333,
+        "observed_share": 0.6682
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0384,
+        "oof_brier": 0.035875,
+        "naive_brier": 0.036893,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 2.5,
+      "l2_lambda": 10.0,
+      "n_evaluated": 5578,
+      "refit_stats": {
+        "refit_checkpoints": 750,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 271,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0669,
+        "p_value": 1.0,
+        "n": 5578,
+        "n_days": 419,
+        "p_value_day_clustered": 0.914515
+      },
+      "tercile_lift": {
+        "n": 5578,
+        "insufficient": false,
+        "top_mean_r": 0.1516,
+        "middle_mean_r": 0.0505,
+        "bottom_mean_r": 0.0626,
+        "spread_r": 0.0889,
+        "spread_ci_low": -0.0229,
+        "spread_ci_high": 0.1991,
+        "distinct_days": 419
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 205,
+        "expected_share": 0.3333,
+        "observed_share": 0.6269
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5578,
+        "insufficient": false,
+        "tail_r_threshold": 2.5,
+        "tail_count": 214,
+        "tail_in_top_tercile": 141,
+        "expected_share": 0.3333,
+        "observed_share": 0.6589
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0384,
+        "oof_brier": 0.035857,
+        "naive_brier": 0.036893,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 3.0,
+      "l2_lambda": 0.3,
+      "n_evaluated": 5553,
+      "refit_stats": {
+        "refit_checkpoints": 775,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 296,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0683,
+        "p_value": 1.0,
+        "n": 5553,
+        "n_days": 418,
+        "p_value_day_clustered": 0.918671
+      },
+      "tercile_lift": {
+        "n": 5553,
+        "insufficient": false,
+        "top_mean_r": 0.1529,
+        "middle_mean_r": 0.0565,
+        "bottom_mean_r": 0.0599,
+        "spread_r": 0.093,
+        "spread_ci_low": -0.0172,
+        "spread_ci_high": 0.2081,
+        "distinct_days": 418
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 208,
+        "expected_share": 0.3333,
+        "observed_share": 0.6361
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 3.0,
+        "tail_count": 140,
+        "tail_in_top_tercile": 98,
+        "expected_share": 0.3333,
+        "observed_share": 0.7
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0252,
+        "oof_brier": 0.024225,
+        "naive_brier": 0.024576,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 3.0,
+      "l2_lambda": 1.0,
+      "n_evaluated": 5553,
+      "refit_stats": {
+        "refit_checkpoints": 775,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 296,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0684,
+        "p_value": 1.0,
+        "n": 5553,
+        "n_days": 418,
+        "p_value_day_clustered": 0.918874
+      },
+      "tercile_lift": {
+        "n": 5553,
+        "insufficient": false,
+        "top_mean_r": 0.1594,
+        "middle_mean_r": 0.0529,
+        "bottom_mean_r": 0.057,
+        "spread_r": 0.1024,
+        "spread_ci_low": -0.0123,
+        "spread_ci_high": 0.2131,
+        "distinct_days": 418
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 208,
+        "expected_share": 0.3333,
+        "observed_share": 0.6361
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 3.0,
+        "tail_count": 140,
+        "tail_in_top_tercile": 97,
+        "expected_share": 0.3333,
+        "observed_share": 0.6929
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0252,
+        "oof_brier": 0.024088,
+        "naive_brier": 0.024576,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 3.0,
+      "l2_lambda": 3.0,
+      "n_evaluated": 5553,
+      "refit_stats": {
+        "refit_checkpoints": 775,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 296,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0677,
+        "p_value": 1.0,
+        "n": 5553,
+        "n_days": 418,
+        "p_value_day_clustered": 0.916695
+      },
+      "tercile_lift": {
+        "n": 5553,
+        "insufficient": false,
+        "top_mean_r": 0.1671,
+        "middle_mean_r": 0.0397,
+        "bottom_mean_r": 0.0625,
+        "spread_r": 0.1045,
+        "spread_ci_low": -0.0041,
+        "spread_ci_high": 0.2155,
+        "distinct_days": 418
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 211,
+        "expected_share": 0.3333,
+        "observed_share": 0.6453
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 3.0,
+        "tail_count": 140,
+        "tail_in_top_tercile": 96,
+        "expected_share": 0.3333,
+        "observed_share": 0.6857
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0252,
+        "oof_brier": 0.023973,
+        "naive_brier": 0.024576,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    },
+    {
+      "tail_r": 3.0,
+      "l2_lambda": 10.0,
+      "n_evaluated": 5553,
+      "refit_stats": {
+        "refit_checkpoints": 775,
+        "refit_succeeded": 30,
+        "refit_skipped_class_min": 296,
+        "refit_skipped_insufficient_train": 449,
+        "refit_skipped_other": 0
+      },
+      "insufficient": false,
+      "rank_ic_r": {
+        "ic": -0.0635,
+        "p_value": 0.999999,
+        "n": 5553,
+        "n_days": 418,
+        "p_value_day_clustered": 0.902701
+      },
+      "tercile_lift": {
+        "n": 5553,
+        "insufficient": false,
+        "top_mean_r": 0.1677,
+        "middle_mean_r": 0.0341,
+        "bottom_mean_r": 0.0675,
+        "spread_r": 0.1003,
+        "spread_ci_low": -0.0049,
+        "spread_ci_high": 0.2071,
+        "distinct_days": 418
+      },
+      "tail_retention_at_2.0_fixed": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 327,
+        "tail_in_top_tercile": 209,
+        "expected_share": 0.3333,
+        "observed_share": 0.6391
+      },
+      "tail_retention_at_own_tail_r": {
+        "n": 5553,
+        "insufficient": false,
+        "tail_r_threshold": 3.0,
+        "tail_count": 140,
+        "tail_in_top_tercile": 93,
+        "expected_share": 0.3333,
+        "observed_share": 0.6643
+      },
+      "brier": {
+        "base_rate_own_tail_r": 0.0252,
+        "oof_brier": 0.024001,
+        "naive_brier": 0.024576,
+        "beats_naive": true
+      },
+      "gates": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata_FIXED_2.0": true,
+        "beats_naive": true
+      },
+      "passed_all_6_gates": false
+    }
+  ],
+  "best_cell_by_ic": {
+    "tail_r": 3.0,
+    "l2_lambda": 10.0,
+    "ic": -0.0635
+  },
+  "n_cells_passing_all_6_gates": 0,
+  "passing_cells": [],
+  "summary_markdown": "# E2 tail_r x l2_lambda grid -- results\n\nSanity check: repo IC=-0.0664 (n=5809) vs own-harness IC=-0.0664 (n=5809); diff=0.0 -> MATCH\n\n\n| tail_r | lambda | n | IC | p_day | tercile_ci_low | tail_ret(2.0) obs/exp | beats_naive | gates_passed | 6/6 |\n|---|---|---|---|---|---|---|---|---|---|\n| 1.5 | 0.3 | 5849 | -0.0768 | 0.945194 | -0.0208 | 0.6243/0.3332 | True | 3/6 | no |\n| 1.5 | 1.0 | 5849 | -0.0768 | 0.945368 | -0.0268 | 0.6158/0.3332 | True | 3/6 | no |\n| 1.5 | 3.0 | 5849 | -0.0771 | 0.946053 | -0.0272 | 0.6158/0.3332 | True | 3/6 | no |\n| 1.5 | 10.0 | 5849 | -0.0771 | 0.946101 | -0.0374 | 0.6271/0.3332 | True | 3/6 | no |\n| 2.0 | 0.3 | 5809 | -0.0671 | 0.918245 | -0.0071 | 0.6158/0.3333 | True | 3/6 | no |\n| 2.0 | 1.0 | 5809 | -0.0664 | 0.916009 | -0.0101 | 0.6186/0.3333 | True | 3/6 | no |\n| 2.0 | 3.0 | 5809 | -0.0668 | 0.917169 | 0.0036 | 0.6356/0.3333 | True | 4/6 | no |\n| 2.0 | 10.0 | 5809 | -0.0663 | 0.915622 | -0.01 | 0.613/0.3333 | True | 3/6 | no |\n| 2.5 | 0.3 | 5578 | -0.0701 | 0.92443 | -0.0206 | 0.6239/0.3333 | True | 3/6 | no |\n| 2.5 | 1.0 | 5578 | -0.0702 | 0.924665 | -0.0312 | 0.6361/0.3333 | True | 3/6 | no |\n| 2.5 | 3.0 | 5578 | -0.0696 | 0.922939 | -0.0214 | 0.6361/0.3333 | True | 3/6 | no |\n| 2.5 | 10.0 | 5578 | -0.0669 | 0.914515 | -0.0229 | 0.6269/0.3333 | True | 3/6 | no |\n| 3.0 | 0.3 | 5553 | -0.0683 | 0.918671 | -0.0172 | 0.6361/0.3333 | True | 3/6 | no |\n| 3.0 | 1.0 | 5553 | -0.0684 | 0.918874 | -0.0123 | 0.6361/0.3333 | True | 3/6 | no |\n| 3.0 | 3.0 | 5553 | -0.0677 | 0.916695 | -0.0041 | 0.6453/0.3333 | True | 3/6 | no |\n| 3.0 | 10.0 | 5553 | -0.0635 | 0.902701 | -0.0049 | 0.6391/0.3333 | True | 3/6 | no |\n\nBest cell by OOF rank IC: tail_r=3.0, lambda=10.0, IC=-0.0635\n\nCells passing all 6 gates: 0 / 16\n\nMultiplicity caveat: 16 cells at alpha=0.05 on the day-clustered p-value -> ~0.8 false positives expected under a global null. Any single passing cell not corroborated by its grid neighbors should be treated as noise, not discovery."
+}

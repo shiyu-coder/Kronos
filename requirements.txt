@@ -1,10 +1,20 @@
-numpy
-pandas
-torch>=2.0.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+numpy==2.4.6
+pandas==2.2.2
+scipy==1.18.0
+torch==2.7.0+cpu
 
 einops==0.8.1
 huggingface_hub==0.33.1
 matplotlib==3.9.3
-pandas==2.2.2
 tqdm==4.67.1
 safetensors==0.6.2
+
+flask==2.3.3
+flask-cors==6.0.2
+plotly==6.7.0
+python-dotenv>=1.0.1
+requests>=2.32.0
+streamlit
+yfinance==1.5.1

@@ -1,0 +1,26 @@
+{
+  "n_decision_bars": 24254,
+  "tickers": 55,
+  "marginal": {
+    "impl_atr": 8.955223880597014,
+    "impl_range": 5.508369753442731,
+    "impl_notrend": 14.888265853055167,
+    "spec_atr": 9.70561556856601,
+    "spec_range_cons": 12.323740413952338,
+    "spec_range_brk": 14.23270388389544,
+    "spec_notrend": 41.97658118248536,
+    "touches": 32.58843902036777,
+    "brk": 26.915148016821966,
+    "spec_brk": 14.88414282180259
+  },
+  "joint": {
+    "implemented": 0.04123031252576895,
+    "spec": 0.03710728127319205,
+    "spec_with_spec_box": 0.05359940628349963
+  },
+  "firings": {
+    "implemented": 10,
+    "spec": 9,
+    "spec_with_spec_box": 13
+  }
+}

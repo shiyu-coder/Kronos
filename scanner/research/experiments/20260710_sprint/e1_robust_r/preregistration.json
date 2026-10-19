@@ -1,0 +1,79 @@
+{
+  "experiment_id": "20260710_sprint_e1_robust_r",
+  "registered_at": "2026-07-10T00:00:00Z",
+  "hypothesis": "expected_r (L2 ridge on raw R-multiple) failed OOF (rank IC -0.086, n~5764) because unbounded right-tail R magnitudes dominate the squared loss and push the fit away from the ranking-relevant middle of the distribution. Robust or rank-transformed targets should keep magnitude/ordering information without letting tail rows dominate the objective, and should therefore produce a less negative / potentially positive OOF rank IC.",
+  "data": {
+    "source": "scanner.edge.retrieval.load_edge_index(scanner.config.EDGE_INDEX_PATH)",
+    "direction": "bullish",
+    "n_records_bullish": 6298
+  },
+  "harness": {
+    "reused_from": "scanner.edge.calibration.walk_forward_calibration (skeleton copied exactly)",
+    "expanding_window": true,
+    "refit_every_days": 21,
+    "purge_days": 9,
+    "min_train": 300,
+    "features": "scanner.edge.calibration.META_FEATURE_KEYS (10 keys)",
+    "standardization": "scanner.edge.calibration._standardize_train (imported, not reimplemented)",
+    "oof_only": true
+  },
+  "sanity_check": {
+    "description": "MANDATORY pre-flight: run repo's own walk_forward_calibration(objective='expected_r') and confirm rank IC ~= -0.086 (+/-0.005), n_evaluated ~= 5764. Then run a ridge-on-R cell built on OUR harness and confirm it reproduces the same IC (+/-0.005). If it does not match, the harness is broken and must be fixed before any cell is run.",
+    "expected_ic": -0.086,
+    "expected_ic_tolerance": 0.005,
+    "expected_n": 5764
+  },
+  "cells": [
+    {
+      "id": "huber_r",
+      "description": "Huber regression on raw R, delta=1.0, IRLS with Huber weights, L2 ridge penalty lambda=1.0 on coefficients (intercept unpenalized), fit by iterative reweighted least squares to convergence or a fixed max_iter, deterministic (no randomness).",
+      "target": "r_multiple (raw)",
+      "loss": "huber(delta=1.0)",
+      "l2_lambda": 1.0,
+      "direction": "bullish",
+      "features": "META_FEATURE_KEYS"
+    },
+    {
+      "id": "quantile_r_75",
+      "description": "Quantile regression on raw R, tau=0.75, pinball loss, IRLS-style iterative reweighted least squares approximation (deterministic, fixed number of iterations, no randomness), L2 ridge penalty lambda=1.0 on coefficients (intercept unpenalized).",
+      "target": "r_multiple (raw)",
+      "loss": "pinball(tau=0.75)",
+      "l2_lambda": 1.0,
+      "direction": "bullish",
+      "features": "META_FEATURE_KEYS"
+    },
+    {
+      "id": "winsor_ridge",
+      "description": "Ridge (closed-form L2, same _fit_ridge as repo) on R winsorized at the TRAIN-WINDOW 1st/99th percentiles (winsor bounds computed fresh on each train window, applied to that window's targets only; frozen at fit time, not looking ahead).",
+      "target": "r_multiple winsorized at train-window p1/p99",
+      "loss": "squared_error_on_winsorized_target",
+      "l2_lambda": 1.0,
+      "direction": "bullish",
+      "features": "META_FEATURE_KEYS"
+    },
+    {
+      "id": "rank_ridge",
+      "description": "Ridge (closed-form L2) on the empirical CDF rank position of R within the TRAIN WINDOW ONLY (target in [0,1], computed via average-rank/n on the train window's R values; frozen at fit time). OOF predictions are the model's raw [0,1]-ish score, used for ranking only (not converted back to R units).",
+      "target": "train-window empirical CDF rank of r_multiple, in [0,1]",
+      "loss": "squared_error_on_rank_target",
+      "l2_lambda": 1.0,
+      "direction": "bullish",
+      "features": "META_FEATURE_KEYS"
+    }
+  ],
+  "acceptance_gates": {
+    "ic_at_least": 0.07,
+    "day_clustered_p_at_most": 0.05,
+    "n_at_least": 300,
+    "tercile_spread_ci_low_positive": true,
+    "tail_retention_at_least_pro_rata": true,
+    "beats_naive_mse_on_raw_r": true
+  },
+  "reporting_rule": "Report ALL 4 cells regardless of outcome. No dropping losers. A cell that errors reports as errored, not silently skipped.",
+  "constraints": {
+    "no_modification_under_scanner": true,
+    "output_dir": "scanner/research/experiments/20260710_sprint/e1_robust_r/",
+    "no_scanner_main_execution": true,
+    "no_randomness": true
+  }
+}

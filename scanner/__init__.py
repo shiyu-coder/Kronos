@@ -1,0 +1,1 @@
+"""Potter Box scanner package."""

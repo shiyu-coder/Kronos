@@ -1,0 +1,841 @@
+{
+  "sanity_check": {
+    "10key_ic": -0.0664,
+    "10key_n_evaluated": 5809,
+    "10key_expected_ic": -0.0664,
+    "10key_within_tolerance_0.005": true,
+    "compact5_ic": -0.0233,
+    "compact5_n_evaluated": 5809,
+    "compact5_expected_ic": -0.0233,
+    "compact5_within_tolerance_0.005": true
+  },
+  "control_10key": {
+    "direction": "bullish",
+    "objective": "tail_prob",
+    "feature_keys": [
+      "volume_expansion",
+      "volume_percentile",
+      "breakout_strength_pct",
+      "close_position_in_box",
+      "box_width_pct",
+      "range_compression_ratio",
+      "realized_volatility_pct",
+      "no_trend_score",
+      "doctrine_v2_score",
+      "recent_return_pct"
+    ],
+    "config": {
+      "l2_lambda": 1.0,
+      "refit_every_days": 21,
+      "purge_days": 9,
+      "min_train": 300,
+      "tail_r": 2.0
+    },
+    "n_records": 6298,
+    "n_evaluated": 5809,
+    "metrics": {
+      "insufficient": false,
+      "n_evaluated": 5809,
+      "rank_ic_r": {
+        "ic": -0.0664,
+        "p_value": 1.0,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.916009
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.1732,
+        "middle_mean_r": 0.0617,
+        "bottom_mean_r": 0.076,
+        "spread_r": 0.0972,
+        "spread_ci_low": -0.0101,
+        "spread_ci_high": 0.212,
+        "distinct_days": 431
+      },
+      "tail_retention": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 219,
+        "expected_share": 0.3333,
+        "observed_share": 0.6186
+      },
+      "oof_loss": 0.056169,
+      "naive_loss": 0.057226,
+      "beats_naive": true,
+      "mean_score": 0.0619,
+      "realized_win_rate": 0.4886,
+      "realized_tail_rate": 0.0609
+    },
+    "acceptance": {
+      "passed": false,
+      "criteria": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata": true,
+        "beats_naive": true
+      }
+    }
+  },
+  "control_compact5": {
+    "direction": "bullish",
+    "objective": "tail_prob",
+    "feature_keys": [
+      "volume_expansion",
+      "volume_percentile",
+      "breakout_strength_pct",
+      "realized_volatility_pct",
+      "recent_return_pct"
+    ],
+    "config": {
+      "l2_lambda": 1.0,
+      "refit_every_days": 21,
+      "purge_days": 9,
+      "min_train": 300,
+      "tail_r": 2.0
+    },
+    "n_records": 6298,
+    "n_evaluated": 5809,
+    "metrics": {
+      "insufficient": false,
+      "n_evaluated": 5809,
+      "rank_ic_r": {
+        "ic": -0.0233,
+        "p_value": 0.961852,
+        "n": 5809,
+        "n_days": 431,
+        "p_value_day_clustered": 0.685024
+      },
+      "tercile_lift": {
+        "n": 5809,
+        "insufficient": false,
+        "top_mean_r": 0.1227,
+        "middle_mean_r": 0.1278,
+        "bottom_mean_r": 0.0604,
+        "spread_r": 0.0623,
+        "spread_ci_low": -0.0213,
+        "spread_ci_high": 0.1401,
+        "distinct_days": 431
+      },
+      "tail_retention": {
+        "n": 5809,
+        "insufficient": false,
+        "tail_r_threshold": 2.0,
+        "tail_count": 354,
+        "tail_in_top_tercile": 150,
+        "expected_share": 0.3333,
+        "observed_share": 0.4237
+      },
+      "oof_loss": 0.057127,
+      "naive_loss": 0.057226,
+      "beats_naive": true,
+      "mean_score": 0.0639,
+      "realized_win_rate": 0.4886,
+      "realized_tail_rate": 0.0609
+    },
+    "acceptance": {
+      "passed": false,
+      "criteria": {
+        "ic_at_least_0.07": false,
+        "day_clustered_p_at_most_0.05": false,
+        "n_at_least_300": true,
+        "tercile_spread_ci_low_positive": false,
+        "tail_retention_at_least_pro_rata": true,
+        "beats_naive": true
+      }
+    }
+  },
+  "cells": {
+    "cell_1_compact5_tail_prob_lambda_0.3": {
+      "direction": "bullish",
+      "objective": "tail_prob",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "realized_volatility_pct",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 0.3,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5809,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5809,
+        "rank_ic_r": {
+          "ic": -0.0233,
+          "p_value": 0.962013,
+          "n": 5809,
+          "n_days": 431,
+          "p_value_day_clustered": 0.685212
+        },
+        "tercile_lift": {
+          "n": 5809,
+          "insufficient": false,
+          "top_mean_r": 0.1213,
+          "middle_mean_r": 0.1309,
+          "bottom_mean_r": 0.0587,
+          "spread_r": 0.0626,
+          "spread_ci_low": -0.0206,
+          "spread_ci_high": 0.1387,
+          "distinct_days": 431
+        },
+        "tail_retention": {
+          "n": 5809,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 149,
+          "expected_share": 0.3333,
+          "observed_share": 0.4209
+        },
+        "oof_loss": 0.057133,
+        "naive_loss": 0.057226,
+        "beats_naive": true,
+        "mean_score": 0.0639,
+        "realized_win_rate": 0.4886,
+        "realized_tail_rate": 0.0609
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "delta_ic_vs_10key_control": 0.0431
+    },
+    "cell_2_compact5_tail_prob_lambda_3.0": {
+      "direction": "bullish",
+      "objective": "tail_prob",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "realized_volatility_pct",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 3.0,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5809,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5809,
+        "rank_ic_r": {
+          "ic": -0.0232,
+          "p_value": 0.961484,
+          "n": 5809,
+          "n_days": 431,
+          "p_value_day_clustered": 0.684598
+        },
+        "tercile_lift": {
+          "n": 5809,
+          "insufficient": false,
+          "top_mean_r": 0.1259,
+          "middle_mean_r": 0.1231,
+          "bottom_mean_r": 0.0618,
+          "spread_r": 0.0641,
+          "spread_ci_low": -0.0175,
+          "spread_ci_high": 0.1395,
+          "distinct_days": 431
+        },
+        "tail_retention": {
+          "n": 5809,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 152,
+          "expected_share": 0.3333,
+          "observed_share": 0.4294
+        },
+        "oof_loss": 0.057113,
+        "naive_loss": 0.057226,
+        "beats_naive": true,
+        "mean_score": 0.0639,
+        "realized_win_rate": 0.4886,
+        "realized_tail_rate": 0.0609
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "delta_ic_vs_10key_control": 0.0432
+    },
+    "cell_3_compact5_tail_prob_lambda_10.0": {
+      "direction": "bullish",
+      "objective": "tail_prob",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "realized_volatility_pct",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 10.0,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5809,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5809,
+        "rank_ic_r": {
+          "ic": -0.0228,
+          "p_value": 0.959143,
+          "n": 5809,
+          "n_days": 431,
+          "p_value_day_clustered": 0.68195
+        },
+        "tercile_lift": {
+          "n": 5809,
+          "insufficient": false,
+          "top_mean_r": 0.1284,
+          "middle_mean_r": 0.123,
+          "bottom_mean_r": 0.0595,
+          "spread_r": 0.0689,
+          "spread_ci_low": -0.0161,
+          "spread_ci_high": 0.1442,
+          "distinct_days": 431
+        },
+        "tail_retention": {
+          "n": 5809,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 155,
+          "expected_share": 0.3333,
+          "observed_share": 0.4379
+        },
+        "oof_loss": 0.057085,
+        "naive_loss": 0.057226,
+        "beats_naive": true,
+        "mean_score": 0.064,
+        "realized_win_rate": 0.4886,
+        "realized_tail_rate": 0.0609
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "delta_ic_vs_10key_control": 0.0436
+    },
+    "cell_4_compact5_p_win_lambda_1.0": {
+      "direction": "bullish",
+      "objective": "p_win",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "realized_volatility_pct",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 1.0,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5849,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": -0.0488,
+          "p_value": 0.999905,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.844857
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.067,
+          "middle_mean_r": 0.0506,
+          "bottom_mean_r": 0.1896,
+          "spread_r": -0.1226,
+          "spread_ci_low": -0.2228,
+          "spread_ci_high": -0.0109,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 107,
+          "expected_share": 0.3332,
+          "observed_share": 0.3023
+        },
+        "oof_loss": 0.253477,
+        "naive_loss": 0.249867,
+        "beats_naive": false,
+        "mean_score": 0.4921,
+        "realized_win_rate": 0.4885,
+        "realized_tail_rate": 0.0605
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": false,
+          "beats_naive": false
+        }
+      },
+      "note": "p_win objective is NOT comparable in absolute IC to the tail_prob 10key control (different y). See diagnostics.10key_p_win_control for the same-objective baseline.",
+      "delta_ic_vs_10key_p_win_control": -0.0373
+    },
+    "cell_5_geometry5_tail_prob_lambda_1.0": {
+      "direction": "bullish",
+      "objective": "tail_prob",
+      "feature_keys": [
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "no_trend_score",
+        "doctrine_v2_score"
+      ],
+      "config": {
+        "l2_lambda": 1.0,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5809,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5809,
+        "rank_ic_r": {
+          "ic": -0.0642,
+          "p_value": 1.0,
+          "n": 5809,
+          "n_days": 431,
+          "p_value_day_clustered": 0.908801
+        },
+        "tercile_lift": {
+          "n": 5809,
+          "insufficient": false,
+          "top_mean_r": 0.1346,
+          "middle_mean_r": 0.0799,
+          "bottom_mean_r": 0.0964,
+          "spread_r": 0.0382,
+          "spread_ci_low": -0.0553,
+          "spread_ci_high": 0.1484,
+          "distinct_days": 431
+        },
+        "tail_retention": {
+          "n": 5809,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 202,
+          "expected_share": 0.3333,
+          "observed_share": 0.5706
+        },
+        "oof_loss": 0.056146,
+        "naive_loss": 0.057226,
+        "beats_naive": true,
+        "mean_score": 0.0618,
+        "realized_win_rate": 0.4886,
+        "realized_tail_rate": 0.0609
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "delta_ic_vs_10key_control": 0.0022
+    },
+    "cell_6_compact5_tail_prob_first_half": {
+      "n_evaluated": 3022,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 3022,
+        "rank_ic_r": {
+          "ic": -0.0157,
+          "p_value": 0.806462,
+          "n": 3022,
+          "n_days": 216,
+          "p_value_day_clustered": 0.591048
+        },
+        "tercile_lift": {
+          "n": 3022,
+          "insufficient": false,
+          "top_mean_r": 0.1104,
+          "middle_mean_r": 0.1939,
+          "bottom_mean_r": 0.0552,
+          "spread_r": 0.0552,
+          "spread_ci_low": -0.0455,
+          "spread_ci_high": 0.1734,
+          "distinct_days": 216
+        },
+        "tail_retention": {
+          "n": 3022,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 199,
+          "tail_in_top_tercile": 70,
+          "expected_share": 0.3332,
+          "observed_share": 0.3518
+        },
+        "oof_loss": 0.061603,
+        "naive_loss": 0.061514,
+        "beats_naive": false,
+        "mean_score": 0.0658,
+        "realized_win_rate": 0.5046,
+        "realized_tail_rate": 0.0659
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": false
+        }
+      },
+      "split_meta": {
+        "n_unique_days_total": 431,
+        "median_day": "2025-08-21",
+        "first_half_days": 216,
+        "second_half_days": 215,
+        "first_half_date_range": [
+          "2024-10-02",
+          "2025-08-21"
+        ],
+        "second_half_date_range": [
+          "2025-08-22",
+          "2026-07-01"
+        ]
+      },
+      "config": {
+        "l2_lambda": 1.0,
+        "purge_days": 9,
+        "feature_keys": [
+          "volume_expansion",
+          "volume_percentile",
+          "breakout_strength_pct",
+          "realized_volatility_pct",
+          "recent_return_pct"
+        ],
+        "objective": "tail_prob"
+      },
+      "delta_ic_vs_10key_control": 0.0507
+    },
+    "cell_7_compact5_tail_prob_second_half": {
+      "n_evaluated": 2787,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 2787,
+        "rank_ic_r": {
+          "ic": -0.0409,
+          "p_value": 0.984562,
+          "n": 2787,
+          "n_days": 215,
+          "p_value_day_clustered": 0.724741
+        },
+        "tercile_lift": {
+          "n": 2787,
+          "insufficient": false,
+          "top_mean_r": 0.1411,
+          "middle_mean_r": 0.048,
+          "bottom_mean_r": 0.0691,
+          "spread_r": 0.072,
+          "spread_ci_low": -0.0787,
+          "spread_ci_high": 0.1988,
+          "distinct_days": 215
+        },
+        "tail_retention": {
+          "n": 2787,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 155,
+          "tail_in_top_tercile": 82,
+          "expected_share": 0.3333,
+          "observed_share": 0.529
+        },
+        "oof_loss": 0.052273,
+        "naive_loss": 0.052522,
+        "beats_naive": true,
+        "mean_score": 0.0618,
+        "realized_win_rate": 0.4711,
+        "realized_tail_rate": 0.0556
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "split_meta": {
+        "n_unique_days_total": 431,
+        "median_day": "2025-08-21",
+        "first_half_days": 216,
+        "second_half_days": 215,
+        "first_half_date_range": [
+          "2024-10-02",
+          "2025-08-21"
+        ],
+        "second_half_date_range": [
+          "2025-08-22",
+          "2026-07-01"
+        ]
+      },
+      "config": {
+        "l2_lambda": 1.0,
+        "purge_days": 9,
+        "feature_keys": [
+          "volume_expansion",
+          "volume_percentile",
+          "breakout_strength_pct",
+          "realized_volatility_pct",
+          "recent_return_pct"
+        ],
+        "objective": "tail_prob"
+      },
+      "delta_ic_vs_10key_control": 0.0255
+    },
+    "cell_8_compact5_tail_prob_purge14": {
+      "direction": "bullish",
+      "objective": "tail_prob",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "realized_volatility_pct",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 1.0,
+        "refit_every_days": 21,
+        "purge_days": 14,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5772,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5772,
+        "rank_ic_r": {
+          "ic": -0.0187,
+          "p_value": 0.922682,
+          "n": 5772,
+          "n_days": 428,
+          "p_value_day_clustered": 0.650529
+        },
+        "tercile_lift": {
+          "n": 5772,
+          "insufficient": false,
+          "top_mean_r": 0.1279,
+          "middle_mean_r": 0.1288,
+          "bottom_mean_r": 0.0535,
+          "spread_r": 0.0744,
+          "spread_ci_low": -0.0096,
+          "spread_ci_high": 0.1687,
+          "distinct_days": 428
+        },
+        "tail_retention": {
+          "n": 5772,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 147,
+          "expected_share": 0.3333,
+          "observed_share": 0.4153
+        },
+        "oof_loss": 0.057451,
+        "naive_loss": 0.057569,
+        "beats_naive": true,
+        "mean_score": 0.0639,
+        "realized_win_rate": 0.4882,
+        "realized_tail_rate": 0.0613
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": true,
+          "beats_naive": true
+        }
+      },
+      "delta_ic_vs_10key_control": 0.0477,
+      "delta_ic_vs_compact5_purge9": 0.0046
+    }
+  },
+  "diagnostics": {
+    "10key_p_win_control": {
+      "direction": "bullish",
+      "objective": "p_win",
+      "feature_keys": [
+        "volume_expansion",
+        "volume_percentile",
+        "breakout_strength_pct",
+        "close_position_in_box",
+        "box_width_pct",
+        "range_compression_ratio",
+        "realized_volatility_pct",
+        "no_trend_score",
+        "doctrine_v2_score",
+        "recent_return_pct"
+      ],
+      "config": {
+        "l2_lambda": 1.0,
+        "refit_every_days": 21,
+        "purge_days": 9,
+        "min_train": 300,
+        "tail_r": 2.0
+      },
+      "n_records": 6298,
+      "n_evaluated": 5849,
+      "metrics": {
+        "insufficient": false,
+        "n_evaluated": 5849,
+        "rank_ic_r": {
+          "ic": -0.0115,
+          "p_value": 0.810639,
+          "n": 5849,
+          "n_days": 434,
+          "p_value_day_clustered": 0.594551
+        },
+        "tercile_lift": {
+          "n": 5849,
+          "insufficient": false,
+          "top_mean_r": 0.0486,
+          "middle_mean_r": 0.0558,
+          "bottom_mean_r": 0.2028,
+          "spread_r": -0.1541,
+          "spread_ci_low": -0.2467,
+          "spread_ci_high": -0.051,
+          "distinct_days": 434
+        },
+        "tail_retention": {
+          "n": 5849,
+          "insufficient": false,
+          "tail_r_threshold": 2.0,
+          "tail_count": 354,
+          "tail_in_top_tercile": 91,
+          "expected_share": 0.3332,
+          "observed_share": 0.2571
+        },
+        "oof_loss": 0.254876,
+        "naive_loss": 0.249867,
+        "beats_naive": false,
+        "mean_score": 0.4959,
+        "realized_win_rate": 0.4885,
+        "realized_tail_rate": 0.0605
+      },
+      "acceptance": {
+        "passed": false,
+        "criteria": {
+          "ic_at_least_0.07": false,
+          "day_clustered_p_at_most_0.05": false,
+          "n_at_least_300": true,
+          "tercile_spread_ci_low_positive": false,
+          "tail_retention_at_least_pro_rata": false,
+          "beats_naive": false
+        }
+      }
+    },
+    "note": "Post-hoc, not one of the 8 pre-registered cells. Added because the pre-registered control_10key in this results file is objective=tail_prob and is not a valid baseline for cell 4's p_win compact5 result. This runs the same 10-key set under objective=p_win so cell 4 has an apples-to-apples comparison."
+  },
+  "summary": {
+    "control_10key_tail_prob_ic": -0.0664,
+    "control_compact5_tail_prob_ic": -0.0233,
+    "lambda_sweep_ic": {
+      "0.3": -0.0233,
+      "1.0": -0.0233,
+      "3.0": -0.0232,
+      "10.0": -0.0228
+    },
+    "lambda_lead_holds_at_every_lambda": true,
+    "p_win_objective_compact5_ic": -0.0488,
+    "p_win_objective_10key_control_ic": -0.0115,
+    "p_win_effect_reverses_vs_tail_prob": true,
+    "geometry5_only_ic": -0.0642,
+    "geometry5_confirms_dominant_noise_source_claim": false,
+    "temporal_first_half_ic": -0.0157,
+    "temporal_second_half_ic": -0.0409,
+    "temporal_split_meta": {
+      "n_unique_days_total": 431,
+      "median_day": "2025-08-21",
+      "first_half_days": 216,
+      "second_half_days": 215,
+      "first_half_date_range": [
+        "2024-10-02",
+        "2025-08-21"
+      ],
+      "second_half_date_range": [
+        "2025-08-22",
+        "2026-07-01"
+      ]
+    },
+    "temporal_stable": true,
+    "purge9_compact5_ic": -0.0233,
+    "purge14_compact5_ic": -0.0187,
+    "purge_delta": 0.0046,
+    "purge_stable": true,
+    "overall_verdict": "STABLE_BUT_TAIL_SPECIFIC"
+  }
+}

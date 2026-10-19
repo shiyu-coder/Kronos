@@ -1,0 +1,5 @@
+# Large / regenerable artifacts — kept out of git; hashes recorded in REPORT.md.
+kronos_index_snapshot.json
+backfill_checkpoint.jsonl
+validation_output.json
+logs/

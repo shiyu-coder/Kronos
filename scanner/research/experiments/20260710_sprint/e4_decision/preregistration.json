@@ -1,0 +1,52 @@
+{
+  "experiment": "e4_decision",
+  "date": "2026-07-10",
+  "author": "decision-layer statistical honesty sprint",
+  "purpose": "Quantify what win-rate claims are supportable today, and measure what existing ranking objectives would do to realized WR/avg R if used as take-top-K filters. Descriptive counterfactuals only. Nothing ships; no scanner code, gates, or thresholds change.",
+  "data_sources": {
+    "journal": "scanner/reports/scan_decisions.jsonl (read-only)",
+    "index": "scanner.edge.retrieval.load_edge_index(scanner.config.EDGE_INDEX_PATH) (read-only)",
+    "oof_predictions": "scanner.edge.calibration.walk_forward_calibration(records, direction, objective) for objective in {p_win, expected_r, tail_prob} (read-only, reused as-is, no re-implementation of CV)"
+  },
+  "definitions": {
+    "resolved_research_candidate": "journal record with skip_reason=='research_candidate' AND outcome_status=='resolved'. This is the live, non-counterfactual-only candidate pool the user's WR question is actually about.",
+    "win": "outcome_label == 'win'",
+    "index_bullish_universe": "scanner.edge.retrieval EdgeRecord with direction=='bullish' from the walk-forward index (6,298 as of 2026-07-01 per prior session note; actual count taken from the loaded index at run time, not hardcoded)",
+    "R_multiple": "record.r_multiple as computed by scanner.edge.outcomes.walk_triple_barrier: clip(signed_return_pct / risk_pct_used, -10, 10)",
+    "tail_trade": "R multiple >= 2.0 (matches META_TAIL_R in scanner/edge/calibration.py)"
+  },
+  "tasks": [
+    {
+      "id": "1_journal_honesty",
+      "method": "Wilson score interval (two-sided, z=1.96, 95% CI) on wins/resolved_research_candidates from the journal. Power analysis uses the classic one-sample proportion power formula (unpooled variance under null p0 and alternative p1, two-sided alpha=0.05, power=0.80, z_alpha/2=1.9600, z_beta=0.8416): n = (z_a/2*sqrt(p0(1-p0)) + z_b*sqrt(p1(1-p1)))^2 / (p1-p0)^2. This tests whether a NEW cohort's realized WR differs from the current baseline WR (treated as a fixed reference, not resampled) -- the same framing as 'has the live system's WR moved.' Resolution rate ~12/week (given). weeks_needed = ceil(n / 12). Alternative WR targets: baseline+5pp and baseline+10pp.",
+      "caveat": "This is a NEW-cohort-vs-fixed-baseline test, not a comparison of two future random samples. If the true target is 'detect a WR shift using the growing cumulative sample' (baseline itself also has sampling error), true time-to-detection is longer than this floor. We report the floor and say so."
+    },
+    {
+      "id": "2_take_all_baseline",
+      "method": "Descriptive stats (mean, median) on r_multiple for the full bullish index. Win rate = P(r_multiple > 0). Tail rate = P(r_multiple >= 2.0). Per-quarter breakdown by calendar quarter of record.timestamp (UTC). No inference test here -- pure description of whether the base rate looks stable or regime-driven."
+    },
+    {
+      "id": "3_topk_counterfactuals",
+      "method": "For each of the 3 pre-registered objectives (p_win, expected_r, tail_prob), run walk_forward_calibration(records, direction='bullish', objective=...) UNMODIFIED (reused, not reimplemented). Use its `predictions` dict (row_id -> OOF score) joined back to r_multiple via row_id = f'{ticker}|{timestamp}'. This defines the OOF-evaluable subset per objective (differs slightly per objective because of warm-up/class-balance gates -- reported explicitly, not assumed identical). Take-all baseline for each objective is computed ON THAT SAME EVALUABLE SUBSET for apples-to-apples comparison (a separate full-index take-all is task 2).",
+      "selection": "K in {10, 25, 33, 50} (percent). TOP-K = highest-scoring K% of the evaluable subset by OOF score. BOTTOM-K = lowest-scoring K% (mirror check: a working ranker should show top/bottom asymmetry in the same direction predicted by its objective).",
+      "bootstrap": "Day-level block bootstrap on the OOF-evaluable subset, 2000 iterations, numpy Generator seed=42, following the same resample-then-recompute convention already used in scanner/edge/stats.py tercile_lift: for each iteration, resample distinct entry-days WITH replacement (same day count as original), pool all rows belonging to sampled days (duplicated for repeated days), then WITHIN that pooled resample re-sort by score and recompute top-K/bottom-K selection and take-all baseline, and record delta_WR = topK_WR - takeall_WR and delta_avgR = topK_avgR - takeall_avgR (same for bottom-K). CI = [2.5th, 97.5th] percentile of the 2000 deltas. Point estimates come from the ORIGINAL (non-resampled) data using the identical selection procedure.",
+      "label_required": "Every result table row for this task must carry the string 'descriptive counterfactual -- selection uses OOF scores but K was not pre-registered before today'. K values themselves ARE pre-registered in this document (chosen before running), but the practice of scanning 4 K values x 2 tails x 3 objectives is exploratory and multiple-comparisons-unadjusted; findings here do not clear the bar for shipping a filter."
+    },
+    {
+      "id": "4_bearish_check",
+      "method": "Run walk_forward_calibration(records, direction='bearish', objective=...) UNMODIFIED for all 3 objectives. Report the same metrics/acceptance dict structure used for bullish (rank IC, day-clustered p-value, tercile spread + CI, tail retention, beats_naive, and the boolean acceptance.passed with its full criteria breakdown). Cross-reference scanner/brief.py's stated bearish-blocked-on-negative-expectancy gate (grepped, not modified) to state whether OOF ranking skill (if any) is a moot point while take-all bearish expectancy is negative."
+    },
+    {
+      "id": "5_cost_reality",
+      "method": "Approximate, explicitly labeled as such (no bar-level re-walk of the triple barrier under adjusted stop/target prices -- that data is not stored in the index). For slippage s in {25bps, 50bps} per side (round-trip cost = 2s on the underlying move, applied against the trade direction on both entry and exit legs): adjusted_return_pct = outcome_return_pct - 2*s*100 (s in decimal, e.g. 0.0025 for 25bps -> subtract 0.50 percentage points of underlying move). adjusted_r_multiple = clip(adjusted_return_pct / risk_pct_used, -10, 10) using the SAME risk_pct_used stored on the record (assumption: entry slippage does not materially move the stop-distance-in-percent denominator; stated explicitly as a simplification). Recompute WR (adjusted_r>0) and mean R on the full bullish index. This is a floor-level sanity check on cost sensitivity, not a production cost model."
+    }
+  ],
+  "hard_rules": {
+    "seed": 42,
+    "bootstrap_iterations": 2000,
+    "no_writes_outside": "scanner/research/experiments/20260710_sprint/e4_decision/",
+    "no_scanner_main": true,
+    "no_gate_or_threshold_changes": true,
+    "fail_closed": "if walk_forward_calibration returns acceptance.reason=insufficient_records or insufficient_out_of_fold_predictions for any objective/direction, report that explicitly rather than substituting a different method"
+  }
+}

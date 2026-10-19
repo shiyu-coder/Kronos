@@ -1,0 +1,3 @@
+from .config import DEFAULT_WATCHLIST
+
+WATCHLIST = list(DEFAULT_WATCHLIST)

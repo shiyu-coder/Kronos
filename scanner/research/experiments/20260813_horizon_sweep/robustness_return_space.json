@@ -1,0 +1,128 @@
+[
+  {
+    "horizon": 5,
+    "target": "none",
+    "cell_net_pct": 0.2759315036258396,
+    "placebo_net_pct": 0.2672489767070647,
+    "margin_pct": -0.49564994708915056,
+    "margin_t": -1.9907,
+    "n_days": 406
+  },
+  {
+    "horizon": 5,
+    "target": "3R",
+    "cell_net_pct": 0.18810135994693908,
+    "placebo_net_pct": 0.23781996695221444,
+    "margin_pct": -0.5376475631086721,
+    "margin_t": -2.2322,
+    "n_days": 406
+  },
+  {
+    "horizon": 10,
+    "target": "none",
+    "cell_net_pct": 1.1911966058810184,
+    "placebo_net_pct": 0.9311828690827573,
+    "margin_pct": -0.7123530581481115,
+    "margin_t": -1.7275,
+    "n_days": 406
+  },
+  {
+    "horizon": 10,
+    "target": "3R",
+    "cell_net_pct": 0.8511418598065984,
+    "placebo_net_pct": 0.8460672762089718,
+    "margin_pct": -0.7919594713765341,
+    "margin_t": -1.9223,
+    "n_days": 406
+  },
+  {
+    "horizon": 15,
+    "target": "none",
+    "cell_net_pct": 1.9543036297893985,
+    "placebo_net_pct": 1.6178392452610593,
+    "margin_pct": -1.0194251466899067,
+    "margin_t": -1.9864,
+    "n_days": 406
+  },
+  {
+    "horizon": 15,
+    "target": "3R",
+    "cell_net_pct": 1.4796520938871773,
+    "placebo_net_pct": 1.3386122489174233,
+    "margin_pct": -0.9083685988447852,
+    "margin_t": -1.809,
+    "n_days": 406
+  },
+  {
+    "horizon": 20,
+    "target": "none",
+    "cell_net_pct": 2.715254194669892,
+    "placebo_net_pct": 2.422144332154767,
+    "margin_pct": -1.1473998316783838,
+    "margin_t": -1.7382,
+    "n_days": 406
+  },
+  {
+    "horizon": 20,
+    "target": "3R",
+    "cell_net_pct": 1.7560084542496608,
+    "placebo_net_pct": 1.764714034553083,
+    "margin_pct": -0.9889585086578763,
+    "margin_t": -1.6051,
+    "n_days": 406
+  },
+  {
+    "horizon": 30,
+    "target": "none",
+    "cell_net_pct": 3.797620945357628,
+    "placebo_net_pct": 3.7541797642342654,
+    "margin_pct": -1.3301847292104805,
+    "margin_t": -1.466,
+    "n_days": 406
+  },
+  {
+    "horizon": 30,
+    "target": "3R",
+    "cell_net_pct": 2.1619696905886383,
+    "placebo_net_pct": 2.354885254363806,
+    "margin_pct": -1.0165110944283744,
+    "margin_t": -1.3477,
+    "n_days": 406
+  },
+  {
+    "horizon": 40,
+    "target": "none",
+    "cell_net_pct": 4.8054459628633674,
+    "placebo_net_pct": 5.279006692272921,
+    "margin_pct": -1.7431214840410323,
+    "margin_t": -1.6417,
+    "n_days": 406
+  },
+  {
+    "horizon": 40,
+    "target": "3R",
+    "cell_net_pct": 2.3801476857525703,
+    "placebo_net_pct": 2.799045332061815,
+    "margin_pct": -1.170253740726808,
+    "margin_t": -1.4324,
+    "n_days": 406
+  },
+  {
+    "horizon": 60,
+    "target": "none",
+    "cell_net_pct": 5.398139095252915,
+    "placebo_net_pct": 7.788588777809761,
+    "margin_pct": -2.5158971614511088,
+    "margin_t": -1.8502,
+    "n_days": 405
+  },
+  {
+    "horizon": 60,
+    "target": "3R",
+    "cell_net_pct": 2.577438349317187,
+    "placebo_net_pct": 3.1228409614072556,
+    "margin_pct": -1.2392522420345815,
+    "margin_t": -1.5298,
+    "n_days": 405
+  }
+]

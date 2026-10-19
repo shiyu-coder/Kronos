@@ -1,0 +1,52 @@
+{
+  "experiment": "post_breakout_retest_entry",
+  "registered_at": "2026-08-18T18:07:43.3586939-05:00",
+  "branch": "codex/finish-kronos-cleanup",
+  "motivation": "The corrected Potter detector restored source-faithful setup coverage, but both production readiness routes are now adequately sampled and net-negative. The 2026-08-13 horizon and regime experiments also found that selected entries underperform matched arbitrary entries. Thresholds, targets, horizons, post-selection regimes, additive feature transforms, and Kronos ranking are closed. The source doctrine explicitly emphasizes punchback/retest behavior, while production still enters at the decision-bar close. Entry timing itself remains untested.",
+  "hypothesis": "For source-valid bullish Potter Box breaks, waiting up to three completed daily bars for a price-improving touch of the original control level and a close back above it produces positive net five-bar expectancy, improves expectancy versus immediate entry on the exact same setups, and beats a same-day/ticker-universe drift placebo.",
+  "null": "The retest/reclaim rule either remains net-negative, does not improve the exact same setups, or fails to beat ordinary same-direction exposure on its entry days.",
+  "rule": {
+    "trigger": "The fixed current edge index supplies records with features.potter_passed == 1. Consecutive same-ticker/direction triggers are de-overlapped by suppressing new triggers for wait_window + outcome_horizon bars after each retained trigger.",
+    "wait_window_bars": 3,
+    "bullish_confirmation": "On the first of the next three completed bars whose range intersects original box_top +/- stored touch_tolerance, close > box_top and close <= original breakout close, enter at that close.",
+    "bearish_confirmation": "Symmetric diagnostic only: range intersects original box_bottom +/- tolerance, close < box_bottom and close >= original breakdown close.",
+    "no_confirmation": "No trade. A missing retest is not assigned an outcome.",
+    "entry_information_set": "Entry occurs at the confirmation-bar close, after the touch and reclaim are observable. Outcome walking begins on the following bar.",
+    "stop": "Keep the original setup's absolute structural stop price. Recompute risk_pct from the confirmation close to that fixed stop so the experiment changes entry timing, not the intended invalidation level.",
+    "exit": "No profit target; five completed bars after entry, matching shipped geometry.",
+    "costs": "25 bps per side, charged as 0.50 return percentage points per completed trade before division by the entry-specific structural risk.",
+    "r_cap": 10.0
+  },
+  "primary_population": "Bullish source-valid Potter setups with complete wait and outcome windows. Bearish is reported as a locked diagnostic because production already blocks the direction.",
+  "controls": {
+    "harness": "All outcomes use scanner.edge.outcomes.walk_triple_barrier directly; no experimental barrier implementation is permitted.",
+    "exact_setup_pair": "For every confirmed retest, compare its net R with immediate entry on the identical original setup under the original risk and shipped five-bar/no-target plan. Pair differences are clustered by original signal day with HAC lag 8.",
+    "drift_placebo": "On each retest entry day, evaluate the same direction/no-target/five-bar plan at the close for every available cohort ticker using that ticker's median retest risk. Compare entry-day means with HAC lag 8. This prevents broad tape movement on retest days from being credited to the rule.",
+    "fixed_information": "Control levels, touch tolerance, direction, stop, and trigger eligibility come only from fields fixed at the original signal timestamp. Future bars are used solely to decide whether/when the pre-registered confirmation occurs and to measure its later outcome.",
+    "fingerprints": "Record SHA-256 hashes of the exact edge index and cached bar snapshot used. Recent unresolved records absent from the cache are excluded before any outcome is read."
+  },
+  "acceptance_gates": {
+    "coverage": "At least 100 confirmed bullish entries across at least 40 distinct entry days.",
+    "absolute": "Bullish retest entry-day mean net R > 0 with HAC t >= 2.0.",
+    "same_setup": "Retest minus immediate-entry mean net R > 0 with HAC t >= 2.0 on original signal-day means.",
+    "drift": "Retest minus matched drift-placebo entry-day mean net R > 0 with HAC t >= 2.0.",
+    "all_required": "Every gate must pass. This is one primary rule, not a parameter sweep; day-1/day-2/day-3 and bearish splits are descriptive only.",
+    "no_production_change": "A first pass may only justify adding a shadow retest-candidate journal and a later independent confirmation. It cannot alter live scoring, alerts, readiness, or execution today."
+  },
+  "falsification": "If any primary gate fails, the exact three-bar daily retest/reclaim rule is closed and no production entry change is made. A favorable unadjusted row mean, isolated delay bucket, bearish diagnostic, or failure to beat the drift placebo cannot rescue it.",
+  "amendments": [
+    {
+      "at": "2026-08-18T18:08:15-05:00, after the first run",
+      "field": "registered_at metadata only",
+      "original_value": "2026-08-18T18:24:00-05:00",
+      "corrected_value": "2026-08-18T18:07:43.3586939-05:00",
+      "reason": "The hand-entered minute was a future-time typo. The corrected value is the filesystem creation timestamp printed by Get-Item. The preregistration, rule, gates, script, and outcomes were not changed. The first result was generated at 18:07:58-05:00, 15 seconds after file creation."
+    }
+  ],
+  "known_limitations": [
+    "Daily bars cannot prove intraday option fills at the confirmation close.",
+    "The cached bar snapshot was originally fetched for the 2026-08-13 horizon study; exact hashes make the snapshot explicit, but later vendor revisions are not represented.",
+    "The fixed index spans roughly two years and mostly one equity-market regime.",
+    "This tests one doctrine-native retest definition. It does not test stop placement, intraday punchbacks, or a multi-timeframe box state machine."
+  ]
+}
