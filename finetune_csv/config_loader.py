@@ -29,9 +29,13 @@ class ConfigLoader:
             return config
         
         base_path = config.get('model_paths', {}).get('base_path', '')
+        base_save_path = config['model_paths'].get('base_save_path') or f"{base_path}/{exp_name}"
+        if '{exp_name}' in base_save_path:
+            base_save_path = base_save_path.format(exp_name=exp_name)
+        tokenizer_save_name = config['model_paths'].get('tokenizer_save_name', 'tokenizer')
         path_templates = {
-            'base_save_path': f"{base_path}/{exp_name}",
-            'finetuned_tokenizer': f"{base_path}/{exp_name}/tokenizer/best_model"
+            'base_save_path': base_save_path,
+            'finetuned_tokenizer': os.path.join(base_save_path, tokenizer_save_name, 'best_model')
         }
         
         if 'model_paths' in config:
