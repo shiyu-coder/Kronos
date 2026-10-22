@@ -540,7 +540,8 @@ def predict():
             # Custom time period: find starting position of historical data in original df
             start_dt = pd.to_datetime(start_date)
             mask = df['timestamps'] >= start_dt
-            historical_start_idx = df[mask].index[0] if len(df[mask]) > 0 else 0
+            # Chart slicing uses positions, not the labels retained after dropna.
+            historical_start_idx = np.flatnonzero(mask)[0] if mask.any() else 0
         else:
             # Latest data: start from beginning
             historical_start_idx = 0
