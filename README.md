@@ -86,10 +86,16 @@ We release a family of pre-trained models with varying capacities to suit differ
 
 ### Installation
 
-1. Install Python 3.10+, and then install the dependencies:
+1. Install Python 3.10+, then install dependencies with either **pip** or **uv**:
 
 ```shell
+# pip (requirements.txt stays compatible)
 pip install -r requirements.txt
+
+# or uv (preferred for reproducible envs; uses pyproject.toml + uv.lock)
+uv sync
+# for tests:
+uv sync --extra dev
 ```
 
 ### 📈 Making Forecasts
