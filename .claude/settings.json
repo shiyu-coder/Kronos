@@ -1,0 +1,8 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0"
+  },
+  "worktree": {
+    "baseRef": "head"
+  }
+}

@@ -1,0 +1,24 @@
+# Machine-readable map for agents. Paths relative to repo root.
+app: Kronos
+seed:
+  command: ./verify seed
+  fixtures:
+    - tests/data/regression_input.csv
+    - tests/data/regression_output_256.csv
+    - tests/data/regression_output_512.csv
+flows:
+  smoke:
+    description: Local package import + fixture integrity (no model download)
+    command: ./verify run smoke
+  regression:
+    description: Kronos predictor regression pytest (downloads pinned model revisions)
+    command: ./verify run regression
+pages:
+  chart:
+    description: Deterministic chart from regression_input.csv close series
+    path: verification/out/screenshots/chart.png
+    command: ./verify screenshot chart
+invariants:
+  - Fixture CSV SHA256 matches seed.lock
+  - Smoke flow writes ok marker
+  - Chart screenshot SHA256 matches verification/baselines/chart.sha256 when baseline present

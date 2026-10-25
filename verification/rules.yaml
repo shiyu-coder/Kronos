@@ -1,0 +1,13 @@
+# Rules enforced by ./verify check. Same input → same result.
+version: 1
+require_seed_lock: true
+require_files:
+  - verification/feature-map.yaml
+  - verification/rules.yaml
+  - tests/data/regression_input.csv
+  - tests/data/regression_output_256.csv
+  - tests/data/regression_output_512.csv
+require_flow_ok:
+  - smoke
+baselines:
+  chart: verification/baselines/chart.sha256
