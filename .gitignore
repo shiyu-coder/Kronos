@@ -74,3 +74,6 @@ venv.bak/
 temp/
 tmp/
 .python-version
+
+# Claude Code worker worktrees
+.claude/worktrees/
