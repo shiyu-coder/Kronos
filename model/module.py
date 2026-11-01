@@ -301,10 +301,19 @@ class RotaryPositionalEmbedding(nn.Module):
         return self.cos_cached, self.sin_cached
 
     def forward(self, q, k):
-        cos, sin = self._update_cos_sin_cache(q, q.shape[-2])
+        q_len, k_len = q.shape[-2], k.shape[-2]
+        # In cross-attention the query can be shorter than the keys (decode_s2
+        # uses a single query per step). Build the tables from the longer side,
+        # rotate keys by their positions 0..k_len-1 and the query by the
+        # positions of the last q_len keys, so the relative rotation between a
+        # query and a key matches the full-length computation. When
+        # q_len == k_len (self-attention and training) this is unchanged.
+        cos, sin = self._update_cos_sin_cache(q, max(q_len, k_len))
+        q_cos, q_sin = cos[..., -q_len:, :], sin[..., -q_len:, :]
+        k_cos, k_sin = cos[..., :k_len, :], sin[..., :k_len, :]
         return (
-            (q * cos) + (self._rotate_half(q) * sin),
-            (k * cos) + (self._rotate_half(k) * sin),
+            (q * q_cos) + (self._rotate_half(q) * q_sin),
+            (k * k_cos) + (self._rotate_half(k) * k_sin),
         )
 
     def _rotate_half(self, x):
