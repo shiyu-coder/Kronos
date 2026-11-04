@@ -337,16 +337,26 @@ class MultiHeadAttentionWithRoPE(nn.Module):
         q, k = self.rotary(q, k)
 
         if key_padding_mask is not None:
-            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)  # [batch, 1, 1, seq_len]
-            attn_mask = attn_mask.expand(-1, self.n_heads, seq_len, -1)  # [batch, n_heads, q_len, k_len]
+            # key_padding_mask follows the convention used elsewhere in this module (see
+            # DualHead.compute_loss): 0 marks a real token, nonzero marks padding.
+            # scaled_dot_product_attention's boolean attn_mask means the opposite (True = attend),
+            # so convert rather than pass key_padding_mask straight through.
+            key_valid = (key_padding_mask == 0).unsqueeze(1).unsqueeze(2)  # [batch, 1, 1, seq_len]
+            # This layer always needs causal self-attention; fold it into the mask instead of the
+            # is_causal flag, since scaled_dot_product_attention rejects an explicit attn_mask
+            # together with is_causal=True.
+            causal = torch.tril(torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device))
+            attn_mask = (causal.unsqueeze(0).unsqueeze(0) & key_valid).expand(-1, self.n_heads, -1, -1)
+            is_causal = False
         else:
             attn_mask = None
+            is_causal = True
 
         attn_output = F.scaled_dot_product_attention(
             q, k, v,
             attn_mask=attn_mask,
             dropout_p=self.attn_dropout_p if self.training else 0.0,
-            is_causal=True
+            is_causal=is_causal
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model)
@@ -379,7 +389,10 @@ class MultiHeadCrossAttentionWithRoPE(nn.Module):
         q, k = self.rotary(q, k)
 
         if key_padding_mask is not None:
-            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)
+            # See the matching comment in MultiHeadAttentionWithRoPE.forward: key_padding_mask
+            # is 0 for a real token and nonzero for padding, the opposite of what
+            # scaled_dot_product_attention's boolean attn_mask expects.
+            attn_mask = (key_padding_mask == 0).unsqueeze(1).unsqueeze(2)
             attn_mask = attn_mask.expand(-1, self.n_heads, q_len, -1)
         else:
             attn_mask = None
