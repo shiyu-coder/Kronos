@@ -34,12 +34,15 @@ def set_seed(seed: int, rank: int = 0):
 
 def get_model_size(model: torch.nn.Module) -> str:
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    if total_params >= 1e9:
+    million_label = f"{total_params / 1e6:.1f}"
+    thousand_label = f"{total_params / 1e3:.1f}"
+    if total_params >= 1e9 or million_label == "1000.0":
         return f"{total_params / 1e9:.1f}B"
-    elif total_params >= 1e6:
+    if total_params >= 1e6 or thousand_label == "1000.0":
         return f"{total_params / 1e6:.1f}M"
-    else:
-        return f"{total_params / 1e3:.1f}K"
+    if thousand_label == "0.0":
+        return str(total_params)
+    return f"{thousand_label}K"
 
 
 def format_time(seconds: float) -> str:

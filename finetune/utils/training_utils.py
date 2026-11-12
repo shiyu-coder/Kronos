@@ -72,12 +72,15 @@ def get_model_size(model: torch.nn.Module) -> str:
     """
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    if total_params >= 1e9:
-        return f"{total_params / 1e9:.1f}B"  # Billions
-    elif total_params >= 1e6:
-        return f"{total_params / 1e6:.1f}M"  # Millions
-    else:
-        return f"{total_params / 1e3:.1f}K"  # Thousands
+    million_label = f"{total_params / 1e6:.1f}"
+    thousand_label = f"{total_params / 1e3:.1f}"
+    if total_params >= 1e9 or million_label == "1000.0":
+        return f"{total_params / 1e9:.1f}B"
+    if total_params >= 1e6 or thousand_label == "1000.0":
+        return f"{total_params / 1e6:.1f}M"
+    if thousand_label == "0.0":
+        return str(total_params)
+    return f"{thousand_label}K"
 
 
 def reduce_tensor(tensor: torch.Tensor, world_size: int, op=dist.ReduceOp.SUM) -> torch.Tensor:
