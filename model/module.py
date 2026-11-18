@@ -337,16 +337,19 @@ class MultiHeadAttentionWithRoPE(nn.Module):
         q, k = self.rotary(q, k)
 
         if key_padding_mask is not None:
-            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)  # [batch, 1, 1, seq_len]
-            attn_mask = attn_mask.expand(-1, self.n_heads, seq_len, -1)  # [batch, n_heads, q_len, k_len]
+            key_valid = (key_padding_mask == 0).unsqueeze(1).unsqueeze(2)
+            causal = torch.tril(torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device))
+            attn_mask = (causal.unsqueeze(0).unsqueeze(0) & key_valid).expand(-1, self.n_heads, -1, -1)
+            is_causal = False
         else:
             attn_mask = None
+            is_causal = True
 
         attn_output = F.scaled_dot_product_attention(
             q, k, v,
             attn_mask=attn_mask,
             dropout_p=self.attn_dropout_p if self.training else 0.0,
-            is_causal=True
+            is_causal=is_causal
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model)
@@ -379,18 +382,16 @@ class MultiHeadCrossAttentionWithRoPE(nn.Module):
         q, k = self.rotary(q, k)
 
         if key_padding_mask is not None:
-            attn_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)
+            attn_mask = (key_padding_mask == 0).unsqueeze(1).unsqueeze(2)
             attn_mask = attn_mask.expand(-1, self.n_heads, q_len, -1)
         else:
             attn_mask = None
-
-        is_causal_flag = self.training
 
         attn_output = F.scaled_dot_product_attention(
             q, k, v,
             attn_mask=attn_mask,
             dropout_p=self.attn_dropout_p if self.training else 0.0,
-            is_causal=is_causal_flag
+            is_causal=False
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, q_len, self.d_model)
