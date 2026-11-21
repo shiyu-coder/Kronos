@@ -349,7 +349,8 @@ def top_k_top_p_filtering(
         # Remove all tokens with a probability less than the last token of the top-k
         indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
         logits[indices_to_remove] = filter_value
-        return logits
+        if top_p >= 1.0:
+            return logits
 
     if top_p < 1.0:
         sorted_logits, sorted_indices = torch.sort(logits, descending=True)
@@ -470,6 +471,10 @@ def auto_regressive_inference(tokenizer, model, x, x_stamp, y_stamp, max_context
 
 
 def calc_time_stamps(x_timestamp):
+    if not isinstance(x_timestamp, pd.Series):
+        x_timestamp = pd.Series(pd.to_datetime(x_timestamp))
+    elif not pd.api.types.is_datetime64_any_dtype(x_timestamp):
+        x_timestamp = pd.to_datetime(x_timestamp)
     time_df = pd.DataFrame()
     time_df['minute'] = x_timestamp.dt.minute
     time_df['hour'] = x_timestamp.dt.hour
@@ -504,6 +509,8 @@ class KronosPredictor:
 
         self.tokenizer = self.tokenizer.to(self.device)
         self.model = self.model.to(self.device)
+        self.tokenizer.eval()
+        self.model.eval()
 
     def generate(self, x, x_stamp, y_stamp, pred_len, T, top_k, top_p, sample_count, verbose):
 
@@ -527,7 +534,8 @@ class KronosPredictor:
         df = df.copy()
         if self.vol_col not in df.columns:
             df[self.vol_col] = 0.0  # Fill missing volume with zeros
-            df[self.amt_vol] = 0.0  # Fill missing amount with zeros
+            if self.amt_vol not in df.columns:
+                df[self.amt_vol] = 0.0  # Fill missing amount with zeros only if absent
         if self.amt_vol not in df.columns and self.vol_col in df.columns:
             df[self.amt_vol] = df[self.vol_col] * df[self.price_cols].mean(axis=1)
 
@@ -604,7 +612,8 @@ class KronosPredictor:
             df = df.copy()
             if self.vol_col not in df.columns:
                 df[self.vol_col] = 0.0
-                df[self.amt_vol] = 0.0
+                if self.amt_vol not in df.columns:
+                    df[self.amt_vol] = 0.0
             if self.amt_vol not in df.columns and self.vol_col in df.columns:
                 df[self.amt_vol] = df[self.vol_col] * df[self.price_cols].mean(axis=1)
 
